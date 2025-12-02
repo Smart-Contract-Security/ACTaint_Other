@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Mining24",
+        "code": "function Mining24 (uint256 _value, uint256 _minReq) public { owner = msg.sender; value = _value; minReq = _minReq; balances[msg.sender] = totalDistributed; }",
+        "vulnerability": "Reinitialization of owner",
+        "reason": "This function allows the 'owner' variable to be reset to the caller (msg.sender) anytime it is called. Since this function is public and does not have an 'onlyOwner' modifier, any user can claim ownership of the contract by calling this function, which may lead to unauthorized control over contract functionalities restricted to the owner.",
+        "file_name": "0x43efc486d1c7c5cb0193e409a73aa33786f5197c.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { if (newOwner != address(0)) { owner = newOwner; } }",
+        "vulnerability": "Unchecked ownership transfer",
+        "reason": "Though this function correctly uses the 'onlyOwner' modifier, it does not emit any event or have sufficient logging mechanism to track the change of ownership. This lack of transparency could potentially lead to unnoticed malicious changes in ownership, making it difficult to trace and verify legitimate changes in contract ownership.",
+        "file_name": "0x43efc486d1c7c5cb0193e409a73aa33786f5197c.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Logical flaw in distribution check",
+        "reason": "The function checks if 'totalDistributed' is greater than or equal to 'totalSupply' after it has already distributed tokens, which could potentially allow the 'totalDistributed' to exceed 'totalSupply'. This check should ideally occur before updating 'totalDistributed' to prevent over-distribution beyond the intended supply cap. Moreover, the function is marked as private and does not validate the '_to' address or amount, assuming the calling functions handle these checks.",
+        "file_name": "0x43efc486d1c7c5cb0193e409a73aa33786f5197c.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy issue due to the external call to 'distr' before updating the state. However, the severity and profitability are not as high as suggested because the function includes a check that could prevent multiple withdrawals by setting 'distributionFinished' to true. Nonetheless, the vulnerability could still be exploited if not all conditions are met, making it a moderate risk.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks because it calls 'distr' which triggers external state changes (like transfer) before updating the caller's state. This allows the attacker to re-enter the function multiple times in one transaction before their state (blacklist) is updated, potentially allowing them to withdraw more tokens than intended.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(1000).mul(999);\n}",
+        "file_name": "0xadcc3e3bd358767e3c372c026d2de71d532a2370.sol"
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Integer Underflow",
+        "criticism": "The reasoning is partially correct. The function does check for the balance of the burner before burning tokens, which prevents an underflow in the 'balances' mapping. However, the concern about 'totalDistributed' underflowing is valid if '_value' is greater than 'totalDistributed'. This could indeed lead to an underflow, making the vulnerability severe if exploited, as it could corrupt the state of the contract. The profitability, however, is low as it mainly results in disruption rather than a direct benefit to an attacker.",
+        "correctness": 6,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "In the 'burn' function, although there is a check to ensure that the value to be burned is not greater than the sender's balance, there is no check to ensure that the totalDistributed does not underflow when subtracted by _value. This could lead to an underflow, setting totalDistributed to a very high value if the burn amount is greater than totalDistributed.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    Burn(burner, _value);\n}",
+        "file_name": "0xadcc3e3bd358767e3c372c026d2de71d532a2370.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "ERC20 Approve/Allowance Race Condition",
+        "criticism": "The reasoning correctly identifies a well-known race condition in the ERC20 token standard's 'approve' function. This vulnerability is severe as it can allow a malicious spender to exploit the race condition to spend more than the intended allowance. The profitability is also high for the attacker if they can exploit this race condition effectively. The explanation is clear and aligns well with common vulnerabilities found in ERC20 tokens.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'approve' function is susceptible to a race condition where, if a user first approves an allowance and then decides to change it, a malicious spender could potentially submit a transaction to use the initial allowance just after it's approved but before it's changed, exploiting the time window where both are valid.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xadcc3e3bd358767e3c372c026d2de71d532a2370.sol"
+    }
+]

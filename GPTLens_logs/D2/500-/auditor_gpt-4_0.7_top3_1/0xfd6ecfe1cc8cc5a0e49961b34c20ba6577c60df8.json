@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint amount) public payable onlyOwner { if (lockDate > 0 && now >= lockDate) { uint max = deposits[msg.sender]; if (amount <= max && max > 0) { msg.sender.transfer(amount); Withdrawal(msg.sender, amount); } } }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The withdraw function allows the owner to withdraw funds, but it sends ether with 'msg.sender.transfer(amount)' before updating the 'deposits[msg.sender]' state. This sequence allows a malicious owner to perform a reentrancy attack by re-calling the withdraw function in a fallback function, potentially draining the contract's funds if the checks and internal state updates are not adequately managed.",
+        "file_name": "0xfd6ecfe1cc8cc5a0e49961b34c20ba6577c60df8.sol"
+    },
+    {
+        "function_name": "init",
+        "code": "function init() public payable isUnlocked { Owner = msg.sender; lockDate = 0; Initialized(msg.sender); }",
+        "vulnerability": "Initialization without protection",
+        "reason": "The init function can be called by anyone since it lacks access control measures beyond checking if the contract is unlocked. This means that ownership can potentially be claimed by anyone who calls this function first, leading to unauthorized control of the contract.",
+        "file_name": "0xfd6ecfe1cc8cc5a0e49961b34c20ba6577c60df8.sol"
+    },
+    {
+        "function_name": "SetLockDate",
+        "code": "function SetLockDate(uint newDate) public payable onlyOwner { LockDate(lockDate, newDate); lockDate = newDate; }",
+        "vulnerability": "Arbitrary lock manipulation",
+        "reason": "The SetLockDate function allows the contract owner to set any arbitrary date for 'lockDate'. This functionality can be exploited by setting a 'lockDate' far in the future, effectively locking out the withdrawal function indefinitely and potentially causing funds to be stuck without recourse.",
+        "file_name": "0xfd6ecfe1cc8cc5a0e49961b34c20ba6577c60df8.sol"
+    }
+]

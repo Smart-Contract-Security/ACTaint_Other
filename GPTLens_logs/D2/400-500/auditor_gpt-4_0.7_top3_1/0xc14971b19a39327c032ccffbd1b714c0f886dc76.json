@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyPiece",
+        "code": "function buyPiece() payable { if (pieceForSale && msg.value >= lowestAskPrice) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; _amountOwner = msg.value / 10000 * ownerCommission; _amountEthart = msg.value / 40; _amountSeller = msg.value - _amountOwner - _amountEthart; owner.transfer(_amountOwner); lowestAskAddress.transfer(_amountSeller); registrar.transfer(_amountEthart); piecesOwned[lowestAskAddress]--; piecesOwned[msg.sender]++; Interface a = Interface(registrar); a.issuePatrons(msg.sender, msg.value / 5 * 2); pieceSold (lowestAskAddress, msg.sender, msg.value); pieceForSale = false; lowestAskPrice = 0; lowestAskAddress = 0x0; } else {throw;} }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'buyPiece' function transfers Ether to external addresses (owner, lowestAskAddress, registrar) before updating the state variables (piecesOwned, pieceForSale). This ordering can be exploited by a malicious contract at one of these addresses to re-enter the 'buyPiece' function and potentially buy the piece multiple times with the same Ether by manipulating state changes.",
+        "file_name": "0xc14971b19a39327c032ccffbd1b714c0f886dc76.sol"
+    },
+    {
+        "function_name": "setProof",
+        "code": "function setProof (string _proofLink) onlyBy (owner) { if (!proofSet) { uint256 remainder; proofLink = _proofLink; proofSet = true; remainder = editionSize % 40; ethartAward = (editionSize - remainder) / 40; if (remainder > 0 && now % 39 <= remainder) {ethartAward++;} piecesOwned[registrar] = ethartAward; piecesOwned[owner] = editionSize - ethartAward; } else {throw;} }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The calculation of 'ethartAward' in the 'setProof' function can lead to integer overflow. Specifically, the division and subsequent addition operations (ethartAward++) are not checked for overflow, potentially allowing the award calculation to wrap around and be less than intended. This can be manipulated to alter the distribution of piecesOwned.",
+        "file_name": "0xc14971b19a39327c032ccffbd1b714c0f886dc76.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _amount) returns (bool success) { allowed[msg.sender][_spender] = _amount; Approval(msg.sender, _spender, _amount); return true; }",
+        "vulnerability": "ERC-20 Race Condition",
+        "reason": "The 'approve' function is vulnerable to a known race condition in ERC-20 tokens where a spender could potentially spend an old allowance and the new one. This race condition can occur because there is no requirement to set the current allowance to zero before setting a new one. A malicious spender can take advantage of this by front-running a transaction that tries to set a new allowance, using the old one just before it changes.",
+        "file_name": "0xc14971b19a39327c032ccffbd1b714c0f886dc76.sol"
+    }
+]

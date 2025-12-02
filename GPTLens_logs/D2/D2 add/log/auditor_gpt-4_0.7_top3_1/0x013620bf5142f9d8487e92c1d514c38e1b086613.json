@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fallback function",
+        "code": "function() public payable hasValue { checkinter(); players[nbUsers] = msg.sender; bets[nbUsers] = msg.value; users.push(PlayerBets(msg.sender, msg.value)); nbUsers++; totalBets += msg.value; if (nbUsers == 2) { endBlock = block.number + 15; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function modifies the state before calling an external contract (checkinter()) which can potentially call back into the contract, leading to reentrancy attacks. This can be used to drain Ether from the contract.",
+        "file_name": "0x013620bf5142f9d8487e92c1d514c38e1b086613.sol"
+    },
+    {
+        "function_name": "withrawWin",
+        "code": "function withrawWin(address winner,uint winticket) internal { uint tempTot = totalBets; lastWinnerTicket = winticket; totalGames++; nbUsers = 0; totalBets = 0; endBlock = 0; delete users; fees += tempTot * 5 / 100; winner.transfer(tempTot * 95 / 100); lastWinner = winner; }",
+        "vulnerability": "Improper State Update",
+        "reason": "This function updates the state variables such as nbUsers, totalBets, and lastWinner after transferring Ether to the winner. This ordering allows the winner to potentially reenter the contract and manipulate state inappropriately, or cause other side effects like duplicate winnings.",
+        "file_name": "0x013620bf5142f9d8487e92c1d514c38e1b086613.sol"
+    },
+    {
+        "function_name": "endLottery",
+        "code": "function endLottery() internal { uint sum = 0; uint winningNumber = uint(block.blockhash(block.number - 1)) % totalBets; for (uint i = 0; i < nbUsers; i++) { sum += users[i].amount; if (sum >= winningNumber) { withrawWin(users[i].addPlayer,winningNumber); return; } } }",
+        "vulnerability": "Blockhash Manipulation",
+        "reason": "This function uses the blockhash of the previous block as a source of randomness, which can be slightly manipulated by miners. Miners could potentially influence the outcome by withholding a block, creating an unfair advantage in the lottery draw.",
+        "file_name": "0x013620bf5142f9d8487e92c1d514c38e1b086613.sol"
+    }
+]

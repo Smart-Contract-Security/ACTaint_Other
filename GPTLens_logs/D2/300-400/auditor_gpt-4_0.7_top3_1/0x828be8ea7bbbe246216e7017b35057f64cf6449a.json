@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external {\n    if (msg.value>=howManyEtherInWeiToBecomeOwner) {\n        owner.transfer(msg.value);\n        owner.transfer(this.balance);\n        owner=_newowner;\n    }\n}",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The function 'changeOwner' transfers all balance of the contract to the previous owner when a new owner is set. If the balance is large, the gas cost to execute these transfers could exceed the block gas limit, effectively making it impossible to change the contract owner since the transaction will consistently fail.",
+        "file_name": "0x828be8ea7bbbe246216e7017b35057f64cf6449a.sol"
+    },
+    {
+        "function_name": "mintTo",
+        "code": "function mintTo(address _to, uint256 _value) public returns (bool) {\n    balances[_to] += _value;\n    Transfer(msg.sender, _to, _value);\n    return true;\n}",
+        "vulnerability": "Unauthorized Token Minting",
+        "reason": "The function 'mintTo' allows any user to mint new tokens to any address. This can lead to unauthorized inflation of the token supply, disrupting the token economics and potentially devaluing the tokens held by other users.",
+        "file_name": "0x828be8ea7bbbe246216e7017b35057f64cf6449a.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external {\n    if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) {\n        selfdestruct(owner);\n    }\n}",
+        "vulnerability": "Arbitrary Contract Destruction",
+        "reason": "The function 'killContract' allows the contract to be destroyed by anyone who sends enough Ether. This can potentially lead to loss of contract functionality and assets unexpectedly, affecting all stakeholders who rely on the contract's continued existence.",
+        "file_name": "0x828be8ea7bbbe246216e7017b35057f64cf6449a.sol"
+    }
+]

@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc8a074de1c6bf01a75cd29892c91b6c354200f75.code
+Start time: 28/08/2022 08:32:30
+Building CFG...
+CFG generation time (secs): 0.10
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function ethReverse(uint256)
+	( 2130)  852:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function ChangeOwner(address)
+
+Violated access control check in function setSymbol(string)
+	( 2697)  a89:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function ChangeOwner(address)
+
+Violated access control check in function setName(string)
+	( 2749)  abd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function ChangeOwner(address)
+
+Violated access control check in function ToggleFeed(bool)
+	( 2860)  b2c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function ChangeOwner(address)
+
+Violated access control check in function SetTPE(uint256)
+	( 2961)  b91:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function ChangeOwner(address)
+
+Violated access control check in function ToggleCrowdsale(bool)
+	( 2995)  bb3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function ChangeOwner(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 2.97
+End time: 28/08/2022 08:32:33

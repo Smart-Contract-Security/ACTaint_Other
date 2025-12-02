@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw( uint _value, uint8 v, bytes32 r, bytes32 s, uint signatureValidUntilBlock ) public returns (bool success) { require(balanceOf(msg.sender) >= _value); if (now <= depositLock[msg.sender]) { require(block.number < signatureValidUntilBlock); require(isValidSignature(keccak256(msg.sender, address(this), signatureValidUntilBlock), v, r, s)); } balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply_ = totalSupply_.sub(_value); depositLock[msg.sender] = 0; if (erc20old) { ERC20Old(originalToken).transfer(msg.sender, _value); } else { require(ERC20(originalToken).transfer(msg.sender, _value)); } return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function updates the balance state and removes the deposit lock after performing the external call to transfer tokens, either through ERC20 or ERC20Old interfaces. This order of operations can lead to reentrancy vulnerabilities where an attacker might recursively call the withdraw function in the context of the external call before the balance and lock states are updated, potentially draining the contract.",
+        "file_name": "0x274bbd862606b7011fa961ecb5a697b9fdf804cf.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint _value) public { require(isSigner[_to] || isSigner[_from]); assert(msg.sender == TRANSFER_PROXY_VEFX || msg.sender == TRANSFER_PROXY_V2); balances[_to] = balances[_to].add(_value); depositLock[_to] = depositLock[_to] > now ? depositLock[_to] : now + 1 hours; balances[_from] = balances[_from].sub(_value); Transfer(_from, _to, _value); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The 'transferFrom' function lacks proper validation of the transfer amount, allowing unrestricted value transfers as long as the transaction is initiated by a designated signer and the proxy addresses. This could potentially lead to unauthorized fund transfers between accounts controlled by the signers.",
+        "file_name": "0x274bbd862606b7011fa961ecb5a697b9fdf804cf.sol"
+    },
+    {
+        "function_name": "withdrawDifferentToken",
+        "code": "function withdrawDifferentToken(address _differentToken, bool _erc20old) public onlyOwner returns (bool) { require(_differentToken != originalToken); require(ERC20(_differentToken).balanceOf(address(this)) > 0); if (_erc20old) { ERC20Old(_differentToken).transfer(msg.sender, ERC20(_differentToken).balanceOf(address(this))); } else { require(ERC20(_differentToken).transfer(msg.sender, ERC20(_differentToken).balanceOf(address(this)))); } return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'withdrawDifferentToken' executes token transfers via either the ERC20 or ERC20Old interface without checking the return value of the transfer calls. This could lead to a scenario where the transfer fails silently, causing potential discrepancies in the tracking of internal state and actual token balances, leading to funds being locked within the contract.",
+        "file_name": "0x274bbd862606b7011fa961ecb5a697b9fdf804cf.sol"
+    }
+]

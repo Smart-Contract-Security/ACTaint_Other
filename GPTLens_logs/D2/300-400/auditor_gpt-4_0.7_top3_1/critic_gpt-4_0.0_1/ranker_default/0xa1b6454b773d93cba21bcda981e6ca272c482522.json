@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "depositKittiesAndMintTokens",
+        "vulnerability": "Integer Overflow/Underflow",
+        "criticism": "The reasoning about the potential for integer overflow due to the multiplication of _kittyIds.length with 10**18 is valid, especially if there are no checks on the maximum length of _kittyIds. However, the severity and profitability depend on the implementation details of the .mul function and the solidity version used, as recent versions include overflow checks by default. If overflow checks are not in place, this could indeed lead to incorrect minting amounts, potentially causing significant disruption in the token economics.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The multiplication (_kittyIds.length).mul(10**18) could potentially overflow without proper checks on the length of _kittyIds or the values being multiplied, leading to incorrect minting amounts.",
+        "code": "function depositKittiesAndMintTokens(uint256[] calldata _kittyIds) external nonReentrant { require(_kittyIds.length > 0, 'you must submit an array with at least one element'); for(uint i = 0; i < _kittyIds.length; i++){ uint256 kittyToDeposit = _kittyIds[i]; require(msg.sender == kittyCore.ownerOf(kittyToDeposit), 'you do not own this cat'); require(kittyCore.kittyIndexToApproved(kittyToDeposit) == address(this), 'you must approve() this contract to give it permission to withdraw this cat before you can deposit a cat'); require(kittyCore.getKitty(kittyToDeposit) == 1, 'this cat must be gen1'); kittyCore.transferFrom(msg.sender, address(this), kittyToDeposit); _pushKitty(kittyToDeposit); emit DepositKittyAndMintToken(kittyToDeposit); } _mint(msg.sender, (_kittyIds.length).mul(10**18)); }",
+        "file_name": "0xa1b6454b773d93cba21bcda981e6ca272c482522.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "burnTokensAndWithdrawKitties",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of potential reentrancy due to the external call within a loop after state changes is incorrect. The function is protected by a nonReentrant modifier, which prevents reentrant calls effectively. The state changes (setting kittyIsDepositedInContract[kittyToWithdraw] = false) are made before the external call, reducing the risk of reentrancy. Therefore, the reasoning provided does not align with the actual risk posed by the function's implementation.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "Although the function uses a nonReentrant modifier, it interacts with an external contract (kittyCore.transfer) within the loop after state changes (setting kittyIsDepositedInContract[kittyToWithdraw] = false). This could lead to potential reentrancy attacks where the external call can be used to re-enter the contract before the state changes are fully reflected.",
+        "code": "function burnTokensAndWithdrawKitties(uint256[] calldata _kittyIds, address[] calldata _destinationAddresses) external nonReentrant { require(_kittyIds.length == _destinationAddresses.length, 'you did not provide a destination address for each of the cats you wish to withdraw'); require(_kittyIds.length > 0, 'you must submit an array with at least one element'); uint256 numTokensToBurn = _kittyIds.length; require(balanceOf(msg.sender) >= numTokensToBurn.mul(10**18), 'you do not own enough tokens to withdraw this many ERC721 cats'); _burn(msg.sender, numTokensToBurn.mul(10**18)); for(uint i = 0; i < numTokensToBurn; i++){ uint256 kittyToWithdraw = _kittyIds[i]; if(kittyToWithdraw == 0){ kittyToWithdraw = _popKitty(); } else { require(kittyIsDepositedInContract[kittyToWithdraw] == true, 'this kitty has already been withdrawn'); require(address(this) == kittyCore.ownerOf(kittyToWithdraw), 'the contract does not own this cat'); kittyIsDepositedInContract[kittyToWithdraw] = false; } kittyCore.transfer(_destinationAddresses[i], kittyToWithdraw); emit BurnTokenAndWithdrawKitty(kittyToWithdraw); } }",
+        "file_name": "0xa1b6454b773d93cba21bcda981e6ca272c482522.sol",
+        "final_score": 1.25
+    },
+    {
+        "function_name": "batchRemoveWithdrawnKittiesFromStorage",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning provided is incorrect as there are no external calls within the function that are unchecked. The function is primarily modifying the length of an array based on the state of each element, which does not involve any external calls. The actual risk might be related to improper handling of array indices or logical errors in removing elements, but not unchecked external calls. The criticism should focus on potential logical errors rather than external calls.",
+        "correctness": 1,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "The function iteratively modifies the length of an array based on conditions without proper validation of the state of each element (kittyIsDepositedInContract[kittyId] == false). This might lead to unforeseen effects or manipulation of the array's length and content, impacting the integrity of the contract's state storage.",
+        "code": "function batchRemoveWithdrawnKittiesFromStorage(uint256 _numSlotsToCheck) external { require(_numSlotsToCheck <= depositedKittiesArray.length, 'you are trying to batch remove more slots than exist in the array'); uint256 arrayIndex = depositedKittiesArray.length; for(uint i = 0; i < _numSlotsToCheck; i++){ arrayIndex = arrayIndex.sub(1); uint256 kittyId = depositedKittiesArray[arrayIndex]; if(kittyIsDepositedInContract[kittyId] == false){ depositedKittiesArray.length--; } else { return; } } }",
+        "file_name": "0xa1b6454b773d93cba21bcda981e6ca272c482522.sol",
+        "final_score": 1.0
+    }
+]

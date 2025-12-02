@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Allowance Double-Spend",
+        "reason": "This function does not properly prevent a known race condition vulnerability known as 'Allowance Double-Spend'. The issue occurs because it allows changing non-zero allowance without first setting it to zero, potentially allowing a spender to double-spend if they act quickly before the allowance is updated.",
+        "file_name": "0x860eb6f729ab3957fd5b3054d80d0b04037efdda.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); emit Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Missing Return Value Check",
+        "reason": "The function uses the '.sub' and '.add' methods from the SafeMath library but does not check the return value of these methods. In case of an arithmetic error (though unlikely due to the library's internal checks), the lack of return value check may lead to unexpected behavior.",
+        "file_name": "0x860eb6f729ab3957fd5b3054d80d0b04037efdda.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unchecked Send",
+        "reason": "The 'withdraw' function transfers Ether to the owner but does not check the return value of the '.transfer()' call. If the transfer fails (e.g., if the contract balance is 0), the contract will not react to the failure, potentially leading to loss of funds or locked states in the contract.",
+        "file_name": "0x860eb6f729ab3957fd5b3054d80d0b04037efdda.sol"
+    }
+]

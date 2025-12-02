@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the 'withdraw' function, the 'to.transfer(amount)' call transfers control to the address specified in 'to', which could be a malicious contract that re-enters the 'withdraw' function or other functions modifying state before the 'Deposits' mapping is updated. This could lead to withdrawal of more funds than intended, as the balance is not immediately decremented.",
+        "file_name": "0x1d8cd6eab10ab7d673fa7b4c5f93fe167953d4f9.sol"
+    },
+    {
+        "function_name": "init",
+        "code": "function init() payable open { Owner = msg.sender; minDeposit = 1 ether; deposit(); }",
+        "vulnerability": "Incorrect Access Control",
+        "reason": "The 'init' function is vulnerable because it is not restricted to only the owner, allowing any user to call it and potentially reinitialize critical contract parameters such as 'Owner' and 'minDeposit'. This can lead to unauthorized control over the smart contract.",
+        "file_name": "0x1d8cd6eab10ab7d673fa7b4c5f93fe167953d4f9.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Unchecked balance before selfdestruct",
+        "reason": "The 'kill' function allows the contract to be destroyed by selfdestruct only if the contract's balance is zero. However, due to possible race conditions or pending transactions, this check can be bypassed or manipulated, leading to loss of contract funds or denial of service.",
+        "file_name": "0x1d8cd6eab10ab7d673fa7b4c5f93fe167953d4f9.sol"
+    }
+]

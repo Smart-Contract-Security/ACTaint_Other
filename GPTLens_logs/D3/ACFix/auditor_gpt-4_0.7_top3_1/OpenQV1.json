@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintBounty",
+        "code": "function mintBounty( string calldata _bountyId, string calldata _organization, OpenQDefinitions.InitOperation memory _initOperation ) external nonReentrant onlyProxy returns (address) { require( bountyIdToAddress[_bountyId] == address(0), Errors.BOUNTY_ALREADY_EXISTS ); address bountyAddress = bountyFactory.mintBounty( _bountyId, msg.sender, _organization, claimManager, depositManager, _initOperation ); bountyIdToAddress[_bountyId] = bountyAddress; emit BountyCreated( _bountyId, _organization, msg.sender, bountyAddress, block.timestamp, bountyType(_bountyId), _initOperation.data, VERSION_1 ); return bountyAddress; }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'mintBounty' is only protected by the 'onlyProxy' modifier but not by 'onlyOwner' or a more specific access control mechanism, allowing any address that can act as a proxy to create bounties, potentially leading to unauthorized creation of bounties if the proxy is compromised.",
+        "file_name": "OpenQV1.sol"
+    },
+    {
+        "function_name": "setBountyFactory",
+        "code": "function setBountyFactory(address _bountyFactory) external onlyProxy onlyOwner { bountyFactory = BountyFactory(_bountyFactory); }",
+        "vulnerability": "Centralization Risk",
+        "reason": "The 'setBountyFactory' function allows the contract owner to change the address of the bounty factory. If the owner's account is compromised, the attacker can redirect the bounty creation process to a malicious factory, which could lead to misallocation of funds or creation of fraudulent bounties.",
+        "file_name": "OpenQV1.sol"
+    },
+    {
+        "function_name": "transferOracle",
+        "code": "function transferOracle(address _newOracle) external onlyProxy onlyOwner { require(_newOracle != address(0), Errors.NO_ZERO_ADDRESS); _transferOracle(_newOracle); }",
+        "vulnerability": "Single Point of Failure",
+        "reason": "The function 'transferOracle' allows the contract owner to change the oracle address. Since the oracle plays a critical role in various verification processes, if the contract owner's account is compromised, an attacker can change the oracle to a malicious one, which can severely disrupt the contract's operations and integrity.",
+        "file_name": "OpenQV1.sol"
+    }
+]

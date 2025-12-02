@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "reentrancy",
+        "criticism": "The reasoning is accurate in identifying the reentrancy vulnerability due to the direct transfer of Ether without any reentrancy guard. This type of vulnerability is severe as it can allow an attacker to drain the contract's funds by recursively calling the withdraw function. The profitability is also high for an attacker if the contract holds a significant amount of Ether.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The 'withdraw' function directly transfers Ether to a recipient address without any checks for reentrancy attacks. An attacker can exploit this by creating a fallback function in the recipient contract that calls back into this contract, leading to multiple withdrawals.",
+        "code": "function withdraw(address recipient, uint256 balance) public onlyOwner { recipient.transfer(balance); }",
+        "file_name": "0x66d58f0a2a44742688843ceb8c0fa8d8567e3c54.sol",
+        "final_score": 9.0
+    },
+    {
+        "function_name": "getRand",
+        "vulnerability": "predictable RNG",
+        "criticism": "The reasoning is correct in pointing out the vulnerability due to the predictability of the RNG method used. Using blockhash as a source of randomness is insecure because it can be manipulated by miners or predicted by observers, especially if the block number is known. This can severely impact any functionality relying on this randomness, such as games or lotteries, making it a high-severity issue. The profitability could be high if the random number is used in a context where predicting it could yield financial gain.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'getRand' function uses the blockhash of a past block to generate a random number. Since blockhashes are accessible to all participants in the network, an attacker can predict the outcome of the random number generation if they can determine the block number used.",
+        "code": "function getRand(uint blockNumber, uint max) constant internal returns(uint) { return(uint(sha3(block.blockhash(blockNumber))) % max); }",
+        "file_name": "0x66d58f0a2a44742688843ceb8c0fa8d8567e3c54.sol",
+        "final_score": 8.25
+    },
+    {
+        "function_name": "makeWager",
+        "vulnerability": "denial of service",
+        "criticism": "The reasoning correctly identifies a potential denial of service attack through the use of exceptions based on certain conditions. However, the severity and profitability are overstated. While it can be annoying and disruptive, it doesn't lead to loss of funds or control over the contract. Moreover, the attacker would need to spend gas to continuously send transactions, which reduces profitability.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The 'makeWager' function throws an exception if the sender already has an active wager or the sent value is zero or exceeds the maxWagerWei, which can be used by an attacker to lock funds by continuously sending transactions that meet these conditions, preventing legitimate users from making wagers.",
+        "code": "function makeWager() payable public { if (msg.value == 0 || msg.value > maxWagerWei) throw; if (wagers[msg.sender].active) { throw; } wagers[msg.sender] = Wager({ sender: msg.sender, wagerWei: msg.value, creationBlockNumber: block.number, active: true, }); }",
+        "file_name": "0x66d58f0a2a44742688843ceb8c0fa8d8567e3c54.sol",
+        "final_score": 4.75
+    }
+]

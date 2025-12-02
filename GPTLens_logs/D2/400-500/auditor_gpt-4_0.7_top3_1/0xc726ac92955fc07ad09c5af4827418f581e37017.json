@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "overthrow",
+        "code": "function overthrow(string challengeData) returns (bool success){ var challengeHash = sha3(challengeData); if(checkDate()) return false; if(challengeHash == leaderHash) return false; if((challengeHash ^ leaderHash) > difficulty) return false; difficulty = (challengeHash ^ leaderHash); challengeWorldRecord(difficulty); leader = msg.sender; leaderHash = challengeHash; Leader(\"New leader! This is their address, and the new hash to collide.\", leader, leaderHash); fallenLeaders++; return true; }",
+        "vulnerability": "Unchecked external call",
+        "reason": "In the 'overthrow' function, there is an external call 'leader.send(this.balance)' in the 'checkDate()' function which is invoked. This external call is made without checking for its execution success, which can lead to a loss of funds if the call fails. Furthermore, if the call throws an exception, it can halt the entire contract execution.",
+        "file_name": "0xc726ac92955fc07ad09c5af4827418f581e37017.sol"
+    },
+    {
+        "function_name": "checkDate",
+        "code": "function checkDate() private returns (bool success) { if (block.timestamp > (startingTime + gameLength)) { if(leader != admin){ Winner(\"Victory! Game will be reset to end in 1 week (in block time).\", leader); leader.send(this.balance); }else NoWinner(\"No winner! Game will be reset to end in 1 week (in block time).\"); startingTime = block.timestamp; reset(); return true; } return false; }",
+        "vulnerability": "Denial of Service via timestamp dependency",
+        "reason": "The function 'checkDate' uses 'block.timestamp' for logic control which determines when a game ends and when to send all contract balances. Miners can manipulate 'block.timestamp' to a certain degree, which could be exploited to extend or reduce the game duration inappropriately, potentially disrupting the game's fairness and functionality.",
+        "file_name": "0xc726ac92955fc07ad09c5af4827418f581e37017.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill(){ if (msg.sender == admin){ GameOver(\"The Crypto Hill has ended.\"); selfdestruct(admin); } }",
+        "vulnerability": "Unauthorized contract termination",
+        "reason": "The 'kill' function allows the admin to destroy the contract at any time. This poses a severe risk as the admin can terminate the contract unilaterally without any consent from other stakeholders, leading to a loss of trust and potential fund loss if there were any balances left in the contract.",
+        "file_name": "0xc726ac92955fc07ad09c5af4827418f581e37017.sol"
+    }
+]

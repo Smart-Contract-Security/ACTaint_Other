@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' allows changing the owner of the contract by sending a certain amount of Ether. However, before updating the owner state variable, it transfers Ether to the current owner. If the current owner is a malicious contract, it can invoke this function during the transfer, leading to reentrancy where the state 'owner' may not yet be updated, and funds could be drained.",
+        "file_name": "0x38e308c4ac50fd6c31c5f53d7b25f25116d80a3a.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "The 'killContract' function allows anyone to destroy the contract by sending a large amount of Ether (500 Ether). This could be abused by an attacker who wants to permanently disable the contract functionality by paying the required amount, leading to a loss of service for all legitimate users.",
+        "file_name": "0x38e308c4ac50fd6c31c5f53d7b25f25116d80a3a.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Arbitrary Contract Modification",
+        "reason": "The function 'changeNameSymbol' allows anyone who sends enough Ether (400 Ether) to change the name and symbol of the token, regardless of their ownership of the contract. This could be exploited by an attacker to mislead or confuse users by changing these to resemble other well-known tokens, potentially leading to phishing attacks or other forms of fraud.",
+        "file_name": "0x38e308c4ac50fd6c31c5f53d7b25f25116d80a3a.sol"
+    }
+]

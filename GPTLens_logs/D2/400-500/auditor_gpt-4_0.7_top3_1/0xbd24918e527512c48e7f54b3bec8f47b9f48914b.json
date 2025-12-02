@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race Condition (front-running attack)",
+        "reason": "The approve function does not properly handle the race condition vulnerability where a malicious user can take advantage of the time window between the approval and the balance update to drain funds. The function checks if the new value or the previously allowed value is not 0, potentially allowing for unexpected behavior if the spender decides to spend the allowance before the owner has the chance to set it to the desired value. This can lead to the front-runner exploiting the allowance by quickly making transactions.",
+        "file_name": "0xbd24918e527512c48e7f54b3bec8f47b9f48914b.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Potential Reentrancy",
+        "reason": "The withdraw function directly transfers the balance of the contract to the owner without ensuring that reentrancy attacks are prevented. It uses the call.value() method which can lead to reentrancy if the recipient is a contract and has a fallback function. A malicious contract could call back into the smart contract before the initial function execution is complete, potentially leading to unexpected behaviors or draining of contract funds.",
+        "file_name": "0xbd24918e527512c48e7f54b3bec8f47b9f48914b.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function calculates the number of tokens to distribute based on the amount of ETH sent to the contract. If a large enough value of msg.value is sent that, when multiplied by tokensPerEth, exceeds the uint256 limit, it could cause an overflow, resulting in incorrect token calculation. Although SafeMath is used, the code structure and logic could allow for scenarios where the overflow is not adequately handled, potentially leading to incorrect distribution of tokens and impacting the contract's integrity.",
+        "file_name": "0xbd24918e527512c48e7f54b3bec8f47b9f48914b.sol"
+    }
+]

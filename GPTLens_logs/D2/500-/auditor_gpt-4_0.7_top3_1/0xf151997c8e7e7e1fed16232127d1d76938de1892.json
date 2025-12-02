@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'getTokens' allows a reentrancy attack since it calls 'distr' which transfers tokens, and then modifies the state afterwards (blacklist[investor] = true;). An attacker could recursively call 'getTokens' before their initial invocation completes, potentially allowing them to drain more tokens than intended.",
+        "file_name": "0xf151997c8e7e7e1fed16232127d1d76938de1892.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function is vulnerable to a known race condition where calling 'approve' to set a new allowance before the old one has been used can allow an attacker to approve a larger amount. This happens because it doesn't reset the allowance to zero before setting a new value, which can be exploited by front-running.",
+        "file_name": "0xf151997c8e7e7e1fed16232127d1d76938de1892.sol"
+    },
+    {
+        "function_name": "withdrawForeignTokens",
+        "code": "function withdrawForeignTokens(address _tokenContract) onlyOwner public returns (bool) {\n    ForeignToken token = ForeignToken(_tokenContract);\n    uint256 amount = token.balanceOf(address(this));\n    return token.transfer(owner, amount);\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In the 'withdrawForeignTokens' function, the return value of 'token.transfer(owner, amount)' is not checked. If the 'transfer' function fails for any reason (e.g., the contract does not have enough tokens), the transaction will not be reverted, potentially leading to incorrect assumptions about the state of the contract.",
+        "file_name": "0xf151997c8e7e7e1fed16232127d1d76938de1892.sol"
+    }
+]

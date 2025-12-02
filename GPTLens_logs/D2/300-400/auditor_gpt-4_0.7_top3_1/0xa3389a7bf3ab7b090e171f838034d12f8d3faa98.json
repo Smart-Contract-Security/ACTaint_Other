@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setResult",
+        "code": "function setResult(uint32 _result) external onlySiths { require(_result >= firstHero || _result <= lastHero); require(startPayment == false); if (betAmount[_result] == 0) { startWithdraw(); return; } uint256 donation = (address(this).balance - betAmount[_result]) / 10; Martin.transfer(donation / 2); George.transfer(donation / 2); uint256 totalBets = (address(this).balance - betAmount[_result]); winRatio = totalBets * RR / betAmount[_result]; resultWin = _result; startPayment = true; if (endBetting != true) { endBetting = true; } }",
+        "vulnerability": "Integer Overflow and Underflow",
+        "reason": "The function does not properly validate the input range for _result, using a logical OR (||) instead of AND (&&) in require(_result >= firstHero || _result <= lastHero), which allows setting _result to any value, potentially leading to integer overflow/underflow vulnerabilities in subsequent calculations.",
+        "file_name": "0xa3389a7bf3ab7b090e171f838034d12f8d3faa98.sol"
+    },
+    {
+        "function_name": "setBet",
+        "code": "function setBet(uint8 _hero) external payable { require(onPause == false); require(msg.value >= minBet); require(endBetting == false); require(_hero >= firstHero || _hero <= lastHero); if (bets[msg.sender][_hero] == 0) { playerCount[_hero]++; } bets[msg.sender][_hero] += msg.value; betAmount[_hero] += msg.value; emit Bet(msg.sender, _hero, msg.value); }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "This function increments playerCount and betAmount for every new bet without limit, potentially leading to a state where the size and number of operations (such as iterating through playerCount or betAmount arrays in other functions) consume more gas than the block gas limit, thus making the contract unusable.",
+        "file_name": "0xa3389a7bf3ab7b090e171f838034d12f8d3faa98.sol"
+    },
+    {
+        "function_name": "clearBlockchain",
+        "code": "function clearBlockchain() external { require(startPayment && endBetting); if (resultWin == Withdraw) { require(address(this).balance < minBet); selfdestruct(msg.sender); } else { require(playerCount[resultWin] == 0); selfdestruct(msg.sender); } }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function clearBlockchain() uses selfdestruct which can be triggered by anyone as long as the conditions are met. There\u2019s no specific restriction ensuring that only the contract owner or a trusted party can call this function, which could lead to premature destruction of the contract if the conditions are accidentally met (e.g., resultWin being Withdraw and contract balance being low).",
+        "file_name": "0xa3389a7bf3ab7b090e171f838034d12f8d3faa98.sol"
+    }
+]

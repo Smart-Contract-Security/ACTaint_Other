@@ -1,0 +1,58 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xafdd6fec9be6e31ad9dd7e28631625ac8e38f9c3.code
+Start time: 27/08/2022 12:32:37
+Building CFG...
+CFG generation time (secs): 0.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawERC20Token(address)
+	( 2919)  b67:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function halt()
+	( 3405)  d4d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function withdrawEIP20Token(address)
+	( 3527)  dc7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function changePrice(uint256)
+	( 4124) 101c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function changeReserve(address)
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function withdrawToken()
+	( 4683) 124b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function unhalt()
+	( 5234) 1472:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function changeBeneficiary(address)
+	( 5424) 1530:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 5611) 15eb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Owanble()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 4.49
+End time: 27/08/2022 12:32:42

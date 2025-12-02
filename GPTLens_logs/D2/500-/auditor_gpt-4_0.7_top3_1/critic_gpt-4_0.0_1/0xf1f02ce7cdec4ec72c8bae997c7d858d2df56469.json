@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The reasoning provided is incorrect. The function uses the 'add' and 'sub' methods from the SafeMath library (implied by the use of '.add' and '.sub'), which are designed to prevent integer overflow and underflow by reverting the transaction if such a condition would occur. Therefore, the risk of integer overflow as described is mitigated by the use of SafeMath, making the vulnerability non-existent in this context. The severity and profitability are both low because the function is safeguarded against the overflow issue.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "This function lacks validation to check if '_amount' being added to 'totalDistributed' exceeds 'totalSupply', leading potentially to integer overflow. Since 'totalDistributed' is incremented before the check of whether it's exceeded 'totalSupply', it could wrap around and reset to a lower value, allowing more tokens to be distributed than intended.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xf1f02ce7cdec4ec72c8bae997c7d858d2df56469.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The criticism is valid as the function 'distr' is indeed called without checking its return value. This could lead to inconsistencies in the state of the contract if 'distr' fails but 'getTokens' continues to execute as if it succeeded. This can be a severe issue as it affects the integrity of the token distribution process, potentially leading to incorrect token balances. The profitability of exploiting this vulnerability, however, remains low as it primarily results in state inconsistency rather than direct financial gain for an attacker.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 2,
+        "reason": "The function 'distr' is called within 'getTokens' without checking its return value. Failure of the 'distr' function (due to reasons like gas running out) could lead to unexpected behavior, yet 'getTokens' will continue execution and modify state variables assuming success. This could lead to a state of inconsistency in token distribution tracking.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "file_name": "0xf1f02ce7cdec4ec72c8bae997c7d858d2df56469.sol"
+    },
+    {
+        "function_name": "withdrawForeignTokens",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The reasoning is accurate. The function does not check the return value of 'token.transfer', which could indeed lead to misleading information about the success of the operation. This is a critical oversight in functions dealing with asset transfers, as it can result in the owner believing assets were transferred when they were not. The severity is moderate because it directly affects asset management, but profitability is low as it does not provide a direct way for an attacker to benefit unless combined with other vulnerabilities.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The return value of 'token.transfer(owner, amount)' is not checked. If the transfer fails, the function will still return 'true', incorrectly indicating a successful withdrawal. This can mislead the contract owner about the state of funds, potentially leading to financial losses.",
+        "code": "function withdrawForeignTokens(address _tokenContract) onlyOwner public returns (bool) { ForeignToken token = ForeignToken(_tokenContract); uint256 amount = token.balanceOf(address(this)); return token.transfer(owner, amount); }",
+        "file_name": "0xf1f02ce7cdec4ec72c8bae997c7d858d2df56469.sol"
+    }
+]

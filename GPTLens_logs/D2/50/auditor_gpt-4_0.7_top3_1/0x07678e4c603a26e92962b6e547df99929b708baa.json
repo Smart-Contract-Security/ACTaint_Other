@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool success) { assert(msg.sender != address(0)); assert(_to != address(0)); require(!frozenAccount[msg.sender]); require(!frozenAccount[_to]); require(tokenBalanceOf[msg.sender] >= _value); require(tokenBalanceOf[msg.sender] - _value < tokenBalanceOf[msg.sender]); require(tokenBalanceOf[_to] + _value > tokenBalanceOf[_to]); require(_value > 0); _transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Integer Underflow",
+        "reason": "The check 'require(tokenBalanceOf[msg.sender] - _value < tokenBalanceOf[msg.sender]);' is intended to prevent underflow but actually does the opposite. This condition always holds true due to how unsigned integers work in Solidity, thus not preventing underflow.",
+        "file_name": "0x07678e4c603a26e92962b6e547df99929b708baa.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) { require(!frozenAccount[msg.sender]); require(tokenBalanceOf[msg.sender] >= amount); require(amount > 0); require(sellPrice > 0); _transfer(msg.sender, this, amount); uint256 revenue = amount * sellPrice; require(this.balance >= revenue); commission = msg.value/commissionRate; require(address(this).send(commission)); msg.sender.transfer(revenue); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function is vulnerable to reentrancy attacks because it calls an external contract (via 'msg.sender.transfer(revenue);') after making state changes ('_transfer(msg.sender, this, amount);' and 'commission = msg.value/commissionRate;'). An attacker can potentially call into this function during the external call and modify state in an unexpected way.",
+        "file_name": "0x07678e4c603a26e92962b6e547df99929b708baa.sol"
+    },
+    {
+        "function_name": "STARTMETADOLLAR",
+        "code": "function STARTMETADOLLAR() { preIcoIsRunning = true; minimalGoalReached = false; icoIsClosed = false; tokenBalanceOf[this] += _totalSupply; allowed[this][owner] = _totalSupply; allowed[this][supervisor] = _totalSupply; currentTokenPrice = 1 * 1; preICOprice = (msg.value) * preMtdRate; ICOprice = (msg.value) * mtdRate; sellPrice = (msg.value) * sellRate; updatePrices(); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'STARTMETADOLLAR' function initializes the contract settings but also updates prices using potentially arbitrary input 'msg.value' which can lead to incorrect initialization. The function does not validate these inputs or the success of 'updatePrices()' which is crucial for contract stability.",
+        "file_name": "0x07678e4c603a26e92962b6e547df99929b708baa.sol"
+    }
+]

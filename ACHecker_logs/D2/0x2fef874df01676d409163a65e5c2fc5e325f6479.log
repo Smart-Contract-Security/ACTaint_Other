@@ -1,0 +1,58 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x2fef874df01676d409163a65e5c2fc5e325f6479.code
+Start time: 20/08/2022 04:25:32
+Building CFG...
+CFG generation time (secs): 1.71
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 3991)  f97:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4234) 108a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 4692) 1254:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 4800) 12c0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5203) 1453:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5401) 1519:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 6561) 19a1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function freezeAccount(address,bool)
+	( 7137) 1be1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 7437) 1d0d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ominiraprotocol()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.46
+End time: 20/08/2022 04:25:39

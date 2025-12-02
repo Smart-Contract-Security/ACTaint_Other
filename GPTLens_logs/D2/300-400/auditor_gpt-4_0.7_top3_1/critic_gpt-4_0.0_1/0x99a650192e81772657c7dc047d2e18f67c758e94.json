@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "newGame",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'newGame' function for reentrancy is valid as it involves transferring Ether to an owner address which could be a contract capable of making callbacks, potentially leading to reentrancy attacks. The function should indeed follow the Checks-Effects-Interactions pattern to mitigate such risks. The severity is high due to the potential for disrupting the contract's state or draining funds. However, the profitability is moderate as exploiting this requires specific conditions (e.g., the owner being a malicious contract).",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The `newGame` function transfers Ether to the owner using `owner.transfer(msg.value)`. If the owner address is a contract, this can lead to reentrancy attacks where the fallback function in the malicious contract could call back into `newGame` or any other function in `GameFactory`, potentially leading to unexpected behavior. The function should use the Checks-Effects-Interactions pattern, and all effects (such as updating state variables) should be done before interacting with external contracts.",
+        "code": "function newGame (address _manager, string _name, string _title, uint256 _price, uint256 _timespan, uint8 _profitOfManager, uint8 _profitOfFirstPlayer, uint8 _profitOfWinner, uint256 _gameType) limits(msg.value) isActivated payable public { require(address(_manager)!=0x0, \"invaild address\"); require(_price >= MINIMUM_PRICE && _price <= MAXIMUM_PRICE, \"price not in range (MINIMUM_PRICE, MAXIMUM_PRICE)\"); require(_timespan >= MINIMUM_TIMESPAN && _timespan <= MAXIMUM_TIMESPAN, \"timespan not in range(MINIMUM_TIMESPAN, MAXIMUM_TIMESPAN)\"); bytes32 name = _name.nameFilter(); require(name[0] != 0, \"invaild name\"); require(checkName(name), \"duplicate name\"); require(_profitOfManager <=20, \"[profitOfManager] don't take too much commission :)\"); require(_profitOfFirstPlayer <=50, \"[profitOfFirstPlayer] don't take too much commission :)\"); require(_profitOfWinner <=100 && (_profitOfManager + _profitOfWinner + _profitOfFirstPlayer) <=100, \"[profitOfWinner] don't take too much commission :)\"); require(msg.value >= getTicketPrice(_profitOfManager), \"fee is not enough\"); address builderAddress = builders[_gameType]; require(address(builderAddress)!=0x0, \"invaild game type\"); IGameBuilder builder = IGameBuilder(builderAddress); address game = builder.buildGame(_manager, _name, _title, _price, _timespan, _profitOfManager, _profitOfFirstPlayer, _profitOfWinner); games[name] = game; names.push(name); addresses.push(game); numberOfGames ++; owner.transfer(msg.value); if(numberOfGames > numberOfEarlybirds){ fee += (fee/10); } emit onNewGame(msg.sender, name, game, fee, now); }",
+        "file_name": "0x99a650192e81772657c7dc047d2e18f67c758e94.sol"
+    },
+    {
+        "function_name": "setFee",
+        "vulnerability": "Denial of Service",
+        "criticism": "The reasoning that the 'setFee' function could lead to a denial of service if the owner sets an excessively high fee is plausible. However, this vulnerability's impact is limited by the fact that only the owner can exploit it, and doing so could harm the owner's interests if the platform becomes unusable. Therefore, while the vulnerability is technically possible, its practical impact and profitability are likely low unless the owner has malicious intent or makes a significant error.",
+        "correctness": 6,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The `setFee` function allows the owner to change the fee arbitrarily. If the fee is set to a very high value, it could make the creation of new games prohibitively expensive, effectively denying service to regular users. This could be used by the owner to restrict access to the contract at their discretion.",
+        "code": "function setFee(uint256 _fee) public payable onlyOwner { fee = _fee; }",
+        "file_name": "0x99a650192e81772657c7dc047d2e18f67c758e94.sol"
+    },
+    {
+        "function_name": "terminate",
+        "vulnerability": "Arbitrary Destruction",
+        "criticism": "The 'terminate' function's vulnerability description is accurate as it allows the owner to unilaterally destroy the contract and withdraw all funds. This poses a severe risk to all other stakeholders and can be seen as a critical vulnerability. The severity is very high due to the potential total loss of the contract's functionality and funds. However, the profitability is only relevant to the owner, as they are the only party who can trigger this function and receive the remaining Ether.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 2,
+        "reason": "The `terminate` function allows the owner to destroy the contract at any time by calling `selfdestruct(owner)`, which sends all remaining Ether in the contract to the owner. This can lead to loss of funds or denial of service as all the state and balance are wiped out without any consent from other stakeholders or users.",
+        "code": "function terminate() public onlyOwner { selfdestruct(owner); }",
+        "file_name": "0x99a650192e81772657c7dc047d2e18f67c758e94.sol"
+    }
+]

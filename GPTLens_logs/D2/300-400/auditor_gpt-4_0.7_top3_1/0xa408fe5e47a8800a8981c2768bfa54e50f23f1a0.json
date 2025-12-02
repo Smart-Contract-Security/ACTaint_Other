@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom (address _from, address _to, uint256 _value) returns (bool success) { if (allowances [_from][msg.sender] < _value) return false; if (accounts [_from] < _value) return false; allowances [_from][msg.sender] = safeSub (allowances [_from][msg.sender], _value); if (_value > 0 && _from != _to) { accounts [_from] = safeSub (accounts [_from], _value); accounts [_to] = safeAdd (accounts [_to], _value); } Transfer (_from, _to, _value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The `transferFrom` function updates the allowance and the balances after emitting the Transfer event. An attacker might exploit this by recursively calling the function from the Transfer event listener, potentially leading to unexpected behaviors if the state is not yet updated.",
+        "file_name": "0xa408fe5e47a8800a8981c2768bfa54e50f23f1a0.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve (address _spender, uint256 _value) returns (bool success) { allowances [msg.sender][_spender] = _value; Approval (msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The approve function does not handle the ERC20 race condition vulnerability. An attacker can manipulate the approved amount between the time when the approval is checked and when it is set, potentially causing the owner to approve an unintended amount.",
+        "file_name": "0xa408fe5e47a8800a8981c2768bfa54e50f23f1a0.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() public saleIsOn() minAmount() payable { uint tokens = get_tokens_count(msg.value); require(transferPayable(msg.sender , tokens)); if(_allowedTransfers) { beneficiary.transfer(msg.value); } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "This function transfers Ether to a beneficiary address without checking the success of the transfer. This can lead to Ether being permanently locked in the contract if the transfer fails (e.g., if the beneficiary is a contract that throws an exception or the call stack limit is reached).",
+        "file_name": "0xa408fe5e47a8800a8981c2768bfa54e50f23f1a0.sol"
+    }
+]

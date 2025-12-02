@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "remove",
+        "code": "function remove() checkAccess(\"owner\") { suicide(msg.sender); }",
+        "vulnerability": "Suicide function",
+        "reason": "Using 'suicide' (or selfdestruct) can lead to loss of contract's code and data. It transfers the remaining Ether to a specified address, in this case, the address that calls the function. If the access control is compromised, it can lead to unexpected and possibly malicious destruction of the contract.",
+        "file_name": "0x57d90b64a1a57749b0f932f1a3395792e12e7055.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint _value) returns (bool) { uint startGas = msg.gas + transferCallGas; if (!_transferWithReward(_db(), msg.sender, _to, _value)) { return false; } uint refund = (startGas - msg.gas + refundGas) * tx.gasprice; return _refund(refund); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function contains a reentrancy vulnerability because it calls an external contract '_transferWithReward' and attempts to handle Ether refund in the same transaction. An attacker could exploit this by creating a fallback function in the receiver contract that calls back into 'transfer', leading to multiple withdrawals before the first transaction is finished.",
+        "file_name": "0x57d90b64a1a57749b0f932f1a3395792e12e7055.sol"
+    },
+    {
+        "function_name": "setFeeAddr",
+        "code": "function setFeeAddr(address _feeAddr) checkAccess(\"currencyOwner\") { feeAddr = _feeAddr; }",
+        "vulnerability": "Arbitrary redirection of fees",
+        "reason": "This function allows changing the address to which transaction fees are sent. If the access control (checkAccess) is compromised or misconfigured, an attacker could redirect fees to an arbitrary address, effectively stealing the fees.",
+        "file_name": "0x57d90b64a1a57749b0f932f1a3395792e12e7055.sol"
+    }
+]

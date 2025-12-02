@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initialize",
+        "code": "function initialize(address _controller, uint256 _cap) public { require(owner == 0); owner = msg.sender; delegation = _controller; delegatedFwd(_controller, msg.data); }",
+        "vulnerability": "Improper Authorization",
+        "reason": "The initialize function sets the owner and delegation based on the input parameters. The function's guard `require(owner == 0);` checks if the owner is not set (i.e., zero address) before allowing the operation. However, this means that any user can call this function to become the owner if the owner is not yet set, leading to unauthorized control over the contract.",
+        "file_name": "0x9caa3424cb91900ef7ac41a7b04a246304c02d3a.sol"
+    },
+    {
+        "function_name": "transferDelegation",
+        "code": "function transferDelegation(address newDelegation) public onlyOwner { require(newDelegation != address(0)); DelegationTransferred(delegation, newDelegation); delegation = newDelegation; }",
+        "vulnerability": "Single Point of Failure",
+        "reason": "The function allows the owner to change the delegation to any different address. Since all calls are forwarded to the delegation address in the fallback function, if the owner (potentially malicious if the ownership is compromised) changes the delegation, they can redirect all contract interactions to a malicious contract, allowing full control over the functionalities.",
+        "file_name": "0x9caa3424cb91900ef7ac41a7b04a246304c02d3a.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () public { delegatedFwd(delegation, msg.data); }",
+        "vulnerability": "Arbitrary Delegation",
+        "reason": "The contract lacks checks on what code is being called through delegation in the fallback function. It forwards all calls and data to the address stored in the `delegation` state variable. If the `delegation` variable is set to point to a malicious contract, it could lead to unintended or harmful execution of functions because any function call not existing in the current contract will automatically be forwarded to the delegated contract.",
+        "file_name": "0x9caa3424cb91900ef7ac41a7b04a246304c02d3a.sol"
+    }
+]

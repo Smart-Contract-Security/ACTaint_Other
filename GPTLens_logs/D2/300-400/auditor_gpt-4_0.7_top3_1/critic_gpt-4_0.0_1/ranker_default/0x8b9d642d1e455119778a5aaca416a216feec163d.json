@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "openLottery",
+        "vulnerability": "Block Timestamp Dependency",
+        "criticism": "The reasoning provided is accurate in identifying the potential manipulation of randomness due to reliance on block properties like timestamp and difficulty, which can indeed be influenced by miners. This vulnerability is severe as it directly affects the fairness of the lottery outcome, potentially leading to biased results favoring the miner. The profitability is also significant because a miner could exploit this to win the lottery, thus gaining an unfair advantage and potential financial gain.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "The function 'random' used within 'openLottery' relies on 'block.timestamp' and 'block.difficulty' for generating randomness which can be manipulated by miners to some extent, influencing the outcome of the lottery.",
+        "code": "function openLottery(uint8 _viewId) public returns(uint8,uint8) { uint8 viewId = _viewId; require(viewId < 7); uint256 currentTerm = CLotteries.length - 1; CLottery storage clottery = CLotteries[currentTerm]; if (currentGene == 0 && clottery.openBlock > 0 && clottery.isReward == false) { OpenLottery(viewId, clottery.luckyGenes[viewId], currentTerm, clottery.openBlock, clottery.totalAmount); return (clottery.luckyGenes[viewId],1); } if (lastBlockNumber == block.number) { OpenLottery(viewId, clottery.luckyGenes[viewId], currentTerm, clottery.openBlock, clottery.totalAmount); return (clottery.luckyGenes[viewId],2); } if (currentGene == 0 && clottery.isReward == true) { CLottery memory _clottery; _clottery.luckyGenes = [0,0,0,0,0,0,0]; _clottery.totalAmount = uint256(0); _clottery.isReward = false; _clottery.openBlock = uint256(0); currentTerm = CLotteries.push(_clottery) - 1; } if (this._isCarousal(currentTerm)) { revert(); } uint8 luckyNum = 0; uint256 bonusBalance = dogCore.getAvailableBlance(); if (currentGene == 6) { if (bonusBalance <= SpoolAmount) { OpenLottery(viewId, clottery.luckyGenes[viewId], currentTerm, 0, 0); return (clottery.luckyGenes[viewId],3); } luckyNum = random(8); CLotteries[currentTerm].luckyGenes[currentGene] = luckyNum; OpenLottery(currentGene, luckyNum, currentTerm, block.number, bonusBalance); currentGene = 0; CLotteries[currentTerm].openBlock = block.number; CLotteries[currentTerm].totalAmount = bonusBalance; lastBlockNumber = block.number; } else { luckyNum = random(12); CLotteries[currentTerm].luckyGenes[currentGene] = luckyNum; OpenLottery(currentGene, luckyNum, currentTerm, 0, 0); currentGene ++; lastBlockNumber = block.number; } return (luckyNum,0); }",
+        "file_name": "0x8b9d642d1e455119778a5aaca416a216feec163d.sol",
+        "final_score": 7.25
+    },
+    {
+        "function_name": "distributeLottery",
+        "vulnerability": "Integer Division",
+        "criticism": "The reasoning is correct in pointing out the issue of integer division which can lead to truncation errors. This is particularly problematic in a financial context where precise distribution of funds is critical. The severity is moderate because it could lead to financial discrepancies and potential disputes among participants. However, the profitability for an external attacker is low, as this issue does not directly lead to an exploitable scenario for personal gain but could undermine trust in the system.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The reward calculation uses integer division which may lead to losses due to truncation, especially when dealing with distributions among multiple participants, potentially causing disputes or unintended financial discrepancies.",
+        "code": "function distributeLottery() public returns (uint8) { (luckyGenes, totalAmount, openBlock, isReward, currentTerm) = lotteryCore.getCLottery(); require(openBlock > 0 && openBlock < (block.number-duration)); require(totalAmount >= lotteryCore.SpoolAmount()); if (isReward == true) { DistributeLottery(flotteries[currentTerm].reward, currentTerm); return 1; } uint256 legalAmount = totalAmount - lotteryCore.SpoolAmount(); uint256 totalDistribute = 0; uint8[7] memory lR; uint8 ratio; if (lotteryCore._isCarousal(currentTerm) ) { lR = carousalParam; ratio = carousalRatio; } else { lR = lotteryParam; ratio = lotteryRatio; } for (uint8 i = 0; i < 7; i++) { address[] memory owners; uint256[] memory dogs; (dogs, owners) = _getLuckyList(currentTerm, i); if (owners.length > 0) { uint256 reward = (legalAmount * ratio * lR[i])/(10000 * owners.length); totalDistribute += reward * owners.length; dogCore.sendMoney(dogCore.cfoAddress(),reward * owners.length/10); for (uint j = 0; j < owners.length; j++) { address gen0Add; if (i == 0) { dogCore.sendMoney(owners[j],reward*95*9/1000); gen0Add = _getGen0Address(dogs[j]); if(gen0Add != address(0)){ dogCore.sendMoney(gen0Add,reward*5/100); } } else if (i == 1) { dogCore.sendMoney(owners[j],reward*97*9/1000); gen0Add = _getGen0Address(dogs[j]); if(gen0Add != address(0)){ dogCore.sendMoney(gen0Add,reward*3/100); } } else if (i == 2) { dogCore.sendMoney(owners[j],reward*98*9/1000); gen0Add = _getGen0Address(dogs[j]); if(gen0Add != address(0)){ dogCore.sendMoney(gen0Add,reward*2/100); } } else { dogCore.sendMoney(owners[j],reward*9/10); } } flotteries[currentTerm].reward.push(reward); } else { flotteries[currentTerm].reward.push(0); } } if (flotteries[currentTerm].owners0.length == 0) { lotteryCore.toSPool((dogCore.getAvailableBlance() - lotteryCore.SpoolAmount())/20); lotteryCore.rewardLottery(true); } else { lotteryCore.rewardLottery(false); } DistributeLottery(flotteries[currentTerm].reward, currentTerm); return 0; }",
+        "file_name": "0x8b9d642d1e455119778a5aaca416a216feec163d.sol",
+        "final_score": 5.0
+    },
+    {
+        "function_name": "setLotteryDuration",
+        "vulnerability": "Improper Access Control",
+        "criticism": "The criticism is valid as the function does not adequately protect against setting a duration that is less than the current block number, which could disrupt the lottery's timing logic. However, the severity and profitability are overstated. While it is a logical flaw, exploiting it requires access to the CEO's address, which is a significant barrier. The actual impact and profitability depend on additional factors such as the ability to compromise the CEO's address.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "The function 'setLotteryDuration' is only protected by a check for the CEO's address. However, it still allows the duration to be set to a value less than the current block number, which can lead to logical errors in the lottery duration calculation and can be exploited if the CEO's address is compromised.",
+        "code": "function setLotteryDuration(uint256 durationBlocks) public { require(msg.sender == dogCore.ceoAddress()); require(durationBlocks > 140); require(durationBlocks < block.number); duration = durationBlocks; }",
+        "file_name": "0x8b9d642d1e455119778a5aaca416a216feec163d.sol",
+        "final_score": 4.5
+    }
+]

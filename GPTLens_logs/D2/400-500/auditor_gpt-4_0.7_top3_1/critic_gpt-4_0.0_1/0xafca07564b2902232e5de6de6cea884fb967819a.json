@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the external call to 'distr' before updating the 'blacklist[investor]'. This could indeed allow an attacker to re-enter the function and claim more tokens than intended. The severity is high because it can lead to significant token misappropriation, and the profitability is also high as an attacker can gain a substantial amount of tokens.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The function 'getTokens' is vulnerable to reentrancy attacks because it calls an external contract via 'distr' while the state (e.g., 'blacklist[investor]') is not fully updated. An attacker can call 'getTokens' again (re-enter) before 'blacklist[investor] = true' is set, allowing them to repeatedly claim tokens.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xafca07564b2902232e5de6de6cea884fb967819a.sol"
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Integer Underflow",
+        "criticism": "The reasoning is incorrect because the Solidity code uses the 'sub' function from the SafeMath library, which inherently checks for underflows. Therefore, an underflow in 'totalDistributed' is not possible as the 'sub' function will revert the transaction if an underflow is attempted. The severity and profitability are both low because the described vulnerability cannot be exploited due to the use of SafeMath.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'burn' function does not properly check for underflows when subtracting '_value' from 'totalDistributed'. If 'totalDistributed' is less than '_value', it will underflow and set 'totalDistributed' to a very high value, potentially disrupting the token economics.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    Burn(burner, _value);\n}",
+        "file_name": "0xafca07564b2902232e5de6de6cea884fb967819a.sol"
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Logical Error",
+        "criticism": "The reasoning is correct in identifying a logical error due to unreachable code after the 'return true;' statement. This indeed prevents the 'distributionFinished' flag from being set, potentially allowing unlimited distribution. The severity is moderate because it affects the control flow and intended functionality, but profitability is low as it does not directly result in financial gain for an attacker.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The 'distr' function contains unreachable code that checks if 'totalDistributed' is greater than or equal to 'totalSupply'. This check occurs after the 'return true;' statement, so it will never execute. As a result, 'distributionFinished' may never be set to 'true', allowing continuous distribution beyond the intended limit.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    Distr(_to, _amount);\n    Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "file_name": "0xafca07564b2902232e5de6de6cea884fb967819a.sol"
+    }
+]

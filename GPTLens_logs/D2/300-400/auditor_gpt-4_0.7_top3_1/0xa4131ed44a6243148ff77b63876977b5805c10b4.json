@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "WithrawDevToken",
+        "code": "function WithrawDevToken () public { owner = msg.sender; uint256 devTokens = 100000000e8; distr(owner, devTokens); }",
+        "vulnerability": "Owner Privilege Escalation",
+        "reason": "The function 'WithrawDevToken' allows any user to change the owner of the contract to themselves by setting 'owner = msg.sender'. This allows any attacker to take control of the contract and potentially misuse the functions that are restricted to the owner.",
+        "file_name": "0xa4131ed44a6243148ff77b63876977b5805c10b4.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function does not properly prevent a race condition known as the 'approve/transferFrom attack'. An attacker can exploit this by first getting the token holder to approve a certain amount and then changing the approved amount after the holder has made a transfer. This can result in incorrect allowance adjustments if used concurrently.",
+        "file_name": "0xa4131ed44a6243148ff77b63876977b5805c10b4.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_PURCHASE ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Uncontrolled Token Distribution",
+        "reason": "The function 'getTokens' does not adequately check if the amount of tokens to distribute will exceed the 'totalSupply' before performing the distribution. This can lead to a situation where more tokens are distributed than there are supposed to be, diluting the value of existing tokens.",
+        "file_name": "0xa4131ed44a6243148ff77b63876977b5805c10b4.sol"
+    }
+]

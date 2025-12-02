@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fallback",
+        "code": "function() payable public { donationWallet.transfer(msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function directly transfers Ether to an external address without any checks or restrictions. An attacker can use a fallback function in their contract to repeatedly call this function during the transfer, leading to reentrancy attack. This could potentially drain all the Ether sent to this contract if the attacker's fallback function keeps reverting or using up gas.",
+        "file_name": "0x75aa66b8405dcef0e935de1c1627196b704a0e91.sol"
+    },
+    {
+        "function_name": "createEntry",
+        "code": "function createEntry(string _alias, string _message) payable public { require(msg.value > minimum_donation); entries[running_id] = Entry(msg.sender, _alias, block.timestamp, block.number, msg.value, _message); running_id++; donationWallet.transfer(msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the fallback function, this function transfers Ether to an external address (donationWallet) without any reentrancy guard. An attacker can potentially exploit this by creating a malicious contract that calls createEntry, and in its payable fallback function, calls createEntry again, leading to multiple unintended donations and state changes.",
+        "file_name": "0x75aa66b8405dcef0e935de1c1627196b704a0e91.sol"
+    },
+    {
+        "function_name": "destroy",
+        "code": "function destroy() onlyOwner public { selfdestruct(owner); }",
+        "vulnerability": "Destructive Method",
+        "reason": "This function allows the contract owner to destroy the contract and remove it from the blockchain, sending all remaining Ether to the owner\u2019s address. If the contract holds significant funds or important state, this could be misused by the owner or if the owner's account is compromised, leading to loss of funds and data permanently.",
+        "file_name": "0x75aa66b8405dcef0e935de1c1627196b704a0e91.sol"
+    }
+]

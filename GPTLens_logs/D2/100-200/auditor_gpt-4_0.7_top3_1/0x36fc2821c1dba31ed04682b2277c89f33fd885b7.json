@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "upgrade",
+        "code": "function upgrade(IApplication newContract, bytes data) public { currentContract = newContract; newContract.initialize(data); Upgrade(newContract, data); }",
+        "vulnerability": "Authorization flaw",
+        "reason": "The function 'upgrade' allows any user to change the contract to which the proxy delegates calls. This function does not check if the message sender is authorized (e.g., owner or with specific permissions) to upgrade the contract, which means that any malicious user could potentially upgrade to a malicious contract, take control of the proxy and manipulate its behavior.",
+        "file_name": "0x36fc2821c1dba31ed04682b2277c89f33fd885b7.sol"
+    },
+    {
+        "function_name": "delegatedFwd",
+        "code": "function delegatedFwd(address _dst, bytes _calldata) internal { require(isContract(_dst)); assembly { let result := delegatecall(sub(gas, 10000), _dst, add(_calldata, 0x20), mload(_calldata), 0, 0) let size := returndatasize let ptr := mload(0x40) returndatacopy(ptr, 0, size) switch result case 0 { revert(ptr, size) } default { return(ptr, size) } } }",
+        "vulnerability": "Fallback function uses low-level calls",
+        "reason": "The 'delegatedFwd' function uses a delegatecall in an assembly block, which is a low-level call. Low-level calls do not automatically propagate exceptions, instead they return false on failure. The function does handle the case where the delegatecall fails (by reverting), but using such low-level calls can lead to vulnerabilities if not handled carefully, such as reentrancy or unexpected state changes if the called contract is malicious.",
+        "file_name": "0x36fc2821c1dba31ed04682b2277c89f33fd885b7.sol"
+    },
+    {
+        "function_name": "Proxy fallback",
+        "code": "function () payable public { require(currentContract != 0); delegatedFwd(currentContract, msg.data); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The fallback function delegates all calls to another contract specified by 'currentContract'. Although it checks that 'currentContract' is not zero, it doesn't validate that the contract at 'currentContract' address is expected or benign. If 'currentContract' is set to a malicious contract (exploiting the upgrade vulnerability), this can lead to severe security issues such as loss or theft of funds.",
+        "file_name": "0x36fc2821c1dba31ed04682b2277c89f33fd885b7.sol"
+    }
+]

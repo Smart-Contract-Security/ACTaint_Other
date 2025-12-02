@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public { uint amount = msg.value / buyPrice; _transfer(this, msg.sender, amount); }",
+        "vulnerability": "Integer Division Issue",
+        "reason": "The calculation of 'amount' using 'msg.value / buyPrice' can lead to integer division issues where the division does not return a fractional part, potentially resulting in incorrect token amount transfers that benefit an attacker by allowing them to pay less ether for more tokens.",
+        "file_name": "0x59004a80a03dc611377866317f50988a9eefc3d7.sol"
+    },
+    {
+        "function_name": "selfdestructs",
+        "code": "function selfdestructs() payable public { selfdestruct(owner); }",
+        "vulnerability": "Arbitrary Self-Destruct",
+        "reason": "This function allows the contract to be killed by any user, not just the owner, potentially leading to denial of service or other malicious activities as the contract state and all Ether held are destroyed.",
+        "file_name": "0x59004a80a03dc611377866317f50988a9eefc3d7.sol"
+    },
+    {
+        "function_name": "getEth",
+        "code": "function getEth(uint num) payable public { owner.send(num); }",
+        "vulnerability": "Arbitrary Ether Withdrawal",
+        "reason": "The 'getEth' function allows any caller to trigger a transfer of an arbitrary amount of Ether specified by 'num' from the contract to the owner without any checks or restrictions, potentially leading to unauthorized fund transfer or depletion of contract funds.",
+        "file_name": "0x59004a80a03dc611377866317f50988a9eefc3d7.sol"
+    }
+]

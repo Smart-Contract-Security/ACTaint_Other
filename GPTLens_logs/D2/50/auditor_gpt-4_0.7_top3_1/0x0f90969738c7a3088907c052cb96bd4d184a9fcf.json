@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { if (isBiometricLocked(msg.sender)) { require(_value <= balances[msg.sender]); require(_to != address(0)); require(_value > 0); uint rightNow = now; bytes32 sha = keccak256(\"transfer\", msg.sender, _to, _value, rightNow); biometricFrom[sha] = msg.sender; biometricTo[sha] = _to; biometricAmount[sha] = _value; biometricNow[sha] = rightNow; BiometricTransferRequest(msg.sender, _to, _value, sha); return true; } else { return super.transfer(_to, _value); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transfer' in 'BiometricToken' allows for reentrancy attacks. The state update (`balances[msg.sender] = balances[msg.sender].sub(_value); balances[_to] = balances[_to].add(_value);`) happens after emitting an event and not before external interactions, which violates the checks-effects-interactions pattern. An attacker could exploit this by recursively calling the transfer function, manipulating balances before the state is properly updated.",
+        "file_name": "0x0f90969738c7a3088907c052cb96bd4d184a9fcf.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool) { if (isBiometricLocked(msg.sender)) { uint rightNow = now; bytes32 sha = keccak256(\"approve\", msg.sender, _spender, _value, rightNow); biometricFrom[sha] = msg.sender; biometricTo[sha] = _spender; biometricAmount[sha] = _value; biometricNow[sha] = rightNow; BiometricApprovalRequest(msg.sender, _spender, _value, sha); return true; } else { return super.approve(_spender, _value); } }",
+        "vulnerability": "Race Condition",
+        "reason": "The 'approve' function in 'BiometricToken' can lead to a race condition vulnerability. It emits an event for a biometric approval request before updating the actual approval state in the blockchain. This delay between the request and the actual state update can be exploited by an attacker, especially in decentralized exchanges, to allow double-spending or other undesirable effects.",
+        "file_name": "0x0f90969738c7a3088907c052cb96bd4d184a9fcf.sol"
+    },
+    {
+        "function_name": "releaseTransfer",
+        "code": "function releaseTransfer(bytes32 sha, uint8 v, bytes32 r, bytes32 s) public returns (bool){ require(msg.sender == biometricFrom[sha]); require(!biometricCompleted[sha]); bytes32 transferFromSha = keccak256(\"transferFrom\", biometricFrom[sha], biometricTo[sha], biometricAmount[sha], biometricNow[sha]); bytes32 transferSha = keccak256(\"transfer\", biometricFrom[sha], biometricTo[sha], biometricAmount[sha], biometricNow[sha]); require(sha == transferSha || sha == transferFromSha); require(verify(sha, v, r, s) == true); if (transferFromSha == sha) { address _spender = biometricAllowee[sha]; address _from = biometricFrom[sha]; address _to = biometricTo[sha]; uint256 _value = biometricAmount[sha]; require(_to != address(0)); require(_value <= balances[_from]); require(_value <= allowed[_from][_spender]); balances[_from] = balances[_from].sub(_value); balances[_to] = balances[_to].add(_value); allowed[msg.sender][_spender] = allowed[msg.sender][_spender].sub(_value); Transfer(_from, _to, _value); } if (transferSha == sha) { super.transfer(biometricTo[sha], biometricAmount[sha]); } biometricCompleted[sha] = true; return true; }",
+        "vulnerability": "Improper Authentication",
+        "reason": "The 'releaseTransfer' function in 'BiometricToken' relies on the 'verify' function for signature verification without adequate validation of the signer's address. This can result in improper authentication where an attacker could potentially forge signatures if they have control of the BOPS address, leading to unauthorized token transfers.",
+        "file_name": "0x0f90969738c7a3088907c052cb96bd4d184a9fcf.sol"
+    }
+]

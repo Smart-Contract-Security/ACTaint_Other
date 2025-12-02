@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintPlayers",
+        "code": "function mintPlayers(SeasonID seasonId, uint256 clubId, uint256 divisionTier, uint256[] calldata generationIds, bytes32[] calldata divisionProof) external payable whenNotPaused nonReentrant {uint256 totalFee = _validateMintingParams(seasonId, clubId, divisionTier, generationIds, divisionProof);uint256 generationId;for (uint256 i = 0; i < generationIds.length; ) {generationId = generationIds[i];if (generationId > _maxGenerationId) {revert GenerationIDTooHigh(generationId, _maxGenerationId);}if (redeemed[seasonId][clubId][generationId]) {revert PlayerAlreadyRedeemed(generationId);}redeemed[seasonId][clubId][generationId] = true;uint256 playerId = _footiumPlayer.safeMint(_footiumClub.clubToEscrow(clubId));emit AcademyPlayerMinted(seasonId, clubId, generationId, playerId);unchecked {i++;}}(bool sent, ) = _prizeDistributorAddress.call{value: totalFee}(\"\");if (!sent) {revert FailedToSendETH(totalFee);}}",
+        "vulnerability": "Unchecked Low-Level Call",
+        "reason": "The function uses a low-level 'call' to send ETH to a prize distributor address without checking the return value. This can lead to scenarios where the call fails silently, leading to a loss of funds or unexpected state changes without reversion.",
+        "file_name": "FootiumAcademy.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() external onlyOwner {uint256 balance = address(this).balance;if (balance > 0) {(bool sent, ) = payable(owner()).call{value: balance}(\"\");if (!sent) {revert FailedToSendETH(balance);}}}",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The 'withdraw' function uses a low-level call to transfer all contract's balance to the owner. If the contract's balance is very high, the call's required gas might exceed block gas limit causing the transaction to fail. This can be exploited by intentionally increasing the contract's balance, making it unable to process the withdraw due to block gas limit, effectively locking funds.",
+        "file_name": "FootiumAcademy.sol"
+    },
+    {
+        "function_name": "setDivisionFees",
+        "code": "function setDivisionFees(uint256[] memory _fees) public onlyOwner {uint256 max = _fees.length;for (uint256 i = 0; i < max; ) {uint256 fee = _fees[i];divisionToFee[i + 1] = fee;unchecked {i++;}}emit ChangedDivisionFees(_fees);}",
+        "vulnerability": "Unchecked External Input",
+        "reason": "This function directly sets the division fees from an input array without validating the contents of the array. Malicious owners can set extremely high fees or manipulate indices, causing unexpected behavior or making the minting process unaffordable.",
+        "file_name": "FootiumAcademy.sol"
+    }
+]

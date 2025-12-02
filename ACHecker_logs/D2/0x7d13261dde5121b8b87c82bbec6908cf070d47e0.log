@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x7d13261dde5121b8b87c82bbec6908cf070d47e0.code
+Start time: 24/08/2022 22:06:58
+Building CFG...
+CFG generation time (secs): 0.02
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function admin_token_withdraw(address,address,uint256)
+	( 1867)  74b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function task()
+
+Violated access control check in function token_withdraw(address,address,uint256)
+	( 2553)  9f9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function task()
+
+Violated access control check in function admin_withdrawETH(address,uint256)
+	( 3983)  f8f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function task()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 1.14
+End time: 24/08/2022 22:06:59

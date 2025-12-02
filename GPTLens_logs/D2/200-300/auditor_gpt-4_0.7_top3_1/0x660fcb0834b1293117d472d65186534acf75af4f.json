@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner {\n    if (WithdrawEnabled()) {\n        uint max = Deposits[msg.sender];\n        if (max > 0 && amount <= max) {\n            to.transfer(amount);\n            Withdrawal(to, amount);\n        }\n    }\n}",
+        "vulnerability": "Incorrect balance check and update",
+        "reason": "The function checks and uses the balance from Deposits[msg.sender] where msg.sender is always the owner due to the onlyOwner modifier. This means that the owner can only withdraw tokens that they've deposited themselves, not from other users' deposits. This is likely a logical error as typically the owner should manage or handle other users' deposits. Furthermore, the max balance is never updated after a successful withdrawal, which can lead to incorrect balance tracking and potential re-entrancy issues if the function interaction pattern was different.",
+        "file_name": "0x660fcb0834b1293117d472d65186534acf75af4f.sol"
+    },
+    {
+        "function_name": "initWallet",
+        "code": "function initWallet() payable open {\n    Owner = msg.sender;\n    minDeposit = 1 ether;\n    Locked = false;\n    deposit();\n}",
+        "vulnerability": "Re-initialization of contract settings",
+        "reason": "The 'initWallet' function allows the contract to reset vital state variables such as Owner, minDeposit, and Locked every time it is called without restrictions. This means that any user can change the owner of the contract and unlock it at any time, which should not be permissible as it can lead to unauthorized access and control over the contract.",
+        "file_name": "0x660fcb0834b1293117d472d65186534acf75af4f.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public {\n    require(this.balance == 0);\n    selfdestruct(Owner);\n}",
+        "vulnerability": "Destructive action controlled by potentially changeable owner",
+        "reason": "The 'kill' function uses the Owner state variable for self-destructing the contract, which can be problematic if the ownership is maliciously or mistakenly transferred (e.g., through a re-initialization in 'initWallet'). The require statement only checks that the contract balance is 0, which does not necessarily ensure that all obligations or expected behaviors are concluded, potentially leading to loss of funds or denial of service.",
+        "file_name": "0x660fcb0834b1293117d472d65186534acf75af4f.sol"
+    }
+]

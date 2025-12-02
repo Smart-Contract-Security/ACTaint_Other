@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Missing ownership transfer validation",
+        "reason": "The function allows the owner to set a new owner but does not immediately change ownership until acceptOwnership() is called by the new owner. This can result in a situation where the new owner is not aware or does not accept ownership, leaving the system in a state without an active owner.",
+        "file_name": "0x2e16e10fa931d2623d4779cb6320b62ce542aa02.sol"
+    },
+    {
+        "function_name": "acceptOwnership",
+        "code": "function acceptOwnership() public { require(msg.sender == newOwner); OwnershipTransferred(owner, newOwner); owner = newOwner; newOwner = address(0); }",
+        "vulnerability": "Single ownership acceptance",
+        "reason": "This function allows the 'newOwner' to accept ownership without any checks on whether the 'owner' has confirmed this transfer. An attacker could potentially set themselves as the new owner (if they could bypass the onlyOwner modifier or if there's a bug in setting 'newOwner') and accept ownership without the original owner\u2019s explicit confirmation.",
+        "file_name": "0x2e16e10fa931d2623d4779cb6320b62ce542aa02.sol"
+    },
+    {
+        "function_name": "releaseSupply",
+        "code": "function releaseSupply() public onlyOwner returns(uint256 _actualRelease) { uint256 releaseAmount = getReleaseAmount(); require(releaseAmount > 0); balances[owner] = addSafe(balances[owner], releaseAmount * 10 ** uint256(decimals)); totalSupply = addSafe(totalSupply, releaseAmount); Transfer(address(0), msg.sender, releaseAmount); return releaseAmount; }",
+        "vulnerability": "Unchecked supply inflation",
+        "reason": "The function does not have a hard cap on the total supply that can be minted, potentially allowing the owner to inflate the supply indefinitely which can lead to devaluation of the token and loss of trust by token holders.",
+        "file_name": "0x2e16e10fa931d2623d4779cb6320b62ce542aa02.sol"
+    }
+]

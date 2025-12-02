@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "migrate",
+        "code": "function migrate() external onlyOwnerOrNewVersion { newVersionAddress.transfer(address(this).balance); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'migrate' transfers all contract's balance to 'newVersionAddress' without checking the success of the transfer operation. If the call fails, the contract will not be aware, potentially leading to loss of funds or inconsistent state.",
+        "file_name": "0x331769de477c2122638fe1116808d3a9159ab13a.sol"
+    },
+    {
+        "function_name": "paySuperPrize",
+        "code": "function paySuperPrize(address payable winner) external onlyLoto { uint256 superPrizeAmount = dailyAmount + weeklyAmount + monthlyAmount + seasonalAmount; dailyAmount = 0; weeklyAmount = 0; monthlyAmount = 0; seasonalAmount = 0; emit SuperPrize(superPrizeAmount, winner); winner.transfer(superPrizeAmount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'paySuperPrize' does not prevent reentrancy attack. It first calculates the total prize, resets the individual amounts, emits an event, and then proceeds to transfer the total prize amount to the 'winner'. If the 'winner' address is a contract, it could call back into any public function of this contract leading to unexpected behaviors or draining of funds in recursive calls.",
+        "file_name": "0x331769de477c2122638fe1116808d3a9159ab13a.sol"
+    },
+    {
+        "function_name": "settleJackpot",
+        "code": "function settleJackpot() external { if (block.number >= dailyEnd) setDaily(); if (block.number >= weeklyEnd) setWeekly(); if (block.number >= monthlyEnd) setMonthly(); if (block.number >= seasonalEnd) setSeasonal(); if (block.number == dailyStart || (dailyStart < block.number - 256)) return; uint48 modulo = uint48(bytes6(blockhash(dailyStart) << 29)); uint256 dailyPayAmount; uint256 weeklyPayAmount; uint256 monthlyPayAmount; uint256 seasonalPayAmount; uint256 dailyWin; uint256 weeklyWin; uint256 monthlyWin; uint256 seasonalWin; if (dailyProcessed == false) { dailyPayAmount = dailyAmount * PRECISION / DAILY_PART / PRECISION; dailyAmount -= dailyPayAmount; dailyProcessed = true; dailyWin = getNumber(dailyNumberStartPrev, dailyNumberEndPrev, modulo); emit Jackpot(dailyWin, dailyNumberEndPrev - dailyNumberStartPrev + 1, dailyPayAmount, 0x01); } if (weeklyProcessed == false) { weeklyPayAmount = weeklyAmount * PRECISION / WEEKLY_PART / PRECISION; weeklyAmount -= weeklyPayAmount; weeklyProcessed = true; weeklyWin = getNumber(weeklyNumberStartPrev, weeklyNumberEndPrev, modulo); emit Jackpot(weeklyWin, weeklyNumberEndPrev - weeklyNumberStartPrev + 1, weeklyPayAmount, 0x02); } if (monthlyProcessed == false) { monthlyPayAmount = monthlyAmount * PRECISION / MONTHLY_PART / PRECISION; monthlyAmount -= monthlyPayAmount; monthlyProcessed = true; monthlyWin = getNumber(monthlyNumberStartPrev, monthlyNumberEndPrev, modulo); emit Jackpot(monthlyWin, monthlyNumberEndPrev - monthlyNumberStartPrev + 1, monthlyPayAmount, 0x04); } if (seasonalProcessed == false) { seasonalPayAmount = seasonalAmount; seasonalAmount -= seasonalPayAmount; seasonalProcessed = true; seasonalWin = getNumber(seasonalNumberStartPrev, seasonalNumberEndPrev, modulo); emit Jackpot(seasonalWin, seasonalNumberEndPrev - seasonalNumberStartPrev + 1, seasonalPayAmount, 0x08); } if (dailyPayAmount > 0) getAddress(dailyWin).transfer(dailyPayAmount); if (weeklyPayAmount > 0) getAddress(weeklyWin).transfer(weeklyPayAmount); if (monthlyPayAmount > 0) getAddress(monthlyWin).transfer(monthlyPayAmount); if (seasonalPayAmount > 0) getAddress(seasonalWin).transfer(seasonalPayAmount); }",
+        "vulnerability": "Block Timestamp Manipulation",
+        "reason": "The function 'settleJackpot' relies on 'block.number' to determine if it's time to process jackpots but also uses 'blockhash' of a possibly old block (dailyStart) to calculate winners. The 'blockhash' function only works for the 256 most recent block numbers. If 'dailyStart' goes beyond this limit, it becomes manipulable, potentially allowing attackers to affect the outcome.",
+        "file_name": "0x331769de477c2122638fe1116808d3a9159ab13a.sol"
+    }
+]

@@ -1,0 +1,48 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x66d58f0a2a44742688843ceb8c0fa8d8567e3c54.code
+Start time: 21/08/2022 21:33:53
+Building CFG...
+CFG generation time (secs): 0.06
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	(  308)  134:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+Violated access control check in function 11c52ec0
+	( 1435)  59b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+Violated access control check in function 1828db82
+	( 1540)  604:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+Violated access control check in function 347d5bc2
+	( 1653)  675:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+Violated access control check in function b9ed93e9
+	( 1957)  7a5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 2136)  858:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+Violated access control check in function withdraw(address,uint256)
+	( 2299)  8fb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function owned()
++--Attacker can make changes to AC item {4} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 3.63
+End time: 21/08/2022 21:33:56

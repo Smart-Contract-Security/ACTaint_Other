@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "registerLoan",
+        "code": "function registerLoan(uint256 _bidId, address _newLender) public override onlyOwner {\n    _mint(_newLender, _bidId);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'registerLoan' function allows for minting of NFTs by calling '_mint'. If the '_newLender' is a malicious contract, it could potentially perform actions (such as state changes or further transactions) when the ERC721 'transfer' event is triggered within the '_mint' function. This could lead to reentrancy attacks where the external contract calls back into this or other functions of the LenderManager contract before the initial operation is fully completed.",
+        "file_name": "LenderManager.sol"
+    },
+    {
+        "function_name": "initialize",
+        "code": "function initialize() external initializer {\n    __LenderManager_init();\n}",
+        "vulnerability": "Improper Initialization",
+        "reason": "The 'initialize' function lacks the 'onlyOwner' modifier or a similar restriction. This could allow any user to re-initialize the contract, potentially disrupting the intended state or logic setup by the contract owner during deployment. This could be exploited if the contract is intended to be initialized only once and exclusively by the deployer or owner.",
+        "file_name": "LenderManager.sol"
+    },
+    {
+        "function_name": "_beforeTokenTransfer",
+        "code": "function _beforeTokenTransfer(address, address to, uint256 tokenId, uint256) internal override {\n    require(_hasMarketVerification(to, tokenId), \"Not approved by market\");\n}",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "This function includes a 'require' statement that calls '_hasMarketVerification', which further interacts with external contracts 'ITellerV2' and 'IMarketRegistry'. If these external calls require significant gas or if the external contract behaviors are maliciously crafted to consume excessive gas, it could cause the transaction to fail due to out-of-gas errors. This vulnerability can be exploited by a malicious actor to perform a denial of service (DoS) attack, preventing legitimate transfers or transactions.",
+        "file_name": "LenderManager.sol"
+    }
+]

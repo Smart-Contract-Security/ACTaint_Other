@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' first transfers Ether to the current owner using 'owner.transfer(msg.value)' and then changes the state variable 'owner' to a new owner. If the original owner is a malicious contract, it could re-enter the 'changeOwner' function when it receives the Ether. During the re-entry, the state variable 'owner' would still be the original owner, potentially allowing unexpected behavior or draining the contract's Ether.",
+        "file_name": "0xabcaea6f4099b1ed62169d39c26f808f948c86d6.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized self-destruction",
+        "reason": "The function 'killContract' allows any user to destroy the contract by sending a sufficient amount of Ether (500 Ether as per 'howManyEtherInWeiToKillContract'). This can lead to denial of service as any user with enough Ether can permanently disable the contract by triggering 'selfdestruct', removing the contract's bytecode from the blockchain.",
+        "file_name": "0xabcaea6f4099b1ed62169d39c26f808f948c86d6.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Improper access control",
+        "reason": "The function 'changeNameSymbol' allows an external party to change the token's name and symbol if they send enough Ether (400 Ether as per 'howManyEtherInWeiToChangeSymbolName'). This can lead to confusion or deception, as the token identification could be arbitrarily changed by anyone willing to spend the required Ether, potentially misleading users about the nature of the token.",
+        "file_name": "0xabcaea6f4099b1ed62169d39c26f808f948c86d6.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in identifying a reentrancy vulnerability due to the lack of precautions such as reentrancy guards or checks-effects-interactions pattern. The severity is high because it could potentially allow an attacker to drain all funds from the contract. The profitability is also high as an attacker could gain significant financial benefit from exploiting this vulnerability.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'withdraw' function transfers ether to an external address without taking precautions against reentrancy attacks. This could allow an attacker to drain the contract's funds by recursively calling the function during the transfer execution.",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "file_name": "0x071a91b97d0500e0547f0289144490ca088847d2.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approve/Allowance Attack",
+        "criticism": "The reasoning is partially correct. The function does indeed return false if there is an existing non-zero allowance, which could lead to confusion and misuse. However, the function does not inherently allow for a double-spend as it prevents changing the allowance if it's already set and non-zero. The severity is moderate because it could lead to user errors but not direct financial loss through the contract. The profitability is low as it requires user error to exploit, not just interaction with the contract.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "The 'approve' function has a potential attack when resetting allowances. If '_value' is not zero and there's already an allowance, the function will return false but won't update the allowance, potentially leaving it open to a double-spend issue if not properly handled by the user.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x071a91b97d0500e0547f0289144490ca088847d2.sol",
+        "final_score": 4.5
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is incorrect as it misinterprets the function's behavior. The 'distr' function is not shown to emit a Transfer event to address(0) based on the provided code snippet. Moreover, the vulnerability described leans more towards a reentrancy issue rather than an unchecked external call. The severity and profitability are overestimated due to the incorrect identification of the vulnerability type.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The 'getTokens' function calls 'distr' which emits a Transfer event to address(0). This can be manipulated by an attacker especially if the recipient is a contract that can perform actions in its fallback function, potentially leading to unexpected behaviors or reentrancy attacks.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x071a91b97d0500e0547f0289144490ca088847d2.sol",
+        "final_score": 1.5
+    }
+]

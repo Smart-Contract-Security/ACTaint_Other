@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "zAddEntry",
+        "code": "function zAddEntry(bytes32 b32AlphaID, string calldata sParms) external { gmapEntry[b32AlphaID].adrCreator = msg.sender; gmapEntryIndex[gnEntryCount] = b32AlphaID; gnEntryCount++; emit Entries(b32AlphaID, msg.sender, block.timestamp, sParms); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In the 'zAddEntry' function, the gnEntryCount is incremented after adding an entry but there's no check to prevent the uint32 gnEntryCount from overflowing, which is possible if the function is called 2^32 times. This overflow can lead to unexpected behavior and potentially overwrite existing entries.",
+        "file_name": "0xf0f1ccde48447f927307e47bd7b1ff0a147e8c74.sol"
+    },
+    {
+        "function_name": "zSetDisabled",
+        "code": "function zSetDisabled(bytes32 b32AlphaID, bool bDisabled) external { require(msg.sender == gadrOwner || msg.sender == gmapEntry[b32AlphaID].adrCreator); gmapEntry[b32AlphaID].bDisabled = bDisabled; }",
+        "vulnerability": "Authorization through tx.origin",
+        "reason": "The function 'zSetDisabled' uses msg.sender to check if the caller is the owner or the creator of the entry to authorize the action. However, if the function invocation is part of a transaction initiated by a contract, msg.sender would be that contract's address, not the original EOA (externally owned account). This could potentially allow a malicious contract to disable entries if it can get a legitimate address to interact with it first.",
+        "file_name": "0xf0f1ccde48447f927307e47bd7b1ff0a147e8c74.sol"
+    },
+    {
+        "function_name": "zKill",
+        "code": "function zKill() onlyByOwner() external {selfdestruct(gadrOwner);}",
+        "vulnerability": "Self-destruct",
+        "reason": "The use of 'selfdestruct' in the 'zKill' function can lead to denial of service by permanently removing the contract from the blockchain when executed by the owner. This action cannot be reversed, and all contract data is removed, potentially leading to loss of critical business or operational data.",
+        "file_name": "0xf0f1ccde48447f927307e47bd7b1ff0a147e8c74.sol"
+    }
+]

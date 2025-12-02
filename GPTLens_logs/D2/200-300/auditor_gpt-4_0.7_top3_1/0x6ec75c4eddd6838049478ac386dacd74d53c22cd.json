@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "cancel",
+        "code": "function cancel() payable public { if (msg.sender == Owner) { selfdestruct(Owner); } }",
+        "vulnerability": "Self-destruct mechanism",
+        "reason": "This function allows the contract owner to destroy the contract and send all remaining Ether to their own address. It can be triggered regardless of any contract state or balances, potentially leading to loss of funds or denial of service for other contract users who may rely on the contract's availability.",
+        "file_name": "0x6ec75c4eddd6838049478ac386dacd74d53c22cd.sol"
+    },
+    {
+        "function_name": "X2",
+        "code": "function X2() public payable { if (msg.value >= this.balance) { selfdestruct(msg.sender); } }",
+        "vulnerability": "Self-destruct mechanism",
+        "reason": "The function X2 allows any user to destroy the contract by sending an amount of Ether that is greater than or equal to the contract's current balance. This could result in unexpected behavior or financial loss as the contract is removed from the blockchain and all remaining Ether sent to the caller, bypassing any additional logic or state checks.",
+        "file_name": "0x6ec75c4eddd6838049478ac386dacd74d53c22cd.sol"
+    },
+    {
+        "function_name": "X2",
+        "code": "function X2() public payable { if (msg.value >= this.balance) { selfdestruct(msg.sender); } }",
+        "vulnerability": "Unprotected self-destruct",
+        "reason": "The use of selfdestruct in this function can be triggered by any user, not just the owner. This poses a significant risk as any user can end the contract's lifecycle by simply sending sufficient Ether, potentially as part of an attack to remove the contract from the blockchain and disrupt the service or claim the remaining balance.",
+        "file_name": "0x6ec75c4eddd6838049478ac386dacd74d53c22cd.sol"
+    }
+]

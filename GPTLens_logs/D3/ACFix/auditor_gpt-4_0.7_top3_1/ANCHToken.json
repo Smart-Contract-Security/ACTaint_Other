@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner(address newOwner) public onlyOwner { _owner = newOwner; }",
+        "vulnerability": "Ownership Takeover",
+        "reason": "The 'changeOwner' function allows the current owner to change ownership of the contract to any address. This poses a severe risk if the owner's account is compromised, as an attacker could transfer ownership and gain full control over the contract functionalities.",
+        "file_name": "ANCHToken.sol"
+    },
+    {
+        "function_name": "_mint",
+        "code": "function _mint(address account, uint256 ramount, uint256 tamount) internal { _rOwned[account] = ramount; emit Transfer(address(0), account, tamount); }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The '_mint' function is used internally to mint new tokens. However, the function does not check whether the total supply ('_tTotal') exceeds the maximum allowable supply, potentially leading to unchecked minting and inflation of the token supply.",
+        "file_name": "ANCHToken.sol"
+    },
+    {
+        "function_name": "_tokenSellTransferReward",
+        "code": "function _tokenSellTransferReward( address sender, address recipient, uint256 tAmount ) private { uint256 currentRate = _getRate(); uint256 rAmount = tAmount.mul(currentRate); _rOwned[sender] = _rOwned[sender].sub(rAmount); _rOwned[recipient] = _rOwned[recipient].add(rAmount); emit Transfer(sender, recipient, tAmount); if(tAmount >= minTxnAmount) { uint256 rewardAmount = tAmount.mul(rewardRate).div(percent); if(balanceOf(address(this)) >= rewardAmount) { uint256 rRewardAmount = rewardAmount.mul(currentRate); _rOwned[address(this)] = _rOwned[address(this)].sub(rRewardAmount); _rOwned[sender] = _rOwned[sender].add(rRewardAmount); txReward[sender] = txReward[sender].add(rewardAmount); emit Transfer(address(this), sender, rewardAmount); } } }",
+        "vulnerability": "Front-running",
+        "reason": "The '_tokenSellTransferReward' function processes transfers and rewards based on transaction amounts. A malicious actor could watch the transaction pool (mempool) to front-run this function by quickly purchasing or selling tokens to manipulate reward distribution or impact token pricing unfavorably.",
+        "file_name": "ANCHToken.sol"
+    }
+]

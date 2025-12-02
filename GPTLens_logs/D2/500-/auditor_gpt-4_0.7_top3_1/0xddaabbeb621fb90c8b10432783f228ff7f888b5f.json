@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "payout",
+        "code": "function payout(uint limit) public { require(now >= payoutDate + PAYOUT_INTERVAL, 'Too fast payout request'); uint sum; uint txs; for(uint i = addresses.length ; i > 0; i--) { address addr = addresses[i - 1]; if(investors[addr].date + 24 hours > now) continue; uint amount = getInvestorUnPaidAmount(addr); investors[addr].date = now; if(address(this).balance < amount) { selfdestruct(owner()); return; } addr.transfer(amount); sum = sum.add(amount); if(++txs >= limit) break; } payoutDate = now; emit PayoutCumulative(sum, txs); }",
+        "vulnerability": "Gas limit in for loop",
+        "reason": "The function iterates over an array of addresses and transfers funds to each. If the array is large, the transaction could run out of gas, causing it to revert. This can lead to denial of service where legitimate payouts cannot be processed.",
+        "file_name": "0xddaabbeb621fb90c8b10432783f228ff7f888b5f.sol"
+    },
+    {
+        "function_name": "payoutSelf",
+        "code": "function payoutSelf() public { address addr = msg.sender; require(investors[addr].deposit > 0, 'Deposit not found'); require(now >= investors[addr].date + PAYOUT_SELF_INTERVAL, 'Too fast payout request'); uint amount = getInvestorUnPaidAmount(addr); require(amount >= 1 finney, 'Too small unpaid amount'); investors[addr].date = now; if(address(this).balance < amount) { selfdestruct(owner()); return; } addr.transfer(amount); emit PayoutSelf(addr, amount); }",
+        "vulnerability": "Self-destruct mechanism",
+        "reason": "The use of selfdestruct can lead to unexpected behavior and loss of contract's balance to the owner. It also breaks the contract, stopping all future interactions. This occurs if the contract's balance is less than the payout amount.",
+        "file_name": "0xddaabbeb621fb90c8b10432783f228ff7f888b5f.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function() payable public { if (0 == msg.value) { payoutSelf(); return; } require(msg.value >= MIN_INVEST, 'Too small amount'); Investor storage user = investors[msg.sender]; if(user.id == 0) { user.id = addresses.length + 1; addresses.push(msg.sender); address ref = bytesToAddress(msg.data); if(investors[ref].deposit > 0 && ref != msg.sender) { user.referrer = ref; } } user.deposit = user.deposit.add(msg.value); user.deposits = user.deposits.add(1); user.date = now; emit Invest(msg.sender, msg.value); paymentDate = now; depositAmount = depositAmount.add(msg.value); uint own_com = msg.value.div(100).mul(OWN_COMMISSION_PERCENT); owner().transfer(own_com); if(user.referrer != address(0)) { uint bonus = msg.value.div(100).mul(REF_BONUS_PERCENT); user.referrer.transfer(bonus); emit ReferrerBonus(user.referrer, bonus); if(user.deposits == 1) { uint cashback = msg.value.div(1000).mul(CASHBACK_PERCENT); msg.sender.transfer(cashback); emit Cashback(msg.sender, cashback); } } }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The fallback function does not check if the transfer of ether to the owner or referrer was successful. Failure in these transfers does not revert the transaction, potentially leading to loss of funds without any state update or notice.",
+        "file_name": "0xddaabbeb621fb90c8b10432783f228ff7f888b5f.sol"
+    }
+]

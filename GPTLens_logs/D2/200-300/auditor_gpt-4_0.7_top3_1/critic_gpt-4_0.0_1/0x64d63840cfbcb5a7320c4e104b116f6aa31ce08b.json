@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "allocate",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'allocate' function being vulnerable to reentrancy is valid as it involves an external call via the 'transfer' function. However, the severity is somewhat overstated because the function is marked as private, meaning it can only be called internally by the contract itself, not by external entities directly. This reduces the risk of it being exploited by a malicious contract unless there is another vulnerability that allows unauthorized access to this function. The profitability of exploiting this vulnerability is also low due to the same access restrictions.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "The 'allocate' function calls 'transfer' which can allow an external call to another contract. If the recipient of the transfer is a malicious contract, it could call back into this contract before the initial transfer is complete, leading to reentrancy attack. This is dangerous because the state changes are not finalized before the external call, which might lead to inconsistency and unexpected behaviors.",
+        "code": "function allocate(address _address,uint256 percent) private{\n uint256 bal=totalSupply.percent(percent);\n transfer(_address,bal);\n }",
+        "file_name": "0x64d63840cfbcb5a7320c4e104b116f6aa31ce08b.sol"
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The reasoning provided is incorrect. The 'sub' function from the SafeMath library does not return a value; it either completes successfully or reverts the transaction if an underflow occurs. Therefore, there is no return value to check. The use of SafeMath is intended to prevent such issues as underflow by reverting transactions where conditions for safe operations are not met. Thus, the criticism of not checking the return value is unfounded because there is no value returned to check. The severity and profitability of this supposed vulnerability are both minimal as the function behaves as expected to prevent underflows securely.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'burn' does not check the return value of 'sub' function from SafeMath library. Although the SafeMath's 'sub' function uses 'assert' to ensure no underflow, in Solidity 0.4.x versions, 'assert' only throws an error without returning a value. It\u2019s safer to handle or check these operations\u2019 return to avoid ignoring failed operations.",
+        "code": "function burn(uint256 _value) public {\n require(_value <= balances[msg.sender]);\n address burner = msg.sender;\n balances[burner] = balances[burner].sub(_value);\n totalSupply = totalSupply.sub(_value);\n Burn(burner, _value);\n }",
+        "file_name": "0x64d63840cfbcb5a7320c4e104b116f6aa31ce08b.sol"
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Missing Input Validation",
+        "criticism": "The criticism is partially correct in that additional checks could be beneficial, such as preventing transfers to the contract itself or other critical contracts. However, the function does include a check to prevent transfers to the 0x0 address, which is a common and critical validation. The severity of this issue is moderate because while it could lead to accidental loss of tokens if tokens are sent to the wrong address, it does not directly facilitate typical attack vectors like theft or reentrancy. Profitability from exploiting this directly is also low, as it generally would result in token loss rather than gain for an attacker.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The function 'transfer' lacks necessary validation to ensure that the '_to' address is not an important contract or the token contract itself, which can lead to accidental loss of tokens. It\u2019s important to have checks to prevent transferring tokens to 0x0, the token contract, or other critical addresses unintentionally.",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) {\n require(_to != address(0));\n require(_value <= balances[msg.sender]);\n balances[msg.sender] = balances[msg.sender].sub(_value);\n balances[_to] = balances[_to].add(_value);\n Transfer(msg.sender, _to, _value);\n return true;\n }",
+        "file_name": "0x64d63840cfbcb5a7320c4e104b116f6aa31ce08b.sol"
+    }
+]

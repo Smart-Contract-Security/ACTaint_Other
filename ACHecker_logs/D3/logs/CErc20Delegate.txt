@@ -1,0 +1,47 @@
+raceback (most recent call last):
+  File "/data1/XXX/AChecker/src/util/frontierset.py", line 81, in copy
+    new._inhibiting_set = self._inhibiting_set.copy()
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/data1/XXX/AChecker/src/explorer/backward.py", line 130, in traverse_back
+    new_todo = generate_sucessors(state, new_data, update_data, predicate=predicate)
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/data1/XXX/AChecker/src/slicing.py", line 157, in backward_slice
+    slices = [r.backward_slice[::-1] for r in
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "bin/achecker.py", line 423, in <module>
+    main()
+  File "bin/achecker.py", line 419, in main
+    analysis(p, initial_storage, sym_validation =symbolic_validation, mode=mode)
+MemoryError

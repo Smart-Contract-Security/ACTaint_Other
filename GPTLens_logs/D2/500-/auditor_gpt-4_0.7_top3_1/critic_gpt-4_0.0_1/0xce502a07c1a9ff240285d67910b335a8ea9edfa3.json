@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "breakup",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the external call to 'BankCore(BANKACCOUNT).receiveFee.value(_fee)()' before updating the contract's status. However, the severity is somewhat mitigated by the fact that only owners can call this function, reducing the likelihood of an external attacker exploiting this. Nonetheless, if an owner is malicious or their credentials are compromised, this could lead to significant damage. The profitability is moderate as it depends on the balance of the contract and the malicious intent of an owner.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "This function allows for a reentrancy attack because it makes an external call to 'BankCore(BANKACCOUNT).receiveFee.value(_fee)()' and transfers the balance to an owner before updating the status to 'BreakUp'. An attacker could potentially re-enter this function in the context of the external call and drain the contract funds or cause other unintended effects.",
+        "code": "function breakup(address _breaker, uint256 _fee) external payable notBreakup oneOfOwners(_breaker) callByBank {\n if(_fee!=0){BankCore(BANKACCOUNT).receiveFee.value(_fee)();}\n if(_breaker==owner1) {owner2.transfer(this.balance);}\n if(_breaker==owner2) {owner1.transfer(this.balance);}\n status=Status.BreakUp;\n}",
+        "file_name": "0xce502a07c1a9ff240285d67910b335a8ea9edfa3.sol"
+    },
+    {
+        "function_name": "withdrawConfirm",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in pointing out the reentrancy risk due to the external call to 'BankCore(BANKACCOUNT).receiveFee.value(request_fee)()' before resetting the state. This could indeed allow an attacker to re-enter the function and potentially withdraw funds multiple times. The severity is high because it directly involves fund transfer operations which are critical. The profitability is also high as an attacker could drain significant funds if the conditions are right.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "Similar to the breakup function, this function is vulnerable to reentrancy attacks. It calls an external function 'BankCore(BANKACCOUNT).receiveFee.value(request_fee)()' and transfers funds to 'withdrawer' before resetting the request parameters and status. This could allow an attacker to re-enter and influence the contract state or withdraw more funds than intended.",
+        "code": "function withdrawConfirm(uint256 _amount, address _confirmer) external payable notBreakup oneOfOwners(_confirmer) callByBank {\n require(uint(status)==2);\n require(_amount==request_amount);\n require(_confirmer!=withdrawer);\n require(this.balance>=request_amount);\n if(request_fee!=0){BankCore(BANKACCOUNT).receiveFee.value(request_fee)();}\n withdrawer.transfer(request_amount-request_fee);\n status=Status.Active;\n withdrawer=address(0);\n request_amount=0;\n request_fee=0;\n}",
+        "file_name": "0xce502a07c1a9ff240285d67910b335a8ea9edfa3.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning correctly identifies a potential DoS attack vector through the require statement checking the contract's balance. However, the severity and profitability are low because this type of attack requires the attacker to either deplete the contract's balance or influence legitimate users to request high amounts, both of which are not straightforward or guaranteed to succeed. Moreover, this is more of a limitation or poor design rather than an exploitable vulnerability by external attackers.",
+        "correctness": 6,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "If the contract balance is lower than the 'amount' specified, the function will revert due to the require statement. This could be used as a denial of service (DoS) attack if an attacker intentionally triggers this condition to prevent legitimate withdrawals by depleting the contract's balance or setting a high withdrawal amount.",
+        "code": "function withdraw(uint256 amount, address _to, uint256 _fee) external notBreakup oneOfOwners(_to) callByBank {\n require(this.balance>=amount);\n status =Status.RequestPending;\n request_amount = amount;\n withdrawer = _to;\n request_fee = _fee;\n}",
+        "file_name": "0xce502a07c1a9ff240285d67910b335a8ea9edfa3.sol"
+    }
+]

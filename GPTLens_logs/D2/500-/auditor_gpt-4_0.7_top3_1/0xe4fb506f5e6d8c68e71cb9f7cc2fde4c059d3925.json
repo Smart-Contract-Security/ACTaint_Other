@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "WthdrawToCreator",
+        "code": "function WthdrawToCreator(uint val) public payable { if(msg.sender==creator) { creator.transfer(val); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function transfers ether specified by 'val' to the creator if the message sender is the creator. It lacks reentrancy protection, which means if the creator contract (a malicious contract) calls this function again during the transfer, it could lead to multiple withdrawals and potentially drain the contract's balance.",
+        "file_name": "0xe4fb506f5e6d8c68e71cb9f7cc2fde4c059d3925.sol"
+    },
+    {
+        "function_name": "WithdrawToSponsor",
+        "code": "function WithdrawToSponsor(address _addr, uint _wei) public payable { if(Sponsors[_addr]>0) { if(isOwner()) { if(_addr.send(_wei)) { if(CharterCapital>=_wei)CharterCapital-=_wei; else CharterCapital=0; } } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function allows the owner to withdraw ether to any sponsor address, but does not properly handle reentrancy. The use of '_addr.send(_wei)' is vulnerable because 'send' only uses 2300 gas and can allow fallback functions in the recipient contract to execute and potentially call back into this function before 'CharterCapital' is updated. This could lead to multiple withdrawals that exceed the intended limit.",
+        "file_name": "0xe4fb506f5e6d8c68e71cb9f7cc2fde4c059d3925.sol"
+    },
+    {
+        "function_name": "WthdrawAllToCreator",
+        "code": "function WthdrawAllToCreator() public payable { if(msg.sender==creator) { creator.transfer(this.balance); } }",
+        "vulnerability": "Unchecked Transfer",
+        "reason": "This function transfers the entire balance of the contract to the creator if the caller is the creator. It relies on 'transfer', which throws on failure and can revert the transaction, but it does not validate whether the 'creator' is a contract or an externally owned account. If the 'creator' is a contract and its fallback function fails or runs out of gas, it could cause the entire transaction to fail, potentially locking funds.",
+        "file_name": "0xe4fb506f5e6d8c68e71cb9f7cc2fde4c059d3925.sol"
+    }
+]

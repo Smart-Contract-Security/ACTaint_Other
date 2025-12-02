@@ -1,0 +1,46 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x6f5c1ed62a4fa41cfc332d81fafd3cd38aacbd85.code
+Start time: 22/08/2022 19:18:23
+Building CFG...
+CFG generation time (secs): 0.05
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawTokenTo(address,address,uint256)
+	(  757)  2f5:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function initVault()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function withdrawToken(address)
+	(  757)  2f5:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function initVault()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function emtpyTo(address,address)
+	(  757)  2f5:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function initVault()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 1442)  5a2:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function initVault()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function withdraw(address,uint256)
+	( 1510)  5e6:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function initVault()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function initVault()
+Needed to protect following instruction in function kill()
+(  938)  3aa:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function kill()
+Needed to protect following instruction in function kill()
+(  938)  3aa:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 2.61
+End time: 22/08/2022 19:18:25

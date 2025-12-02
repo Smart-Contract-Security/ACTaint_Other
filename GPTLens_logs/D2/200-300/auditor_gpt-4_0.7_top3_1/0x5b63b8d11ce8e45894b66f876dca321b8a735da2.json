@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnerShip",
+        "code": "function transferOwnerShip(address newOwer) public onlyOwner { owner = newOwer; }",
+        "vulnerability": "Typographical error in parameter",
+        "reason": "The parameter name 'newOwer' is a typographical error of 'newOwner'. This typo could lead to misunderstandings or misuse of the function, potentially resulting in unintended ownership transfers.",
+        "file_name": "0x5b63b8d11ce8e45894b66f876dca321b8a735da2.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(owner == msg.sender); require(balanceOf[_from] >= _value); require(allowed[_from][msg.sender] >= _value); totalSupply = SafeMath.safeSub(totalSupply, _value); balanceOf[msg.sender] = SafeMath.safeSub(balanceOf[msg.sender], _value); allowed[_from][msg.sender] = SafeMath.safeSub(allowed[_from][msg.sender], _value); emit Burn(msg.sender, _value); return true; }",
+        "vulnerability": "Wrong balance update",
+        "reason": "The function incorrectly updates the balance of 'msg.sender' instead of '_from' when burning from another address. This can lead to an incorrect balance representation, allowing the owner to burn tokens they don't own, which should instead be deducted from '_from'.",
+        "file_name": "0x5b63b8d11ce8e45894b66f876dca321b8a735da2.sol"
+    },
+    {
+        "function_name": "destroyContract",
+        "code": "function destroyContract() ownerRestricted public{ selfdestruct(owner); }",
+        "vulnerability": "Self-destructibility",
+        "reason": "The presence of a selfdestruct function can lead to a total loss of contract functionality and all contained funds and data. This function, especially being public and only restricted by owner, can be triggered unexpectedly if the ownership is compromised.",
+        "file_name": "0x5b63b8d11ce8e45894b66f876dca321b8a735da2.sol"
+    }
+]

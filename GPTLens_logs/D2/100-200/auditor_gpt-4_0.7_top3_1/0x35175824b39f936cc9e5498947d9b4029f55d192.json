@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint wad) public {\n    require(balanceOf[msg.sender] >= wad);\n    balanceOf[msg.sender] -= wad;\n    msg.sender.transfer(wad);\n    Withdrawal(msg.sender, wad);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function sends Ether to an external address before reducing the sender's balance. If the external address is a contract, it could call back into 'withdraw' while executing its fallback function, potentially leading to multiple withdrawals and draining the contract if balance checks and state updates are not properly managed.",
+        "file_name": "0x35175824b39f936cc9e5498947d9b4029f55d192.sol"
+    },
+    {
+        "function_name": "transferByUser",
+        "code": "function transferByUser ( address _token, address _to, uint _value, uint _salt, bytes _signature ) external addressValid(_to) note initialized {\n    bytes32 actionHash = _getTransferActionHash(_token, _to, _value, _salt);\n    if(actionCompleted[actionHash]) {\n        emit LogError(\"Account::transferByUser\", \"ACTION_ALREADY_PERFORMED\");\n        return;\n    }\n    if(ERC20(_token).balanceOf(this) < _value){\n        emit LogError(\"Account::transferByUser\", \"INSUFFICIENT_BALANCE_IN_ACCOUNT\");\n        return;\n    }\n    address signer = _recoverSigner(actionHash, _signature);\n    if(!isUser[signer]) {\n        emit LogError(\"Account::transferByUser\", \"SIGNER_NOT_AUTHORIZED_WITH_ACCOUNT\");\n        return;\n    }\n    actionCompleted[actionHash] = true;\n    if (_token == address(weth9)) {\n        weth9.withdraw(_value);\n        _to.transfer(_value);\n    } else {\n        require(ERC20(_token).transfer(_to, _value), \"Account::transferByUser TOKEN_TRANSFER_FAILED\");\n    }\n    emit LogTransferByUser(_token, _to, _value, signer);\n}",
+        "vulnerability": "Signature Replay",
+        "reason": "This function uses a signature to authorize user actions without a strict expiry or nonce system tied to each signature. An attacker might replay the same signature and actionHash to execute actions (like transfers) multiple times, as long as the actionHash hasn't been marked as completed within the contract.",
+        "file_name": "0x35175824b39f936cc9e5498947d9b4029f55d192.sol"
+    },
+    {
+        "function_name": "init",
+        "code": "function init(address _user, address _config) public {\n    users.push(_user);\n    isUser[_user] = true;\n    config = Config(_config);\n    weth9 = config.weth9();\n    isInitialized = true;\n}",
+        "vulnerability": "Initialization without Access Control",
+        "reason": "The 'init' function lacks access control, allowing anyone to initialize the contract multiple times with potentially malicious configurations. This can lead to overwriting important state variables and disrupting the intended logic of the contract.",
+        "file_name": "0x35175824b39f936cc9e5498947d9b4029f55d192.sol"
+    }
+]

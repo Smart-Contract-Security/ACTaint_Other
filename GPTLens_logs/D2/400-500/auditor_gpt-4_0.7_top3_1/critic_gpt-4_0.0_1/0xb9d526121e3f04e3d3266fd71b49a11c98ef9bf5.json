@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the state-modifying 'distr' function call. However, the severity and profitability are not as high as suggested because the function includes checks for the value of 'msg.value' and the total distributed tokens, which can mitigate the impact of a reentrancy attack. The function does not directly update critical state variables in a way that would be exploitable through reentrancy without additional context on the 'distr' function's implementation.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 3,
+        "reason": "The function 'getTokens' does not prevent reentrant calls. Since 'distr' function modifies the state by updating balances and emitting events, a malicious contract could call 'getTokens' during the execution of 'distr', leading to potential reentrancy attacks where state updates may be unexpectedly altered.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unchecked send",
+        "criticism": "The reasoning is correct in identifying an unchecked send vulnerability. The use of 'transfer' in Solidity automatically reverts on failure, so the concern about not handling a failed transfer is misplaced. The severity is low because the transfer method used is inherently safe against this specific issue, and profitability is also low as it does not allow an attacker to directly profit from this behavior.",
+        "correctness": 3,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function 'withdraw' transfers ether with 'owner.transfer(etherBalance);' without checking the return value. If the call to 'transfer' fails, the contract will not handle it, potentially leading to loss of funds or locked states.",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "file_name": "0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race Condition (front-running)",
+        "criticism": "The reasoning is partially correct about the potential for a race condition. However, the function does include a check that prevents setting a new non-zero allowance if a non-zero allowance already exists, which mitigates the risk of unexpected allowance settings due to front-running. The severity and profitability are overstated because the function's logic inherently reduces the risk of this vulnerability being exploited.",
+        "correctness": 4,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "The 'approve' function is vulnerable to a race condition where two successive calls to approve can lead to an unexpected setting of allowance. If a user calls 'approve' to set a new non-zero allowance while a previous allowance exists, another user can front-run the transaction, potentially leading to allowance being set incorrectly.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.sol"
+    }
+]

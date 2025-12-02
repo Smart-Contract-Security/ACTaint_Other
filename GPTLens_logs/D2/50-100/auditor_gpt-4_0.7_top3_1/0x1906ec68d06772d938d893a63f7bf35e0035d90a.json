@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "segmentedTransfer",
+        "code": "function segmentedTransfer( address _tokenContractAddress, address _to, uint _totalTokens, TransferSettings storage _transfer ) internal { uint tokensLeft = _totalTokens; uint amount; if (_transfer.burnedPercent > 0) { amount = _totalTokens * _transfer.burnedPercent / 100; VIP180(_tokenContractAddress).transferFrom(msg.sender, address(0), amount); tokensLeft -= amount; } if (_transfer.lockedPercent > 0) { amount = _totalTokens * _transfer.lockedPercent / 100; lockContract.lockFrom( msg.sender, _tokenContractAddress, _transfer.lockedMonths, amount ); tokensLeft -= amount; } if (_transfer.transferredThenLockedPercent > 0) { amount = _totalTokens * _transfer.transferredThenLockedPercent / 100; lockContract.transferFromAndLock( msg.sender, address(_to), _tokenContractAddress, _transfer.lockedMonths, amount ); tokensLeft -= amount; } if (tokensLeft > 0) { VIP180(_tokenContractAddress).transferFrom(msg.sender, _to, tokensLeft); } }",
+        "vulnerability": "Integer overflow and underflow",
+        "reason": "The calculation of 'amount' in the segmentedTransfer function is vulnerable to integer overflow and underflow attacks because it directly manipulates arithmetic operations on user-controlled input without proper validation. If the burnedPercent, lockedPercent, or transferredThenLockedPercent are set to malicious values, it could result in unexpected behavior like minting excessive tokens or locking incorrect amounts.",
+        "file_name": "0x1906ec68d06772d938d893a63f7bf35e0035d90a.sol"
+    },
+    {
+        "function_name": "setLockContract",
+        "code": "function setLockContract (address _lockAddress) external notZero(uint(_lockAddress)) onlyOwner { lockContract = LockedTokenManager(_lockAddress); }",
+        "vulnerability": "Type casting vulnerability",
+        "reason": "This function casts an address to uint and back, which can lead to unexpected behavior or vulnerabilities if the address passed is not a valid contract address or does not implement the LockedTokenManager interface correctly. This can potentially lead to loss of funds or unauthorized actions if the 'lockContract' points to a malicious contract.",
+        "file_name": "0x1906ec68d06772d938d893a63f7bf35e0035d90a.sol"
+    },
+    {
+        "function_name": "onLink",
+        "code": "function onLink(uint _oldUid, uint _newUid) external { require (msg.sender == address(aacContract), \"Unauthorized transaction\"); require (_oldUid > UID_MAX && _newUid <= UID_MAX); for(uint i = 0; i < coloredTokens.length; ++i) { coloredTokens[i].balances[_newUid] = coloredTokens[i].balances[_oldUid]; } }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function onLink allows an external caller to modify balances of colored tokens by linking UIDs. Although it checks if the caller is the AAC contract, the conditions on UIDs (_oldUid > UID_MAX and _newUid <= UID_MAX) could be exploited or misconfigured leading to unauthorized balance transfers. This could result in unauthorized creation or destruction of assets if exploited.",
+        "file_name": "0x1906ec68d06772d938d893a63f7bf35e0035d90a.sol"
+    }
+]

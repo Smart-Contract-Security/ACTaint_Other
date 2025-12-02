@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.code
+Start time: 19/08/2022 23:44:12
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setDnsrr(bytes32,bytes)
+	(  702)  2be:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function OwnedResolver()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 0.77
+End time: 19/08/2022 23:44:12

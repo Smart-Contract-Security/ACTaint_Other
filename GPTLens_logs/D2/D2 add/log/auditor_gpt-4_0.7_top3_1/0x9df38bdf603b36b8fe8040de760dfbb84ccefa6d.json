@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "allowRecurringBillingInternal",
+        "code": "function allowRecurringBillingInternal ( address customer, uint256 merchantId, uint256 billingId, uint256 value, uint256 period ) internal { require(merchantId <= lastMerchantId && merchantId != 0, \"Invalid merchant specified\"); require(period < now, \"Invalid period specified\"); require(token.balanceOf(customer) >= value, \"Not enough tokens for the first charge\"); require(token.allowance(customer, address(this)) >= value, \"Tokens are not approved for this smart contract\"); require(billingRegistry[billingId].customer == address(0x0), \"Recurring billing with this ID is already registered\"); BillingRecord storage newRecurringBilling = billingRegistry[billingId]; newRecurringBilling.metadata = encodeBillingMetadata(value, now.sub(period), merchantId, period); newRecurringBilling.customer = customer; emit BillingAllowed(billingId, customer, merchantId, now, period, value); }",
+        "vulnerability": "Incorrect Validation",
+        "reason": "The condition 'require(period < now, \"Invalid period specified\");' is meant to validate that the period should be in the past. However, this is logically incorrect since the period should denote a future timestamp or duration, not a past one. This can lead to unexpected behavior where valid recurring billing setups are incorrectly invalidated.",
+        "file_name": "0x9df38bdf603b36b8fe8040de760dfbb84ccefa6d.sol"
+    },
+    {
+        "function_name": "charge",
+        "code": "function charge (uint256 billingId) public { BillingRecord storage billingRecord = billingRegistry[billingId]; (uint256 value, uint256 lastChargeAt, uint256 merchantId, uint256 period) = decodeBillingMetadata(billingRecord.metadata); require(merchantChargingAccountAllowed[merchantId][msg.sender], \"Sender is not allowed to charge\"); require(merchantId != 0, \"Billing does not exist\"); require(lastChargeAt.add(period) <= now, \"Charged too early\"); if (now > lastChargeAt.add(period.mul(2))) { cancelRecurringBillingInternal(billingId); return; } require( token.transferFrom(billingRecord.customer, merchantRegistry[merchantId].beneficiary, value), \"Unable to charge customer\" ); billingRecord.metadata = encodeBillingMetadata(value, lastChargeAt.add(period), merchantId, period); emit BillingCharged(billingId, now, lastChargeAt.add(period.mul(2))); }",
+        "vulnerability": "Unauthorized Charge",
+        "reason": "The function 'charge' lacks proper validation to ensure that only the authorized charging accounts (merchants) can initiate a charge. Although it checks if 'msg.sender' is allowed through 'merchantChargingAccountAllowed', it does not verify if 'msg.sender' is the same as the merchant who is supposed to charge, allowing potentially any address in the allowed list to initiate a charge on behalf of another.",
+        "file_name": "0x9df38bdf603b36b8fe8040de760dfbb84ccefa6d.sol"
+    },
+    {
+        "function_name": "registerNewMerchant",
+        "code": "function registerNewMerchant (address beneficiary, address chargingAccount) public returns (uint256 merchantId) { merchantId = ++lastMerchantId; Merchant storage record = merchantRegistry[merchantId]; record.merchant = msg.sender; record.beneficiary = beneficiary; emit MerchantRegistered(merchantId, msg.sender, beneficiary); changeMerchantChargingAccount(merchantId, chargingAccount, true); }",
+        "vulnerability": "Front Running",
+        "reason": "The 'registerNewMerchant' function suffers from a potential front running issue where an attacker can watch the mempool for new merchant registration transactions and send their own transaction with higher gas to register before the original transaction gets processed. This can allow an attacker to steal a merchant ID by getting their transaction mined first, thus associating their address with the merchant ID intended for someone else.",
+        "file_name": "0x9df38bdf603b36b8fe8040de760dfbb84ccefa6d.sol"
+    }
+]

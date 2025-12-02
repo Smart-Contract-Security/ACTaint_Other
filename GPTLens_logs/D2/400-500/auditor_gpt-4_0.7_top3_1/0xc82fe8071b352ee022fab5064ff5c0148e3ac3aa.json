@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) notLocked(msg.sender, _amount) returns (bool success) { if (piecesOwned[msg.sender] >= _amount && _amount > 0 && piecesOwned[_to] + _amount > piecesOwned[_to] && _to != 0x0) { piecesOwned[msg.sender] -= _amount; piecesOwned[_to] += _amount; Transfer(msg.sender, _to, _amount); return true; } else { return false;} }",
+        "vulnerability": "Integer Overflow",
+        "reason": "This function lacks the check for an integer overflow when adding _amount to piecesOwned[_to]. If _amount is chosen such that the sum exceeds the maximum value for a uint256, it could wrap around and corrupt the state of piecesOwned.",
+        "file_name": "0xc82fe8071b352ee022fab5064ff5c0148e3ac3aa.sol"
+    },
+    {
+        "function_name": "buyPiece",
+        "code": "function buyPiece() payable { if (pieceForSale && msg.value >= lowestAskPrice) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; _amountOwner = msg.value / 10000 * ownerCommission; _amountEthart = msg.value / 40; _amountSeller = msg.value - _amountOwner - _amountEthart; owner.transfer(_amountOwner); lowestAskAddress.transfer(_amountSeller); registrar.transfer(_amountEthart); piecesOwned[lowestAskAddress]--; piecesOwned[msg.sender]++; Interface a = Interface(registrar); a.issuePatrons(msg.sender, msg.value / 5 * 2); pieceSold (lowestAskAddress, msg.sender, msg.value); pieceForSale = false; lowestAskPrice = 0; lowestAskAddress = 0x0; } else {throw;} }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function transfers ether to external addresses (owner, lowestAskAddress, and registrar) before updating the state variables related to ownership of the piece. This could allow the recipient to call back into the contract and buy the same piece again or manipulate state in other ways before the state variables are updated.",
+        "file_name": "0xc82fe8071b352ee022fab5064ff5c0148e3ac3aa.sol"
+    },
+    {
+        "function_name": "setProof",
+        "code": "function setProof (string _proofLink) onlyBy (owner) { if (!proofSet) { uint256 remainder; proofLink = _proofLink; proofSet = true; remainder = editionSize % 40; ethartAward = (editionSize - remainder) / 40; if (remainder > 0 && now % 39 <= remainder) {ethartAward++;} piecesOwned[registrar] = ethartAward; piecesOwned[owner] = editionSize - ethartAward; } else {throw;} }",
+        "vulnerability": "Arbitrary State Change",
+        "reason": "The function allows the owner to set the proof link only once but also alters the distribution of pieces between the registrar and owner based on the edition size. This could be misused by initializing an artwork with a strategically chosen edition size to manipulate the distribution of ownership.",
+        "file_name": "0xc82fe8071b352ee022fab5064ff5c0148e3ac3aa.sol"
+    }
+]

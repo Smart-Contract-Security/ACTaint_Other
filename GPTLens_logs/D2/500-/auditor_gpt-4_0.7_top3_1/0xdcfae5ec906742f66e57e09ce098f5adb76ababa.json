@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "WthdrawAllToCreator",
+        "code": "function WthdrawAllToCreator() public payable { if(msg.sender==creator) { creator.transfer(this.balance); } }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "This function transfers all the contract balance to the creator if the transaction is initiated by the creator. However, if the creator's address is a contract that fails to receive ether (e.g., fallback function reverts or runs out of gas), the transfer will fail and effectively lock all funds in the contract since there is no alternative mechanism to withdraw them.",
+        "file_name": "0xdcfae5ec906742f66e57e09ce098f5adb76ababa.sol"
+    },
+    {
+        "function_name": "WthdrawToCreator",
+        "code": "function WthdrawToCreator(uint val) public payable { if(msg.sender==creator) { creator.transfer(val); } }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "Similar to the 'WthdrawAllToCreator' function, this function allows the creator to withdraw a specified amount of ether from the contract. If the creator's address is a contract that fails on receiving ether, it could cause the transaction to revert and prevent the withdrawal functionality from being used, potentially freezing funds in the contract.",
+        "file_name": "0xdcfae5ec906742f66e57e09ce098f5adb76ababa.sol"
+    },
+    {
+        "function_name": "WithdrawToSponsor",
+        "code": "function WithdrawToSponsor(address _addr, uint _wei) public payable { if(Sponsors[_addr]>0) { if(isOwner()) { if(_addr.send(_wei)) { if(CharterCapital>=_wei)CharterCapital-=_wei; else CharterCapital=0; } } } }",
+        "vulnerability": "Unchecked send",
+        "reason": "While there is an attempt to check if the send operation was successful, the subsequent updates to 'CharterCapital' do not account for the possibility of the send failing. If the send fails (returns false), the state of 'CharterCapital' will still be subtracted incorrectly. This could lead to discrepancies in the accounting of 'CharterCapital', potentially allowing for ether to be withdrawn on the basis of incorrect capital reported.",
+        "file_name": "0xdcfae5ec906742f66e57e09ce098f5adb76ababa.sol"
+    }
+]

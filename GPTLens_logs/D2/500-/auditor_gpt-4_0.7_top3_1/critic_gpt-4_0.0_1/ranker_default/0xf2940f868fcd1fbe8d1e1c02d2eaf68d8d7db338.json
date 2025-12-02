@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "addGame",
+        "vulnerability": "Authorization Flaw",
+        "criticism": "The reasoning is correct in pointing out the lack of access control in the 'addGame' function, which allows any user to register a game address. This is a significant security flaw as it could allow unauthorized users to add potentially malicious games, leading to severe consequences for the system. The severity of this vulnerability is high due to the potential impact, and the profitability could also be high if an attacker exploits this to manipulate game mechanics or perform other malicious activities.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function 'addGame' can be called by any user as it lacks access control mechanisms to check if the caller is authorized (e.g., admin or authorized game developer). This can allow any attacker to register any address as a game, potentially leading to misuse or insertion of malicious games.",
+        "code": "function addGame(address _gameAddress) public {\n    require(gameIDs_[_gameAddress] == 0, \"derp, that games already been registered\");\n    gID_++;\n    gameIDs_[_gameAddress] = gID_;\n    games_[gID_] = PlayerBookReceiverInterface(_gameAddress);\n    games_[gID_].receivePlayerInfo(1, plyr_[1].addr);\n}",
+        "file_name": "0xf2940f868fcd1fbe8d1e1c02d2eaf68d8d7db338.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "addGame",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is accurate in identifying the unchecked external call in the 'addGame' function. The external call to 'games_[gID_].receivePlayerInfo' does not check the result of the execution, which could indeed lead to unexpected behavior if the called contract is malicious or fails. This vulnerability is moderately severe as it could disrupt the function's intended behavior and potentially lead to denial of service. However, the profitability for an attacker is low unless they can gain from the disruption itself.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'addGame' makes an external call to 'games_[gID_].receivePlayerInfo(1, plyr_[1].addr)' without checking the execution result. If the called contract is malicious or has an error, it could lead to unexpected behavior or denial of service.",
+        "code": "function addGame(address _gameAddress) public {\n    require(gameIDs_[_gameAddress] == 0, \"derp, that games already been registered\");\n    gID_++;\n    gameIDs_[_gameAddress] = gID_;\n    games_[gID_] = PlayerBookReceiverInterface(_gameAddress);\n    games_[gID_].receivePlayerInfo(1, plyr_[1].addr);\n}",
+        "file_name": "0xf2940f868fcd1fbe8d1e1c02d2eaf68d8d7db338.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "getPlayerID",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat correct in identifying a potential reentrancy issue due to the state-changing 'determinePID' call within 'getPlayerID'. However, the actual risk of reentrancy would depend on the specific implementation of 'determinePID' and whether it indeed allows for such recursive calls that could affect the state significantly. Without more details on 'determinePID', the severity and profitability cannot be accurately assessed but are likely lower than suggested unless specific exploitable conditions are met.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The 'getPlayerID' function calls 'determinePID', which updates the state by potentially increasing 'pID_' and updating mapping 'pIDxAddr_'. As this function is external and not protected against reentrancy, a malicious contract could call it again (recursively) before the first execution finishes, potentially leading to errors like incorrect player IDs being assigned or state inconsistency.",
+        "code": "function getPlayerID(address _addr) isRegisteredGame() external returns (uint256) {\n    determinePID(_addr);\n    return (pIDxAddr_[_addr]);\n}",
+        "file_name": "0xf2940f868fcd1fbe8d1e1c02d2eaf68d8d7db338.sol",
+        "final_score": 3.75
+    }
+]

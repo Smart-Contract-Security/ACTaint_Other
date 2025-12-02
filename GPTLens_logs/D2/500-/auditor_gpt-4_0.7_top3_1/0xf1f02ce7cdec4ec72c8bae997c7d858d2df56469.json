@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Integer Overflow",
+        "reason": "This function lacks validation to check if '_amount' being added to 'totalDistributed' exceeds 'totalSupply', leading potentially to integer overflow. Since 'totalDistributed' is incremented before the check of whether it's exceeded 'totalSupply', it could wrap around and reset to a lower value, allowing more tokens to be distributed than intended.",
+        "file_name": "0xf1f02ce7cdec4ec72c8bae997c7d858d2df56469.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'distr' is called within 'getTokens' without checking its return value. Failure of the 'distr' function (due to reasons like gas running out) could lead to unexpected behavior, yet 'getTokens' will continue execution and modify state variables assuming success. This could lead to a state of inconsistency in token distribution tracking.",
+        "file_name": "0xf1f02ce7cdec4ec72c8bae997c7d858d2df56469.sol"
+    },
+    {
+        "function_name": "withdrawForeignTokens",
+        "code": "function withdrawForeignTokens(address _tokenContract) onlyOwner public returns (bool) { ForeignToken token = ForeignToken(_tokenContract); uint256 amount = token.balanceOf(address(this)); return token.transfer(owner, amount); }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The return value of 'token.transfer(owner, amount)' is not checked. If the transfer fails, the function will still return 'true', incorrectly indicating a successful withdrawal. This can mislead the contract owner about the state of funds, potentially leading to financial losses.",
+        "file_name": "0xf1f02ce7cdec4ec72c8bae997c7d858d2df56469.sol"
+    }
+]

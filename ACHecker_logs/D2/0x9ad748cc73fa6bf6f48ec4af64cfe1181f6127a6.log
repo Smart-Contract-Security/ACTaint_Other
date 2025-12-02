@@ -1,0 +1,49 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x9ad748cc73fa6bf6f48ec4af64cfe1181f6127a6.code
+Start time: 26/08/2022 16:59:50
+Building CFG...
+CFG generation time (secs): 3.52
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withDraw()
+	( 1992)  7c8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function allocatePrivateToken(address[],uint256[])
+	( 2464)  9a0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function allocateTeamToken()
+	( 2687)  a7f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function allocateContributorsToken()
+	( 2809)  af9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function changeOwner(address)
+	( 2861)  b2d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function allocateTokens(address[],uint256[])
+	( 2942)  b7e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function transfer(address,uint256)
+	( 3133)  c3d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setInitialVaribles(uint256,uint256,uint256,address,address,address)
+
+Violated access control check in function unfreezeTokenTransfer(bool)
+	( 3377)  d31:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+Violated access control check in function setInitialVaribles(uint256,uint256,uint256,address,address,address)
+	( 3899)  f3b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function owned()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 7.18
+End time: 26/08/2022 17:00:01

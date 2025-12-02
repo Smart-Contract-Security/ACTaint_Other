@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.code
+Start time: 21/08/2022 22:58:50
+Building CFG...
+CFG generation time (secs): 1.73
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 3810)  ee2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4042)  fca:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferTokenTo(address,uint256)
+	( 4573) 11dd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 4738) 1282:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 4936) 1348:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferTokenToMultiple(address[],uint256)
+	( 5810) 16b2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 6348) 18cc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6930) 1b12:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withrawDev()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.08
+End time: 21/08/2022 22:58:57

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "voteFoul",
+        "vulnerability": "Reentrancy on fund transfer",
+        "criticism": "The reasoning provided is accurate in identifying a reentrancy vulnerability due to the state variable 'sentMoney' being updated after the fund transfer. This could indeed allow a malicious contract to re-enter 'voteFoul' and trigger multiple transfers if the conditions are still met. The severity is high because it could lead to significant financial loss. However, the profitability is moderate because exploiting this requires specific conditions, such as controlling the beneficiary address and ensuring the conditions for transfer are repeatedly met.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function 'voteFoul' transfers funds to the beneficiary if certain conditions are met. However, it updates the 'sentMoney' state variable after performing the transfer. If the beneficiary is a contract, it could potentially execute the fallback function to re-enter and call 'voteFoul' again before 'sentMoney' is set to true, leading to multiple unintended transfers.",
+        "code": "function voteFoul(uint _number) public{ require(signedByPromisor); require(msg.sender == judges[_number]); require(votedFoul[_number] != 1); require(votedShy[_number] != 1); require(votedSuccess[_number] != 1); foulVotes = foulVotes + 1; votedFoul[_number] = 1; if((foulVotes >= 2) && !sentMoney){ beneficiary.transfer(deposit); sentMoney = true; } }",
+        "file_name": "0x61796d1ac7e5d1965e444eefe53371de2e55533d.sol"
+    },
+    {
+        "function_name": "promisorSigns",
+        "vulnerability": "DoS with Block Gas Limit",
+        "criticism": "The reasoning is somewhat correct in identifying a potential DoS scenario. However, the scenario described is more accurately a governance issue or collusion risk rather than a traditional DoS attack exploiting block gas limits. The severity is moderate because it could deadlock the contract, but the profitability is low as there is no direct financial gain from merely locking the contract. The correctness is reduced because the description of the vulnerability does not perfectly align with typical DoS attacks related to gas limits.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The 'promisorSigns' function requires all three judges to have signed by checking 'signedByJudge' array indices. An attacker could potentially prevent the contract from progressing by refusing to sign as one of the judges (if they control one of the judge's addresses or collude with them), making it impossible for the promisor to fulfill their part of the contract and thus locking the funds indefinitely.",
+        "code": "function promisorSigns() payable public{ require(msg.sender == promisor); require(signedByJudge[0] == 1); require(signedByJudge[1] == 1); require(signedByJudge[2] == 1); require(!signedByPromisor); require(msg.value == deposit); signedByPromisor = true; }",
+        "file_name": "0x61796d1ac7e5d1965e444eefe53371de2e55533d.sol"
+    },
+    {
+        "function_name": "selfDestruct",
+        "vulnerability": "Unauthorized self-destruction",
+        "criticism": "The reasoning is correct in highlighting a critical vulnerability where the 'selfDestruct' function does not authenticate the caller, potentially allowing any user to destroy the contract. This is a severe issue as it could lead to total loss of the contract's functionality and assets unexpectedly. The severity is very high due to the irreversible nature of self-destruction. However, the profitability is low because the attacker does not gain financially from merely destroying the contract.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 1,
+        "reason": "The 'selfDestruct' function allows any caller to destroy the contract provided 'sentMoney' is true and the time condition is met. This function does not check if the caller is authorized (e.g., the contract owner or a designated administrator), allowing any user to trigger destruction and potentially remove the contract from the blockchain unexpectedly, leading to loss of access to the contract by legitimate parties.",
+        "code": "function selfDestruct() public{ require(sentMoney); require(now >= (endDate+432000)); selfdestruct(msg.sender); }",
+        "file_name": "0x61796d1ac7e5d1965e444eefe53371de2e55533d.sol"
+    }
+]

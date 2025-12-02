@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "uploadBalances",
+        "code": "function uploadBalances(address[] addresses, uint256[] balances) onlyOwner {\n    require(!balancesLocked);\n    require(addresses.length == balances.length);\n    uint256 sum;\n    for (uint256 i = 0; i < uint256(addresses.length); i++) {\n        sum = safeAdd(sum, safeSub(balances[i], balanceOf[addresses[i]]));\n        balanceOf[addresses[i]] = balances[i];\n    }\n    balanceOf[owner] = safeSub(balanceOf[owner], sum);\n}",
+        "vulnerability": "Arbitrary balance manipulation",
+        "reason": "This function allows the owner to upload arbitrary balances for any addresses, potentially allowing the owner to inflate or deflate balances arbitrarily. This could be used to create or destroy tokens, manipulate market supply, or unjustly enrich certain addresses.",
+        "file_name": "0x2b9b643d017ef2505647b84109766e19a24dcc74.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) returns (bool success) {\n    require(balanceOf[msg.sender] >= _amount);\n    require(balanceOf[_to] + _amount >= balanceOf[_to]);\n    balanceOf[msg.sender] -= _amount;\n    uint256 preBalance = balanceOf[_to];\n    balanceOf[_to] += _amount;\n    bool alreadyMax = preBalance >= singleIDXMQty;\n    if (!alreadyMax) {\n        if (now >= validAfter[_to].ts + mustHoldFor) validAfter[_to].last = preBalance;\n        validAfter[_to].ts = now;\n    }\n    if (validAfter[msg.sender].last > balanceOf[msg.sender]) validAfter[msg.sender].last = balanceOf[msg.sender];\n    Transfer(msg.sender, _to, _amount);\n    return true;\n}",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function does not properly use SafeMath for the arithmetic operation 'balanceOf[_to] += _amount;'. This can lead to integer overflow if '_amount' is large enough, allowing an attacker to manipulate balance records and potentially steal tokens.",
+        "file_name": "0x2b9b643d017ef2505647b84109766e19a24dcc74.sol"
+    },
+    {
+        "function_name": "setOwner",
+        "code": "function setOwner(address _owner) returns (bool success) {\n    owner = _owner;\n    return true;\n}",
+        "vulnerability": "Ownership takeover",
+        "reason": "This function allows the current owner to set a new owner without any checks or constraints. If the owner account is compromised, an attacker can easily take over the contract by setting themselves as the new owner, gaining control over all functionalities protected by the 'onlyOwner' modifier.",
+        "file_name": "0x2b9b643d017ef2505647b84109766e19a24dcc74.sol"
+    }
+]

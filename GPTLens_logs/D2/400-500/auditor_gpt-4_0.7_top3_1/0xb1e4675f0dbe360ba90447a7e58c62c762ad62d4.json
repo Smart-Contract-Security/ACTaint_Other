@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setAccessPolicy",
+        "code": "function setAccessPolicy(IAccessPolicy newPolicy, address newAccessController) public only(ROLE_ACCESS_CONTROLLER) {\n    require(newPolicy.allowed(newAccessController, ROLE_ACCESS_CONTROLLER, this, msg.sig));\n    IAccessPolicy oldPolicy = _accessPolicy;\n    _accessPolicy = newPolicy;\n    LogAccessPolicyChanged(msg.sender, oldPolicy, newPolicy);\n}",
+        "vulnerability": "Arbitrary Access Control Change",
+        "reason": "The function allows the change of the access policy controller without sufficient checks on the authenticity of the new policy. An attacker could deploy a malicious policy that always returns true on checks, effectively gaining full control over the contract.",
+        "file_name": "0xb1e4675f0dbe360ba90447a7e58c62c762ad62d4.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint256 amount) public returns (bool) {\n    var allowance = _allowed[from][msg.sender];\n    _allowed[from][msg.sender] = sub(allowance, amount);\n    transferInternal(from, to, amount);\n    return true;\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "This function alters the allowance state before completing the token transfer. If the `transferInternal()` method includes external calls, it could potentially lead to reentrancy attacks where the allowance is manipulated while the transfer is in process.",
+        "file_name": "0xb1e4675f0dbe360ba90447a7e58c62c762ad62d4.sol"
+    },
+    {
+        "function_name": "enableMigration",
+        "code": "function enableMigration(IMigrationTarget migration) public onlyStates(LockState.AcceptingLocks, LockState.AcceptingUnlocks) {\n    MigrationSource.enableMigration(migration);\n}",
+        "vulnerability": "Unchecked Migration Target",
+        "reason": "This function does not check if the migration address provided as the target is a legitimate contract or not. An attacker could set a malicious contract as the migration target, potentially leading to loss or theft of tokens when the `migrate()` function is called.",
+        "file_name": "0xb1e4675f0dbe360ba90447a7e58c62c762ad62d4.sol"
+    }
+]

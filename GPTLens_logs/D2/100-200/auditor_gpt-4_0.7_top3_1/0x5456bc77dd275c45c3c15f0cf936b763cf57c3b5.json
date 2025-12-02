@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "init",
+        "code": "function init(EToken2Interface _etoken2, string memory _symbol, string memory _name) public returns(bool) { if (address(etoken2) != address(0)) { return false; } etoken2 = _etoken2; etoken2Symbol = _bytes32(_symbol); name = _name; symbol = _symbol; return true; }",
+        "vulnerability": "Initialization vulnerability",
+        "reason": "The function 'init' lacks access control, allowing anyone to initialize the contract multiple times as long as 'etoken2' is not set. This could lead to unexpected behavior or denial of service by repeatedly calling 'init'.",
+        "file_name": "0x5456bc77dd275c45c3c15f0cf936b763cf57c3b5.sol"
+    },
+    {
+        "function_name": "transferToICAPWithReference",
+        "code": "function transferToICAPWithReference( bytes32 _icap, uint _value, string memory _reference) public returns(bool) { return _getAsset()._performTransferToICAPWithReference( _icap, _value, _reference, msg.sender); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transferToICAPWithReference' calls another contract ('_getAsset()._performTransferToICAPWithReference') which could be malicious and re-enter the function causing issues like draining funds or corrupting contract state.",
+        "file_name": "0x5456bc77dd275c45c3c15f0cf936b763cf57c3b5.sol"
+    },
+    {
+        "function_name": "commitUpgrade",
+        "code": "function commitUpgrade() public returns(bool) { if (pendingVersion == address(0)) { return false; } if (pendingVersionTimestamp + UPGRADE_FREEZE_TIME > now) { return false; } latestVersion = pendingVersion; delete pendingVersion; delete pendingVersionTimestamp; emit UpgradeCommited(latestVersion); return true; }",
+        "vulnerability": "Time manipulation",
+        "reason": "The function 'commitUpgrade' uses block timestamp for logic related to upgrade timing. Miners or malicious users may manipulate the timestamp, potentially causing the upgrade to be committed earlier than intended, leading to unexpected behaviors.",
+        "file_name": "0x5456bc77dd275c45c3c15f0cf936b763cf57c3b5.sol"
+    }
+]

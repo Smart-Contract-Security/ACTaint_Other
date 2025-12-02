@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "revealNumber",
+        "code": "function revealNumber(address _requestor) public payable { assert(_canReveal(_requestor, msg.sender)); _revealNumber(_requestor); }",
+        "vulnerability": "Incorrect Access Control",
+        "reason": "The `revealNumber` function uses the `_canReveal` function to check if the number can be revealed based on the waiting block count. However, it does not properly authenticate whether the caller has the right to reveal the number for a specific `_requestor`. An attacker can call this function with any `_requestor` address that is ready to be revealed and manipulate or access the result before the actual requestor does.",
+        "file_name": "0xb8842b95a9c0cdbd4c0d6e0319b8d46792830677.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() onlyOwner { selfdestruct(owner); }",
+        "vulnerability": "Selfdestruct Functionality",
+        "reason": "The use of `selfdestruct` can be risky as it removes the contract from the blockchain. This function is open to denial of service (DoS) if the ownership is transferred to a malicious owner or if the owner account is compromised. An attacker who gains ownership can destroy the contract, causing loss of data and functionality which might be critical to the system or other dependent systems.",
+        "file_name": "0xb8842b95a9c0cdbd4c0d6e0319b8d46792830677.sol"
+    },
+    {
+        "function_name": "requestNumber",
+        "code": "function requestNumber(address _requestor, uint256 _max, uint8 _waitTime) payable public { if (!whiteList[msg.sender]) { require(!(msg.value < cost)); } assert(!checkNumber(_requestor)); pendingNumbers[_requestor] = PendingNumber({ proxy: tx.origin, renderedNumber: 0, max: max, creationBlockNumber: block.number, waitTime: waitTime }); if (_max > 1) { pendingNumbers[_requestor].max = _max; } if (_waitTime > 0 && _waitTime < 250) { pendingNumbers[_requestor].waitTime = _waitTime; } EventLuckyNumberRequested(_requestor, pendingNumbers[_requestor].max, pendingNumbers[_requestor].creationBlockNumber, pendingNumbers[_requestor].waitTime); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The `requestNumber` function does not check if the msg.sender is already in the `pendingNumbers` map which can lead to overriding existing entries without the original user's consent. This can be exploited by an attacker to disrupt the service for legitimate users or manipulate the entry data.",
+        "file_name": "0xb8842b95a9c0cdbd4c0d6e0319b8d46792830677.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function `getTokens` does not set the `blacklist[investor]` to true before distributing tokens, which can potentially allow an attacker to call this function multiple times in a single transaction before the blacklist condition is updated. This could lead to excessive token distribution to a single address.",
+        "file_name": "0x97fe19dfab95b1709bb0994af18ba7f793e28cba.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval Race Condition",
+        "reason": "In the `approve` function, there's a race condition vulnerability where if the `_value` is not 0 and the current allowance is not 0, the function returns false without updating the allowance. This check can lead to a front-running attack where an attacker can utilize the approved tokens before the sender has the chance to set the amount to zero, and then re-approve a new amount.",
+        "file_name": "0x97fe19dfab95b1709bb0994af18ba7f793e28cba.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "reason": "The `withdraw` function allows the contract owner to withdraw all Ether stored in the contract without any checks on the state of the contract or other conditions that might need to be met before such a withdrawal is safe. This could lead to potential issues if the contract is supposed to hold Ether as a part of its logic.",
+        "file_name": "0x97fe19dfab95b1709bb0994af18ba7f793e28cba.sol"
+    }
+]

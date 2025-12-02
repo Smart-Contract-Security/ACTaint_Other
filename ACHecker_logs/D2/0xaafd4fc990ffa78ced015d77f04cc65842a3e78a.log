@@ -1,0 +1,29 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xaafd4fc990ffa78ced015d77f04cc65842a3e78a.code
+Start time: 27/08/2022 08:32:53
+Building CFG...
+CFG generation time (secs): 0.08
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function kill()
+	( 1038)  40e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Ethraffle()
+
+Violated access control check in function togglePause()
+	( 1509)  5e5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Ethraffle()
+
+Violated access control check in function endRaffle()
+	( 1629)  65d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function Ethraffle()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function Ethraffle()
+Needed to protect following instruction in function kill()
+( 1051)  41b:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 4.58
+End time: 27/08/2022 08:32:58

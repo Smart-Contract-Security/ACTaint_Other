@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "acceptOwnership",
+        "code": "function acceptOwnership() public { require(msg.sender == newOwner); OwnerUpdate(owner, newOwner); owner = newOwner; newOwner = 0x0; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'acceptOwnership' changes the state of the contract by updating the owner, but it emits an event before finalizing the state change. If the 'OwnerUpdate' event is logged and external contracts are listening to this event, they can call back into this function before 'newOwner' is set to 0x0, allowing possibly unexpected behavior or reentrancy attacks.",
+        "file_name": "0xe4e821c1aef1d3305ade82835853d87d2705a992.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public ownerOnly { require(_newOwner != owner); newOwner = _newOwner; }",
+        "vulnerability": "Arbitrary Redirection",
+        "reason": "This function allows the current owner to set 'newOwner' arbitrarily without any checks that '_newOwner' is a valid or secure address, other than it's not the current owner. This can lead to the ownership being transferred to an unintended or malicious address, especially if input validation or sanitation is poor in upstream calls.",
+        "file_name": "0xe4e821c1aef1d3305ade82835853d87d2705a992.sol"
+    },
+    {
+        "function_name": "change",
+        "code": "function change(IERC20Token _fromToken, IERC20Token _toToken, uint256 _amount, uint256 _minReturn) public returns (uint256 amount) { require(_fromToken != _toToken); if (_toToken == token) return buy(_fromToken, _amount, _minReturn); else if (_fromToken == token) return sell(_toToken, _amount, _minReturn); uint256 purchaseAmount = buy(_fromToken, _amount, 1); return sell(_toToken, purchaseAmount, _minReturn); }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function 'change' does not check the return values of internal calls to 'buy' and 'sell'. These functions may fail silently, particularly if the ERC20 token interactions fail (e.g., due to insufficient balance or allowance), leading to loss of funds or unintended behavior.",
+        "file_name": "0xe4e821c1aef1d3305ade82835853d87d2705a992.sol"
+    }
+]

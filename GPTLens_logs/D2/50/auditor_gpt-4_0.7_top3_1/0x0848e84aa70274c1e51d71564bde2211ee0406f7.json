@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyTicketsFor",
+        "code": "function buyTicketsFor(address _beneficiary) public payable { require(_beneficiary != 0x0); require(msg.value >= PRICE); uint256 change = msg.value%PRICE; uint256 numberOfTickets = msg.value.sub(change).div(PRICE); ticket.mint(_beneficiary, numberOfTickets); addParticipant(_beneficiary, numberOfTickets); msg.sender.transfer(change); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyTicketsFor' transfers ether to msg.sender before updating the state. This can lead to reentrancy attacks where a malicious contract can call 'buyTicketsFor' again during its execution, potentially leading to unexpected behavior or draining of ether.",
+        "file_name": "0x0848e84aa70274c1e51d71564bde2211ee0406f7.sol"
+    },
+    {
+        "function_name": "awardPrizes",
+        "code": "function awardPrizes() private { uint256 winnerIndex = uint256(block.blockhash(block.number-1))%SIZE; uint256 jackpotNumber = uint256(block.blockhash(block.number-1))%JACKPOT_CHANCE; if (winnerIndex == jackpotNumber) { distributeJackpot(winnerIndex); } for (uint8 i = 0; i < prizes.length; i++) { participants[gameNumber][winnerIndex%SIZE].transfer(prizes[i]); PrizeAwarded(gameNumber, participants[gameNumber][winnerIndex%SIZE], prizes[i]); winnerIndex++; } }",
+        "vulnerability": "Predictable RNG",
+        "reason": "The function 'awardPrizes' uses 'block.blockhash(block.number-1)' to determine the winner, which can be predicted by miners since they have control over the block hash. This could lead to a miner manipulating the result to ensure they win the prize.",
+        "file_name": "0x0848e84aa70274c1e51d71564bde2211ee0406f7.sol"
+    },
+    {
+        "function_name": "distributeRemaining",
+        "code": "function distributeRemaining() private { jackpotAmount = jackpotAmount.add(JACK_DIST); fund.transfer(DIV_DIST); msg.sender.transfer(GAS_REFUND); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'distributeRemaining' performs a transfer to an external address 'fund' and afterwards to msg.sender. This could potentially allow reentrancy attacks where the external called contract can re-enter and call into any functions of this contract, leading to unexpected behavior or ether being siphoned.",
+        "file_name": "0x0848e84aa70274c1e51d71564bde2211ee0406f7.sol"
+    }
+]

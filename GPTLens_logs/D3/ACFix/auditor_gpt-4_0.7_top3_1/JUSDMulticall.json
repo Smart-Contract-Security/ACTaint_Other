@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "multiCall",
+        "code": "function multiCall( bytes[] memory callData ) external returns (bytes[] memory returnData) { returnData = new bytes[](callData.length); for (uint256 i; i < callData.length; i++) { (bool success, bytes memory res) = address(this).delegatecall( callData[i] ); if (success == false) { assembly { let ptr := mload(0x40) let size := returndatasize() returndatacopy(ptr, 0, size) revert(ptr, size) } } returnData[i] = res; } }",
+        "vulnerability": "Arbitrary code execution",
+        "reason": "This vulnerability arises from the use of delegatecall to a user-provided input (callData[i]). The delegatecall function allows for calling another contract using the context of the caller. This can potentially allow an attacker to execute arbitrary code within the context of the JUSDMulticall contract. Since the input to delegatecall is not sanitized or restricted, an attacker could craft malicious bytecode in callData that manipulates the state of the contract or drains its funds when executed.",
+        "file_name": "JUSDMulticall.sol"
+    },
+    {
+        "function_name": "multiCall",
+        "code": "function multiCall( bytes[] memory callData ) external returns (bytes[] memory returnData) { returnData = new bytes[](callData.length); for (uint256 i; i < callData.length; i++) { (bool success, bytes memory res) = address(this).delegatecall( callData[i] ); if (success == false) { assembly { let ptr := mload(0x40) let size := returndatasize() returndatacopy(ptr, 0, size) revert(ptr, size) } } returnData[i] = res; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "If an attacker can manipulate the callData to include a call to the multiCall function itself or another function that re-calls multiCall, it would lead to reentrancy. During reentrancy, the state of the contract might not be consistent, leading to unexpected behaviors such as draining funds or corrupting internal data structures. The lack of reentrancy guard (e.g., using a modifier to prevent reentrant calls) in the function exacerbates this issue.",
+        "file_name": "JUSDMulticall.sol"
+    },
+    {
+        "function_name": "multiCall",
+        "code": "function multiCall( bytes[] memory callData ) external returns (bytes[] memory returnData) { returnData = new bytes[](callData.length); for (uint256 i; i < callData.length; i++) { (bool success, bytes memory res) = address(this).delegatecall( callData[i] ); if (success == false) { assembly { let ptr := mload(0x40) let size := returndatasize() returndatacopy(ptr, 0, size) revert(ptr, size) } } returnData[i] = res; } }",
+        "vulnerability": "Denial of Service (DoS) via Out of Gas",
+        "reason": "If the callData array is large enough or if the executed delegatecall operations are complex and require high gas, the entire multiCall transaction could run out of gas, particularly since all operations are attempted to be done in a single transaction. This could lead to denial of service where legitimate operations intended to be executed via multiCall cannot complete due to gas limitations.",
+        "file_name": "JUSDMulticall.sol"
+    }
+]

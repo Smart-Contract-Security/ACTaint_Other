@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "leave",
+        "code": "function leave() public returns(bool) { _leave[msg.sender] = true; Transfer(msg.sender, address(this), 1 ether ); }",
+        "vulnerability": "Improper Event Logging",
+        "reason": "The 'leave' function logs a transfer event suggesting 1 ether is transferred from the sender to the contract address. However, there is no actual transfer of ether or change in any balance, which can mislead external observers or interfaces tracking token transactions based on events.",
+        "file_name": "0x7e876fa6fa22aa775325c2a121b5ec39a0bdb928.sol"
+    },
+    {
+        "function_name": "enter",
+        "code": "function enter() public returns(bool) { _leave[msg.sender] = false; Transfer(address(this), msg.sender, 1 ether ); }",
+        "vulnerability": "Improper Event Logging",
+        "reason": "Similar to the 'leave' function, 'enter' function logs a transfer event suggesting 1 ether is transferred from the contract to the sender. This event logging does not reflect any real change in balances or token ownership, potentially leading to false representations of token flows.",
+        "file_name": "0x7e876fa6fa22aa775325c2a121b5ec39a0bdb928.sol"
+    },
+    {
+        "function_name": "balanceOf",
+        "code": "function balanceOf(address _owner) public view returns (uint256 balance) { if( _leave[msg.sender] == true ) return 0; else return 1 ether; }",
+        "vulnerability": "Incorrect Balance Reporting",
+        "reason": "The 'balanceOf' function reports the balance based on the sender's '_leave' status rather than the actual balance of the '_owner' parameter. This can lead to incorrect balance reporting, potentially allowing users to manipulate visible balances by toggling their '_leave' status.",
+        "file_name": "0x7e876fa6fa22aa775325c2a121b5ec39a0bdb928.sol"
+    }
+]

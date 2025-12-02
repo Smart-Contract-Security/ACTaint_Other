@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Missing decrement of allowance",
+        "criticism": "The criticism is valid as the 'transferFrom' function does not show the decrement of the allowance, which is a critical part of the ERC20 standard to prevent double spending of the same allowance. This omission can lead to severe security issues where a spender could reuse the same allowance to transfer more tokens than the owner has authorized. The severity is high due to potential loss of tokens beyond the approved amount, and the profitability is also high as an attacker can exploit this repeatedly until the allowance is manually corrected or exhausted.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 8,
+        "reason": "The function 'transferFrom' does not decrement the allowance after a successful transfer. This omission allows a spender to potentially reuse the same allowance multiple times, effectively transferring more tokens than the owner intended. This is a critical vulnerability in the context of ERC20 tokens as it violates the standard behavior expected from a compliant 'transferFrom' implementation.",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public inWhitelist isNameOrTAO(_from) isNameOrTAO(_to) returns (bool) { _transfer(_from, _to, _value); return true; }",
+        "file_name": "0x1f7f65b220a0f2d48b28390380f57468e7a382fe.sol",
+        "final_score": 8.75
+    },
+    {
+        "function_name": "mint",
+        "vulnerability": "Unrestricted minting capability",
+        "criticism": "The reasoning is correct in identifying the potential for inflation and devaluation due to unrestricted minting capabilities. However, the severity and profitability depend on the governance of the whitelist and the intentions of those who have minting capabilities. If the whitelist is strictly controlled and includes only trusted entities, the risk might be lower. Nonetheless, the potential for abuse makes this a significant concern, especially without a cap on total supply.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "The 'mint' function allows an address in the whitelist to arbitrarily increase the supply of tokens by minting any amount to any target address. This can lead to inflation and devaluation of the token if not properly governed or restricted, especially since there is no cap on the total supply or checks on the caller beyond being in a whitelist.",
+        "code": "function mint(address target, uint256 mintedAmount) public inWhitelist isNameOrTAO(target) returns (bool) { _mint(target, mintedAmount); return true; }",
+        "file_name": "0x1f7f65b220a0f2d48b28390380f57468e7a382fe.sol",
+        "final_score": 7.25
+    },
+    {
+        "function_name": "_transfer",
+        "vulnerability": "Potential overflow in balance update",
+        "criticism": "The reasoning is incorrect. The function '_transfer' does use SafeMath for all arithmetic operations, including the addition of the transferred value to the recipient's balance (balanceOf[_to].add(_value)). This use of SafeMath's 'add' function inherently includes overflow checks. Therefore, there is no vulnerability related to overflow in the balance update as claimed. The criticism of the reasoning is due to a misunderstanding of how SafeMath functions operate.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function '_transfer' does use SafeMath for arithmetic operations to prevent overflows, but it does not check for overflow when adding the transferred value to the recipient's balance. This could lead to overflow issues if the recipient's balance is very close to the maximum uint256 value and a significant amount of tokens are transferred.",
+        "code": "function _transfer(address _from, address _to, uint256 _value) internal { require (_to != address(0)); require (balanceOf[_from] >= _value); require (balanceOf[_to].add(_value) >= balanceOf[_to]); uint256 previousBalances = balanceOf[_from].add(balanceOf[_to]); balanceOf[_from] = balanceOf[_from].sub(_value); balanceOf[_to] = balanceOf[_to].add(_value); emit Transfer(_from, _to, _value); assert(balanceOf[_from].add(balanceOf[_to]) == previousBalances); }",
+        "file_name": "0x1f7f65b220a0f2d48b28390380f57468e7a382fe.sol",
+        "final_score": 0.5
+    }
+]

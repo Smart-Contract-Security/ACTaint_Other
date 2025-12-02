@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "payout",
+        "code": "function payout(uint limit) public { require(now >= payoutDate + PAYOUT_CUMULATIVE_INTERVAL, 'too fast payout request'); uint investorsPayout; uint txs; uint amount; for (uint idx = addresses.length; --idx >= 1;) { address addr = addresses[idx]; if (investors[addr].date + 24 hours > now) { continue; } amount = getInvestorUnPaidAmount(addr); investors[addr].date = now; if (address(this).balance < amount) { selfdestruct(owner); return; } addr.transfer(amount); investorsPayout += amount; if (++txs >= limit) { break; } } payoutDate = now; emit PayoutCumulative(investorsPayout, txs); }",
+        "vulnerability": "Potential for DoS on Low Balance",
+        "reason": "In the 'payout' function, the contract executes a 'selfdestruct' when the balance is insufficient to cover an investor's payout. This can lead to a denial of service as an attacker could repeatedly trigger payouts until the contract balance is low, and then a legitimate payout request would terminate the contract.",
+        "file_name": "0x4a5fc826441a16b86aa850b3ddc4b1bc02f21b6c.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function() payable public { if (msg.value == 0) { return; } require(msg.value >= MINIMUM_INVEST, 'Too small amount, minimum 0.001 ether'); investor storage user = investors[msg.sender]; if (user.id == 0) { user.id = addresses.length; addresses.push(msg.sender); investorCount ++; address referrer = bytesToAddress(msg.data); if (investors[referrer].deposit > 0 && referrer != msg.sender) { user.referrer = referrer; } } user.deposit += msg.value; user.deposits += 1; user.date = now; emit Invest(msg.sender, msg.value); depositAmount += msg.value; lastPaymentDate = now; owner.transfer(msg.value / 5); if (user.referrer > 0x0) { uint bonusAmount = (msg.value / 100) * INTEREST; user.referrer.transfer(bonusAmount); emit RefFee(user.referrer, bonusAmount); if (user.deposits == 1) { msg.sender.transfer(bonusAmount); emit Cashback(msg.sender, bonusAmount); } } }",
+        "vulnerability": "Reentrancy on Ether transfer",
+        "reason": "The fallback function transfers ether to the owner and potentially to a referrer right after updating user's deposit, but before adjusting the internal state completely (e.g., 'lastPaymentDate'). This could be exploited by an attacker using a recursive fallback function in the referrer's address to reenter the Gorgona contract and repeatedly deposit, withdrawing more funds than they are entitled to.",
+        "file_name": "0x4a5fc826441a16b86aa850b3ddc4b1bc02f21b6c.sol"
+    },
+    {
+        "function_name": "payoutSelf",
+        "code": "function payoutSelf(address addr) public { require(addr == msg.sender, 'You need specify your ETH address'); require(investors[addr].deposit > 0, 'deposit not found'); require(now >= investors[addr].date + PAYOUT_PER_INVESTOR_INTERVAL, 'too fast payment required'); uint amount = getInvestorUnPaidAmount(addr); require(amount >= 1 finney, 'too small unpaid amount'); investors[addr].date = now; if (address(this).balance < amount) { selfdestruct(owner); return; } addr.transfer(amount); emit PayoutSelf(addr, amount); }",
+        "vulnerability": "Potential for DoS on Low Balance",
+        "reason": "Similar to the 'payout' function, 'payoutSelf' also has a guard clause that self-destructs the contract when the funds are insufficient. This could be exploited in a way to permanently disable the contract functionality by intentionally draining the contract balance and then triggering a self-destruct by invoking a legitimate payout request.",
+        "file_name": "0x4a5fc826441a16b86aa850b3ddc4b1bc02f21b6c.sol"
+    }
+]

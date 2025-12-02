@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint _value, bytes _data) public { require(_value > 0 ); if(isContract(_to)) { ERC223ReceivingContract receiver = ERC223ReceivingContract(_to); receiver.tokenFallback(msg.sender, _value, _data); } balances[msg.sender] = subSafe(balances[msg.sender], _value); balances[_to] = addSafe(balances[_to], _value); Transfer(msg.sender, _to, _value, _data); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transfer' that handles ERC223 token transfers directly calls an external contract ('ERC223ReceivingContract') which could be malicious and execute reentrant attacks. The balance update should happen before calling the external contract to prevent the reentrancy attack.",
+        "file_name": "0x2d4ca7d079415595f9e5b62602f7ae7d88b91e53.sol"
+    },
+    {
+        "function_name": "TCToken",
+        "code": "function TCToken() public { totalSupply = 1000000000 * 10 ** uint256(decimals); frozenForever = 400000000 * 10 ** uint256(decimals); balances[msg.sender] = subSafe(totalSupply,frozenForever) ; owner = msg.sender; }",
+        "vulnerability": "Arithmetic Overflow",
+        "reason": "The constructor 'TCToken' computes token amounts using multiplication which can lead to overflow if the values are too large. This is critical as it sets the initial state of the token supply, and an overflow could severely misrepresent the intended token distribution.",
+        "file_name": "0x2d4ca7d079415595f9e5b62602f7ae7d88b91e53.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Ownership Hijack",
+        "reason": "The function 'transferOwnership' allows the current owner to set a new owner, but it does not immediately change ownership which can lead to a scenario where the newOwner can be set maliciously without the new owner's consent if the current owner's account is compromised.",
+        "file_name": "0x2d4ca7d079415595f9e5b62602f7ae7d88b91e53.sol"
+    }
+]

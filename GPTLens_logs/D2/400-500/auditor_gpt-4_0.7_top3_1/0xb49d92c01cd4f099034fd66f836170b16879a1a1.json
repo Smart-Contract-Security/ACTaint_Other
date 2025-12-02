@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint _value, bytes _data) public { require(_value > 0 ); if(isContract(_to)) { ERC223ReceivingContract receiver = ERC223ReceivingContract(_to); receiver.tokenFallback(msg.sender, _value, _data); } balances[msg.sender] = subSafe(balances[msg.sender], _value); balances[_to] = addSafe(balances[_to], _value); Transfer(msg.sender, _to, _value, _data); }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the 'transfer' function of ERC223 implementation, the contract first calls an external contract 'ERC223ReceivingContract' before updating the sender's and recipient's balance. This can allow a malicious contract to re-enter and call transfer again, potentially leading to a classic reentrancy attack where the balances may not be updated correctly, allowing theft of tokens.",
+        "file_name": "0xb49d92c01cd4f099034fd66f836170b16879a1a1.sol"
+    },
+    {
+        "function_name": "releaseSupply",
+        "code": "function releaseSupply() public onlyOwner returns(uint256 _actualRelease) { uint256 releaseAmount = getReleaseAmount(); require(releaseAmount > 0); balances[owner] = addSafe(balances[owner], releaseAmount); transfer(owner,releaseAmount); totalSupply = addSafe(totalSupply, releaseAmount); Transfer(address(0), msg.sender, releaseAmount); return releaseAmount; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'releaseSupply' function first adjusts the balances and then calls the 'transfer' function, which could potentially lead to reentrancy. Since 'transfer' function can call external contracts, if it calls a malicious contract, it might lead to unexpected behaviors as reentrancy might manipulate balances or other state variables in between those operations.",
+        "file_name": "0xb49d92c01cd4f099034fd66f836170b16879a1a1.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Ownership Hijacking",
+        "reason": "In the 'transferOwnership' function, there is no check to prevent setting the newOwner to a zero address. This can potentially lead to a situation where the contract's ownership is locked with no possibility to execute owner-only functions if the current owner mistakenly transfers ownership to the zero address.",
+        "file_name": "0xb49d92c01cd4f099034fd66f836170b16879a1a1.sol"
+    }
+]

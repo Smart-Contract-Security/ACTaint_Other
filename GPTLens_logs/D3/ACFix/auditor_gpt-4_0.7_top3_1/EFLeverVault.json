@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "deposit",
+        "code": "function deposit(uint256 _amount) public payable nonReentrant{ require(!is_paused, \"paused\"); require(_amount == msg.value, \"inconsist amount\"); require(_amount != 0, \"too small amount\"); _earnReward(); uint256 volume_before = getVolume(); if (volume_before < 1e9) {require(_amount >= 1e16, \"Too small initial amount\");} uint256 fee_para = getFeeParam(); uint256 loan_amount = mlr.safeMul(_amount).safeDiv(fee_para.safeSub(mlr)); uint256 fee_amount = loan_amount.safeMul(fee_para.safeSub(10000)).safeDiv(10000); address[] memory tokens = new address[](1); uint256[] memory amounts = new uint256[](1); bytes memory userData = \"0x1\"; tokens[0] = weth; amounts[0] = loan_amount; IBalancer(balancer).flashLoan(address(this), tokens, amounts, userData); uint256 ef_amount; if ((volume_before < 1e9)){ ef_amount = _amount.safeSub(fee_amount); } else{ ef_amount = _amount.safeSub(fee_amount).safeMul(IERC20(ef_token).totalSupply()).safeDiv(volume_before); } TokenInterfaceERC20(ef_token).generateTokens(msg.sender, ef_amount); emit CFFDeposit(msg.sender, _amount, ef_amount, getVirtualPrice()); }",
+        "vulnerability": "Reentrancy on Ether transfer",
+        "reason": "The function 'deposit' uses a call to an external contract 'IBalancer(balancer).flashLoan' which can potentially call back into the contract itself or other contracts before the state updates like 'is_paused' or updating balances. This could lead to reentrancy attacks where, for instance, the same tokens get withdrawn multiple times.",
+        "file_name": "EFLeverVault.sol"
+    },
+    {
+        "function_name": "receiveFlashLoan",
+        "code": "function receiveFlashLoan( IERC20[] memory tokens, uint256[] memory amounts, uint256[] memory feeAmounts, bytes memory userData ) public payable { require(msg.sender == balancer, \"only flashloan vault\"); uint256 loan_amount = amounts[0]; uint256 fee_amount = feeAmounts[0]; if (keccak256(userData) == keccak256(\"0x1\")){ _deposit(loan_amount, fee_amount); } if (keccak256(userData) == keccak256(\"0x2\")){ _withdraw(loan_amount, fee_amount); } }",
+        "vulnerability": "External contract call inside conditional",
+        "reason": "Inside the 'receiveFlashLoan' function, the contract logic depends heavily on external input (userData) to determine which internal function to call. This can lead to unexpected behavior if the 'userData' is not strictly validated or if there's a possibility of it being tampered. It also depends on 'msg.sender' being specifically the balancer contract, which could be spoofed if not securely handled.",
+        "file_name": "EFLeverVault.sol"
+    },
+    {
+        "function_name": "raiseActualLTV",
+        "code": "function raiseActualLTV(uint256 lt) public onlyOwner{ uint256 e = getDebt(); uint256 st = getCollecteral(); require(e.safeMul(10000) < st.safeMul(mlr), \"no need to raise\"); uint256 x = st.safeMul(mlr).safeSub(e.safeMul(10000)).safeDiv(uint256(10000).safeSub(mlr)); uint256 y = st.safeMul(lt).safeDiv(10000).safeSub(e).safeSub(1); if (x > y) {x = y;} IAAVE(aave).borrow(weth, x, 2, 0, address(this)); IWETH(weth).withdraw(IERC20(weth).balanceOf(address(this))); { uint256 curve_out = ICurve(curve_pool).get_dy(0, 1, address(this).balance); if (curve_out < address(this).balance){ ILido(lido).submit.value(address(this).balance)(address(this));} else{ ICurve(curve_pool).exchange.value(address(this).balance)(0, 1, address(this).balance, 0); } } if (IERC20(lido).allowance(address(this), aave) != 0) {IERC20(lido).safeApprove(aave, 0);} IERC20(lido).safeApprove(aave, IERC20(lido).balanceOf(address(this))); IAAVE(aave).deposit(lido, IERC20(lido).balanceOf(address(this)), address(this), 0); emit ActualLTVChanged(e, st, getDebt(), getCollecteral()); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'raiseActualLTV' makes a call to external contract 'IAAVE(aave).borrow' without checking the results of this call. If the call to the external contract fails, the function will continue to execute, possibly leading to inconsistent state or locking of funds.",
+        "file_name": "EFLeverVault.sol"
+    }
+]

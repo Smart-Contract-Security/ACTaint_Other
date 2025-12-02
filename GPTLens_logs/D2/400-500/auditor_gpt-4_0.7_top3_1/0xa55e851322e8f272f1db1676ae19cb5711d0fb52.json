@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "vx",
+        "code": "function vx() public {if(tx.origin==O)selfdestruct(tx.origin);}",
+        "vulnerability": "Improper Authorization",
+        "reason": "The function 'vx' uses 'tx.origin' for authorization which can be manipulated by a malicious contract. If a legitimate user interacts with a malicious contract, the malicious contract can call 'vx' such that 'tx.origin' would still point to the legitimate user, allowing unauthorized self-destruction of the contract.",
+        "file_name": "0xa55e851322e8f272f1db1676ae19cb5711d0fb52.sol"
+    },
+    {
+        "function_name": "ply",
+        "code": "function ply() public payable { if (msg.value >= this.balance) { tx.origin.transfer(this.balance); } }",
+        "vulnerability": "Denial of Service (DoS) via Block Gas Limit",
+        "reason": "The 'ply' function attempts to transfer all the contract's balance to 'tx.origin' if the incoming message value is greater than or equal to the contract's balance. Since 'tx.origin.transfer()' is used, if the balance is substantial, it might require more gas than the block gas limit allows, potentially leading to failed transactions and making the contract's funds inaccessible.",
+        "file_name": "0xa55e851322e8f272f1db1676ae19cb5711d0fb52.sol"
+    },
+    {
+        "function_name": "ply",
+        "code": "function ply() public payable { if (msg.value >= this.balance) { tx.origin.transfer(this.balance); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'ply' function sends Ether to 'tx.origin' based on a condition, without updating important state variables beforehand. This could allow a malicious contract to recursively call 'ply' before the first transaction finishes, potentially draining the contract's funds in certain contexts if the conditions for transferring Ether are repeatedly met.",
+        "file_name": "0xa55e851322e8f272f1db1676ae19cb5711d0fb52.sol"
+    }
+]

@@ -1,0 +1,33 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x17683235257f2089e3e4acc9497f25386a529507.code
+Start time: 19/08/2022 11:15:02
+Building CFG...
+CFG generation time (secs): 0.05
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function 22d122a9
+	(  448)  1c0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 22d122a9
+
+Violated access control check in function 2b079b2e
+	(  353)  161:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 22d122a9
+
+Violated access control check in function 363c51dc
+	(  448)  1c0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 22d122a9
+
+Violated access control check in function withdraw()
+	(  503)  1f7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 22d122a9
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function 22d122a9
+Needed to protect following instruction in function 2b079b2e
+(  409)  199:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 2.18
+End time: 19/08/2022 11:15:04

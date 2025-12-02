@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'getTokens' does not prevent reentrant calls. Since 'distr' function modifies the state by updating balances and emitting events, a malicious contract could call 'getTokens' during the execution of 'distr', leading to potential reentrancy attacks where state updates may be unexpectedly altered.",
+        "file_name": "0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unchecked send",
+        "reason": "The function 'withdraw' transfers ether with 'owner.transfer(etherBalance);' without checking the return value. If the call to 'transfer' fails, the contract will not handle it, potentially leading to loss of funds or locked states.",
+        "file_name": "0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race Condition (front-running)",
+        "reason": "The 'approve' function is vulnerable to a race condition where two successive calls to approve can lead to an unexpected setting of allowance. If a user calls 'approve' to set a new non-zero allowance while a previous allowance exists, another user can front-run the transaction, potentially leading to allowance being set incorrectly.",
+        "file_name": "0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.sol"
+    }
+]

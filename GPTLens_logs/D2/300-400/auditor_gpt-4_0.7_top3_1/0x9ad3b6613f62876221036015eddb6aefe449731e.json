@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint8 v, bytes32 r, bytes32 s, uint _value, uint signatureValidUntilBlock) public returns (bool success) { require(balanceOf(msg.sender) >= _value); if (now <= depositLock[msg.sender]) { require(block.number < signatureValidUntilBlock); require(isValidSignature(keccak256(msg.sender, address(this), signatureValidUntilBlock), v, r, s)); } balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply_ = totalSupply_.sub(_value); if (erc20old) { ERC20Old(originalToken).transfer(msg.sender, _value); } else { require(ERC20(originalToken).transfer(msg.sender, _value)); } return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function sends tokens before updating the 'totalSupply_' and 'balances[msg.sender]' states. This allows for potential reentrancy attacks where an attacker could recursively call the withdraw function from within a fallback function in a malicious contract to drain tokens.",
+        "file_name": "0x9ad3b6613f62876221036015eddb6aefe449731e.sol"
+    },
+    {
+        "function_name": "isValidSignature",
+        "code": "function isValidSignature(bytes32 hash, uint8 v, bytes32 r, bytes32 s) public constant returns (bool) { return isSigner[ecrecover(keccak256(\"\\x19Ethereum Signed Message:\\n32\", hash), v, r, s)]; }",
+        "vulnerability": "Faulty Signature Verification",
+        "reason": "The 'isValidSignature' function uses a prefix '\\x19Ethereum Signed Message:\\n32' which is not the standard prefix (it typically includes the length of the message). This might lead to vulnerabilities where messages could be manipulated to produce the same hash with different original data, leading to potential misuse in signature verification.",
+        "file_name": "0x9ad3b6613f62876221036015eddb6aefe449731e.sol"
+    },
+    {
+        "function_name": "addSigner",
+        "code": "function addSigner(address _newSigner) public { require(isSigner[msg.sender]); isSigner[_newSigner] = true; }",
+        "vulnerability": "Unauthorized Access",
+        "reason": "The 'addSigner' function allows any signer to add another signer without any checks beyond the initial requirement of being a signer. This can lead to an unchecked expansion of signers who can approve withdrawals, potentially leading to unauthorized fund access if a single signer's account is compromised.",
+        "file_name": "0x9ad3b6613f62876221036015eddb6aefe449731e.sol"
+    }
+]

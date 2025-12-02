@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "borrow",
+        "code": "function borrow(uint256 amount) external onlyBorrower {\n    if (amount == 0 || amount > availableBorrow(msg.sender)) revert InvalidBorrowAmount();\n    dnGmxJuniorVault.harvestFees();\n    aUsdc.transfer(msg.sender, amount);\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "This function transfers aUSDC to a borrower without checking the return value of the transfer function. This could lead to loss of funds or inaccurate accounting if the transfer fails silently.",
+        "file_name": "DnGmxSeniorVault.sol"
+    },
+    {
+        "function_name": "repay",
+        "code": "function repay(uint256 amount) external onlyBorrower {\n    dnGmxJuniorVault.harvestFees();\n    aUsdc.transferFrom(msg.sender, address(this), amount);\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "Similar to the borrow function, this function does not check the return value of the transferFrom function. If the transferFrom call fails, the function will not revert, potentially leading to incorrect accounting of repayments.",
+        "file_name": "DnGmxSeniorVault.sol"
+    },
+    {
+        "function_name": "updateBorrowCap",
+        "code": "function updateBorrowCap(address borrowerAddress, uint256 cap) external onlyOwner {\n    if (borrowerAddress != address(dnGmxJuniorVault) && borrowerAddress != address(leveragePool)) revert InvalidBorrowerAddress();\n    if (IBorrower(borrowerAddress).getUsdcBorrowed() >= cap) revert InvalidCapUpdate();\n    borrowCaps[borrowerAddress] = cap;\n    aUsdc.approve(borrowerAddress, cap);\n    emit BorrowCapUpdated(borrowerAddress, cap);\n}",
+        "vulnerability": "Potential Misuse of Approval",
+        "reason": "This function sets approvals of aUSDC tokens based on the new borrow cap. However, it does not decrease or remove previous approvals when the cap is lowered, potentially allowing borrowers to borrow more than intended if they previously had a higher cap.",
+        "file_name": "DnGmxSeniorVault.sol"
+    }
+]

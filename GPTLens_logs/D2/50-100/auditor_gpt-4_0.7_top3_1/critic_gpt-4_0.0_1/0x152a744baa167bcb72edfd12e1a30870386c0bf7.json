@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the lack of reentrancy guards such as the 'reentrancy mutex' pattern. However, the severity and profitability are overstated. The function does require a minimum contribution which acts as a natural deterrent against repeated low-value attacks, and the Ethereum gas mechanism also limits the depth of recursion possible, reducing the practical impact of such an attack. The profitability is also limited unless the attacker can manipulate the token price or distribution mechanics significantly.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The function 'getTokens' is vulnerable to reentrancy attacks. It calls 'distr' which updates the balances and totalDistributed, and then checks if totalDistributed >= totalSupply to potentially finish distribution. An attacker can recursively call 'getTokens' because there are no checks to prevent a function from being re-entered within the same transaction. This could lead to unexpected behavior or denial of service as the state may change in between calls.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x152a744baa167bcb72edfd12e1a30870386c0bf7.sol"
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The criticism of not checking the return values of 'sub' and 'add' functions from the SafeMath library is misplaced. In Solidity, the SafeMath library is designed to automatically revert the transaction if an arithmetic operation fails. Therefore, there is no need to explicitly check return values because the 'assert' in SafeMath will handle any errors by reverting. The reasoning does not align with the functionality of SafeMath, thus the correctness is low. The severity and profitability are also minimal as the described issue does not pose a real threat.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function 'transfer' does not check the return value of the 'sub' and 'add' functions from the SafeMath library. Although SafeMath functions use assert for error handling, it's a best practice in Solidity to handle potential errors explicitly. Failing to do so can lead to unexpected behavior if the contract's state is not updated as intended.",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); emit Transfer(msg.sender, _to, _amount); return true; }",
+        "file_name": "0x152a744baa167bcb72edfd12e1a30870386c0bf7.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning correctly identifies a potential race condition in the 'approve' function. However, the impact is somewhat overstated. The Solidity pattern used here does attempt to mitigate the classic ERC20 race condition by requiring the previous allowance to be zero before setting a new non-zero value. This reduces the likelihood of an attacker exploiting the race condition, but does not eliminate it entirely. The severity is moderate because it could lead to unauthorized transfers, but profitability is low as it requires specific conditions and timing to exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The 'approve' function is susceptible to a race condition known as the 'approval race condition'. If a user wants to change the approval from one non-zero value to another, the condition `if (_value != 0 && allowed[msg.sender][_spender] != 0)` may lead to unexpected behavior. An attacker can exploit the race condition by making a transfer in between the calls to 'approve', leading to potential loss or theft of tokens.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x152a744baa167bcb72edfd12e1a30870386c0bf7.sol"
+    }
+]

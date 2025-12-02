@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "upgrade",
+        "vulnerability": "Authorization flaw",
+        "criticism": "The vulnerability identified is highly accurate as it pinpoints a critical authorization flaw where the function 'upgrade' does not verify the identity or permissions of the message sender before performing an upgrade. The severity is significant, as unauthorized upgrading can drastically alter the behavior of the contract or introduce malicious operations. The profitability is high for attackers if they exploit this flaw to divert or manipulate contract functionalities to their benefit. The assessment touches on pivotal aspects of smart contract security, emphasizing the need for strict access controls.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 8,
+        "reason": "The function 'upgrade' allows any user to change the contract to which the proxy delegates calls. This function does not check if the message sender is authorized (e.g., owner or with specific permissions) to upgrade the contract, which means that any malicious user could potentially upgrade to a malicious contract, take control of the proxy and manipulate its behavior.",
+        "code": "function upgrade(IApplication newContract, bytes data) public { currentContract = newContract; newContract.initialize(data); Upgrade(newContract, data); }",
+        "file_name": "0x36fc2821c1dba31ed04682b2277c89f33fd885b7.sol"
+    },
+    {
+        "function_name": "delegatedFwd",
+        "vulnerability": "Fallback function uses low-level calls",
+        "criticism": "The reasoning about the function using low-level delegate calls within an assembly block is well-noted but slightly misleading about its impact. Indeed, use of low-level calls requires careful handling, and the function does utilize revert to handle failed delegate calls, which provides a clear, proper exception path. Thus the security concern is somewhat mitigated by the current implementation, reducing the severity. However, the vulnerability could still see moderate exploitation if the called contract isn\u2019t carefully verified or is malicious, hence moderate severity. Profitability might be limited unless the external contract can exploit state changes pre-revert.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'delegatedFwd' function uses a delegatecall in an assembly block, which is a low-level call. Low-level calls do not automatically propagate exceptions, instead they return false on failure. The function does handle the case where the delegatecall fails (by reverting), but using such low-level calls can lead to vulnerabilities if not handled carefully, such as reentrancy or unexpected state changes if the called contract is malicious.",
+        "code": "function delegatedFwd(address _dst, bytes _calldata) internal { require(isContract(_dst)); assembly { let result := delegatecall(sub(gas, 10000), _dst, add(_calldata, 0x20), mload(_calldata), 0, 0) let size := returndatasize let ptr := mload(0x40) returndatacopy(ptr, 0, size) switch result case 0 { revert(ptr, size) } default { return(ptr, size) } } }",
+        "file_name": "0x36fc2821c1dba31ed04682b2277c89f33fd885b7.sol"
+    },
+    {
+        "function_name": "Proxy fallback",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The concern highlighted regarding the fallback function only checking for a non-zero 'currentContract' but not the legitimacy or security of the referenced contract is a valid one. This vulnerability is deeply tied to the previous 'upgrade' issue\u2014if the upgrade flaw is exploited, the fallback function's lack of vetting exacerbates the security risk. The severity is high, considering that it can facilitate a broad range of attacks if a malicious contract is assigned. Profitability for an attacker also becomes significant if they can manipulate 'currentContract'. However, dependency on another vulnerability (upgrade) should be noted for full context, which slightly reduces standalone severity.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The fallback function delegates all calls to another contract specified by 'currentContract'. Although it checks that 'currentContract' is not zero, it doesn't validate that the contract at 'currentContract' address is expected or benign. If 'currentContract' is set to a malicious contract (exploiting the upgrade vulnerability), this can lead to severe security issues such as loss or theft of funds.",
+        "code": "function () payable public { require(currentContract != 0); delegatedFwd(currentContract, msg.data); }",
+        "file_name": "0x36fc2821c1dba31ed04682b2277c89f33fd885b7.sol"
+    }
+]

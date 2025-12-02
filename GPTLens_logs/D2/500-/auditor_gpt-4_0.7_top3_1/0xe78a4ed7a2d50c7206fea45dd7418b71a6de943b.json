@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "init",
+        "code": "function init() payable open { Owner = msg.sender; minDeposit = 0.5 ether; Locked = false; deposit(); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'init' function is vulnerable to reentrancy attacks. It calls the 'deposit' function after setting state variables but without proper reentrancy protection. If 'deposit' includes external calls to untrusted contracts, they could call back into 'init' or other functions in this contract, potentially leading to unexpected behavior or state manipulation.",
+        "file_name": "0xe78a4ed7a2d50c7206fea45dd7418b71a6de943b.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function is vulnerable to reentrancy. It uses 'to.transfer(amount)' to send Ether, but does not update the depositor's balance before sending the Ether. An attacker can re-enter the contract as part of the transfer call and withdraw additional Ether up to the original maximum.",
+        "file_name": "0xe78a4ed7a2d50c7206fea45dd7418b71a6de943b.sol"
+    },
+    {
+        "function_name": "lock",
+        "code": "function lock() public { if(Locked) revert(); Locked = true; }",
+        "vulnerability": "Incorrect State Variable",
+        "reason": "The 'lock' function incorrectly uses 'Locked' to control state, but 'Locked' is not set correctly across different functions. It is set to false initially in 'init' and can be set to true in 'lock', but there is no function to set it back to 'false'. This can lead to the contract being permanently locked, preventing any further state changes or updates.",
+        "file_name": "0xe78a4ed7a2d50c7206fea45dd7418b71a6de943b.sol"
+    }
+]

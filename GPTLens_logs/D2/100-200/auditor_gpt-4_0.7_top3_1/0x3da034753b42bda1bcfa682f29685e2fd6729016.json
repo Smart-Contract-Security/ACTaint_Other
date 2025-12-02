@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Unchecked token distribution",
+        "reason": "The 'distr' function does not check whether the '_amount' being distributed plus 'totalDistributed' exceeds 'totalSupply'. This could allow the contract to issue more tokens than intended, leading to hyperinflation and devaluation of the token.",
+        "file_name": "0x3da034753b42bda1bcfa682f29685e2fd6729016.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Denial of Service by distribution finish",
+        "reason": "In the 'getTokens' function, once 'totalDistributed' reaches or exceeds 'totalSupply', the 'distributionFinished' flag is set to true, which disables the distribution functionality due to the 'canDistr' modifier. An attacker can deliberately trigger this condition, permanently halting token distribution.",
+        "file_name": "0x3da034753b42bda1bcfa682f29685e2fd6729016.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race condition in Approve function",
+        "reason": "The approve function does not properly handle the potential race condition that could occur if an owner approves a non-zero amount, followed by a subsequent approval before the spender has used the allowance. This can lead to an unexpected allowance being set, which could be exploited by an attacker.",
+        "file_name": "0x3da034753b42bda1bcfa682f29685e2fd6729016.sol"
+    }
+]

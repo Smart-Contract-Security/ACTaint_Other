@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function allows for potential reentrancy attacks as the state is changed after external calls. The call to 'distr' function and subsequent state changes are vulnerable to reentrancy, where an attacker could re-enter the 'getTokens' function in a recursive manner, manipulating the state or causing unexpected behavior due to state changes post external call.",
+        "file_name": "0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) {\n    require(_to != address(0));\n    require(_amount <= balances[msg.sender]);\n    balances[msg.sender] = balances[msg.sender].sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Transfer(msg.sender, _to, _amount);\n    return true;\n}",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The 'transfer' function does not check the return value of the internal 'sub' and 'add' functions from the SafeMath library. In the unlikely case that these functions fail due to an assertion (e.g., overflow), the function would continue execution, potentially leading to incorrect balance updates and unexpected behavior.",
+        "file_name": "0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Race Condition in Approve",
+        "reason": "The 'approve' function is susceptible to a front-running attack, as it allows changing the allowance of a spender that could be abused by an attacker. If a user calls 'approve' to set a new non-zero allowance for a spender who already has a non-zero allowance, an attacker could see the pending transaction and quickly make a transfer based on the old allowance before the transaction is confirmed, potentially leading to unexpected spending.",
+        "file_name": "0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.sol"
+    }
+]

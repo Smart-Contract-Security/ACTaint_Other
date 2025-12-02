@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x07829cca2f215ced7aa41e51921f6dd42c906190.code
+Start time: 19/08/2022 00:17:42
+Building CFG...
+CFG generation time (secs): 0.10
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function settleGame(uint256,bytes32)
+	( 4733) 127d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function setCroupier(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function kill(address)
+Needed to protect following instruction in function kill(address)
+( 7439) 1d0f:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function kill(address)
+Needed to protect following instruction in function kill(address)
+( 7439) 1d0f:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 5.21
+End time: 19/08/2022 00:17:47

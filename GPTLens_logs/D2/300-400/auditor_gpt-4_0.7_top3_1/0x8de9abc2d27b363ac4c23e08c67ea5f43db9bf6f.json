@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setProof",
+        "code": "function setProof (string _proofLink) onlyBy (owner) { if (!proofSet) { uint256 remainder; proofLink = _proofLink; proofSet = true; remainder = editionSize % (10000 / ethartArtReward); ethartArtAwarded = (editionSize - remainder) / (10000 / ethartArtReward); if (remainder > 0 && now % ((10000 / ethartArtReward) - 1) <= remainder) {ethartArtAwarded++;} piecesOwned[registrar] = ethartArtAwarded; piecesOwned[owner] = editionSize - ethartArtAwarded; } else {throw;} }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'setProof' updates the state variables after making external calls. This allows the called contracts to re-enter and potentially exploit the state before it is finalized, leading to unexpected behaviors or loss of funds.",
+        "file_name": "0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.sol"
+    },
+    {
+        "function_name": "buyPiece",
+        "code": "function buyPiece() payable { if (pieceForSale && msg.value >= lowestAskPrice) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; uint256 _amountReferrer; _amountOwner = (msg.value / 10000) * ownerCommission; _amountEthart = (msg.value / 10000) * ethartRevenueReward; _amountSeller = msg.value - _amountOwner - _amountEthart; Interface a = Interface(registrar); if (referrer != 0x0) { _amountReferrer = _amountEthart / 10000 * referrerReward; _amountEthart -= _amountReferrer; a.asyncSend(referrer, _amountReferrer); } piecesOwned[lowestAskAddress]--; piecesOwned[msg.sender]++; PieceSold (lowestAskAddress, msg.sender, msg.value); pieceForSale = false; lowestAskPrice = 0; a.issuePatrons(msg.sender, msg.value); a.asyncSend(owner, _amountOwner); a.asyncSend(lowestAskAddress, _amountSeller); lowestAskAddress = 0x0; a.asyncSend(registrar, _amountEthart); registrar.transfer(msg.value); } else {throw;} }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The function 'buyPiece' calculates parts of the payment based on percentages without ensuring the operation does not cause an integer overflow or underflow. Malicious inputs or extreme values in 'msg.value', 'ownerCommission', and 'ethartRevenueReward' can cause unexpected results, leading to financial loss.",
+        "file_name": "0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) notLocked(msg.sender, _amount) onlyPayloadSize(2 * 32) returns (bool success) { if (piecesOwned[msg.sender] >= _amount && _amount > 0 && piecesOwned[_to] + _amount > piecesOwned[_to] && _to != 0x0) { piecesOwned[msg.sender] -= _amount; piecesOwned[_to] += _amount; Transfer(msg.sender, _to, _amount); return true; } else { return false;} }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'transfer' does not check the return value of the 'Transfer' event emission. This can lead to unnoticed failures in event logging, which might not reflect the actual token balances updates, potentially confusing off-chain clients or interfaces relying on these events.",
+        "file_name": "0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.sol"
+    }
+]

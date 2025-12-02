@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "endRound",
+        "code": "function endRound() private { delete results; uint256 random_start_contrarian = randomGen(index_player,(index_player_in_round)/2)-1; uint256 payout_total; for (var k = 0; k < (index_player_in_round)/2; k++) { uint256 index_contrarian; if (k+random_start_contrarian<(index_player_in_round)/2){ index_contrarian=k+random_start_contrarian; } else { index_contrarian=(k+random_start_contrarian)-(index_player_in_round/2); } uint256 information_cost_matcher = information_cost * k; uint256 payout_matcher = 2*(gamble_value-information_cost_matcher); uint256 information_cost_contrarian = information_cost * index_contrarian; uint256 payout_contrarian = 2*(gamble_value-information_cost_contrarian); results.push(Result(matchers[k].player,matchers[k].flipped,payout_matcher,contrarians[index_contrarian].player,contrarians[index_contrarian].flipped, payout_contrarian)); if (matchers[k].flipped == contrarians[index_contrarian].flipped) { matchers[k].player.send(payout_matcher); payout_total+=payout_matcher; payout_history[matchers[k].player]+=payout_matcher; } else { contrarians[index_contrarian].player.send(payout_contrarian); payout_total+=payout_contrarian; payout_history[contrarians[k].player]+=payout_contrarian; } } index_round_ended+=1; owner.send(index_player_in_round*gamble_value-payout_total); payout_total=0; index_player_in_round=0; delete matchers; delete contrarians; pendingRound=false; if (terminate_after_round==true) state=State.Deactivated; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function includes a reentrancy vulnerability because it calls external addresses with the 'send' method during a loop and before updating the state variables. An attacker could exploit this by creating a fallback function that calls back into the contract, interacting with it in a way that could potentially manipulate the contract's logic or drain its funds.",
+        "file_name": "0x213d2b0498d7eef3151aa9af2e5c4eb8674ecce5.sol"
+    },
+    {
+        "function_name": "refundRound",
+        "code": "function refundRound() onlyActive onlyOwner noEthSent{ uint totalRefund; uint balanceBeforeRefund=this.balance; for (var k = 0; k< matchers.length; k++) { matchers[k].player.send(gamble_value); totalRefund+=gamble_value; } for (var j = 0; j< contrarians.length ; j++) { contrarians[j].player.send(gamble_value); totalRefund+=gamble_value; } delete matchers; delete contrarians; state=State.Deactivated; index_player_in_round=0; uint balanceLeft = balanceBeforeRefund-totalRefund; if (balanceLeft >0) owner.send(balanceLeft); }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the 'endRound' function, 'refundRound' suffers from a reentrancy vulnerability because it interacts with external addresses using 'send' within a loop, before updating the contract's critical state. This could allow an attacker to receive multiple refunds or interfere with the logic of the contract in a harmful way.",
+        "file_name": "0x213d2b0498d7eef3151aa9af2e5c4eb8674ecce5.sol"
+    },
+    {
+        "function_name": "Play",
+        "code": "function Play(bool flipped) equalGambleValue onlyActive resolvePendingRound{ if ( index_player_in_round%2==0 ) { matchers.push(Gamble(msg.sender, flipped)); } else { contrarians.push(Gamble(msg.sender, flipped)); } index_player+=1; index_player_in_round+=1; times_played_history[msg.sender]+=1; if (index_player_in_round>=round_min_size && index_player_in_round%2==0) { bool end = randomEnd(); if (end) { pendingRound=true; blockEndRound=block.number;} } }",
+        "vulnerability": "DoS by Block Gas Limit",
+        "reason": "The 'Play' function can potentially lead to a denial of service (DoS) situation by reaching the block gas limit. This can happen because the function includes complex operations and state changes within a loop, including random number generation and array management. As the number of iterations grows, the function's gas usage could exceed the block gas limit, causing transactions to fail.",
+        "file_name": "0x213d2b0498d7eef3151aa9af2e5c4eb8674ecce5.sol"
+    }
+]

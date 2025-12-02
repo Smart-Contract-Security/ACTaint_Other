@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "ConfigureTranche",
+        "code": "function ConfigureTranche( uint256 _tranche, uint256 _tranche_start_time, uint256 _tranche_end_time, uint256 _tokens_in_tranche, uint256 _reserve_price ) external { require(msg.sender==auth); Tranche storage t = trancheInfo[_tranche]; require(t.configured == false); t.configured = true; require(now<_tranche_start_time); t.start=_tranche_start_time; require(_tranche_end_time>_tranche_start_time); t.end=_tranche_end_time; t.tokens = _tokens_in_tranche*(10**18); emit LogROWTranchePublished(_tranche,_tranche_start_time,_tranche_end_time,_tokens_in_tranche,_reserve_price); }",
+        "vulnerability": "Single Point of Failure in Authentication",
+        "reason": "The 'auth' variable, which is used to authenticate the caller of the ConfigureTranche function, can be set by any external caller through configureAuth function. If an attacker gains control over the 'auth' address, they could misconfigure future tranches or manipulate existing configurations, leading to severe disruptions or financial loss.",
+        "file_name": "0xc34d789b4e3ce3bc3e0e026612a018760b776ddc.sol"
+    },
+    {
+        "function_name": "SettleTranche",
+        "code": "function SettleTranche(uint256 tranche_id) external { Tranche storage t = trancheInfo[tranche_id]; require(t.configured); require(now > t.end); require(!t.settled); t.settled=true; t.price = t.tokens/t.total; }",
+        "vulnerability": "Division by Zero",
+        "reason": "In the SettleTranche function, the price is calculated as 't.tokens / t.total'. If 't.total' is zero (which could happen if no bids are placed), this would lead to a division by zero error. This error can crash the contract or halt executions, possibly freezing assets or leading to denial of service.",
+        "file_name": "0xc34d789b4e3ce3bc3e0e026612a018760b776ddc.sol"
+    },
+    {
+        "function_name": "settleBid",
+        "code": "function settleBid(uint256 tranche_id, uint256 bid_id) external { Tranche storage t = trancheInfo[tranche_id]; require(t.settled); BidInfo storage b = t.bids[bid_id]; require(b.processed==false); b.processed=true; t.user_tokens[b.user] += (b.amount*t.price); t.tokens -= (b.amount*t.price); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The settleBid function updates the user's token balance and the total number of tokens in the tranche after calculating the bid amount times the price. If a callback is triggered to an external contract through one of these state changes, it could potentially lead to reentrancy where the same bid is settled multiple times before the 'b.processed' is set to true, allowing an attacker to drain funds or receive more tokens than intended.",
+        "file_name": "0xc34d789b4e3ce3bc3e0e026612a018760b776ddc.sol"
+    }
+]

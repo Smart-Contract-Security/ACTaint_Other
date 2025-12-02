@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawTokens",
+        "code": "function withdrawTokens () private whenInitialized { uint256 tokensToSend = getAvailableTokensToWithdraw(); sendTokens(tokensToSend); if (dreamToken.balanceOf(this) == 0) { selfdestruct(withdrawalAddress); } }",
+        "vulnerability": "Unexpected selfdestruct",
+        "reason": "The use of 'selfdestruct' can lead to loss of funds or denial of service. In this case, when all tokens are sent and the contract balance reaches zero, it will self-destruct. This can potentially lock all remaining funds (if there are other types of tokens or Ether held by the contract), which could be disastrous if not planned for. Additionally, once selfdestruct is called, the contract code is removed from the blockchain, which prevents any further interaction with the contract, including administrative functions or recovery actions.",
+        "file_name": "0x86c1d92bdb2738925f035fac07c66a09145daef0.sol"
+    },
+    {
+        "function_name": "initializeVestingFor",
+        "code": "function initializeVestingFor (address account) external deployerOnly whenNotInitialized { initialTokensBalance = dreamToken.balanceOf(this); require(initialTokensBalance != 0); withdrawalAddress = account; vestingRules(); }",
+        "vulnerability": "Single Initialization",
+        "reason": "The function 'initializeVestingFor' sets the 'withdrawalAddress' and can only be called once due to the 'whenNotInitialized' modifier which checks if 'withdrawalAddress' is 0x0. If the deployer initializes it with an incorrect address, or if circumstances change requiring a new withdrawal address, there is no function provided to update this address or reinitialize the contract. This lack of flexibility can lead to permanent loss of access to the tokens managed by the contract.",
+        "file_name": "0x86c1d92bdb2738925f035fac07c66a09145daef0.sol"
+    },
+    {
+        "function_name": "getTokensUnlockedPercentage",
+        "code": "function getTokensUnlockedPercentage () private view returns (uint256) { uint256 allowedPercent; for (uint8 i = 0; i < stages.length; i++) { if (now >= stages[i].date) { allowedPercent = stages[i].tokensUnlockedPercentage; } } return allowedPercent; }",
+        "vulnerability": "Incorrect Percentage Calculation",
+        "reason": "The function 'getTokensUnlockedPercentage' iterates through 'stages' and updates 'allowedPercent' without breaking the loop once a match is found. This means if there are multiple stages with dates less than 'now', it will always set 'allowedPercent' to the last stage's unlocked percentage. This could lead to unexpected unlocking of tokens, especially if the stages are not in chronological order or if there are mistakes in date settings. This could potentially allow more tokens to be withdrawn than intended at a given point in time.",
+        "file_name": "0x86c1d92bdb2738925f035fac07c66a09145daef0.sol"
+    }
+]

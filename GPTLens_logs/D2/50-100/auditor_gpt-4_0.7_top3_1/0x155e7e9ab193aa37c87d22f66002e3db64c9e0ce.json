@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the changeOwner function, the ownership of the contract can be changed by sending a specified amount of Ether. However, before updating the owner state variable, it transfers the Ether received (msg.value) and the entire balance of the contract to the current owner. If the current owner's address is a contract, it could potentially perform a reentrancy attack by calling back into the changeOwner function in the fallback function. This can lead to unexpected behavior or drain the contract's balance if the attacker continuously supplies the required Ether to change ownership.",
+        "file_name": "0x155e7e9ab193aa37c87d22f66002e3db64c9e0ce.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Destructive Action",
+        "reason": "The killContract function allows the contract to be destroyed either by the owner or by anyone who sends a large amount of Ether defined by `howManyEtherInWeiToKillContract`. This means that an external entity can forcefully destroy the contract, removing all its code and data from the state and freeing up space on the blockchain, by simply sending the required Ether. This poses a risk as it could be used maliciously to permanently remove contract functionality against the wishes of the owner or other users.",
+        "file_name": "0x155e7e9ab193aa37c87d22f66002e3db64c9e0ce.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Unauthorized Change",
+        "reason": "This function allows the contract's name and symbol to be changed by anyone who sends an amount of Ether equal to or greater than `howManyEtherInWeiToChangeSymbolName`. This can lead to potential misuse where an attacker could change the token's identifying attributes to something misleading or inappropriate. This could be used to confuse or defraud users, especially if they rely on the token's name and symbol for identification in user interfaces.",
+        "file_name": "0x155e7e9ab193aa37c87d22f66002e3db64c9e0ce.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "initialBattle",
+        "vulnerability": "Use of block.timestamp and block.number",
+        "criticism": "The reasoning is accurate in identifying the use of block.timestamp and block.number as a vulnerability due to the potential for miner manipulation. This method of generating randomness is indeed insecure and can lead to predictable or biased outcomes if a miner chooses to exploit it. The severity is moderate because it can affect the fairness of the game, but the profitability is also moderate as it requires the attacker to be a miner, which involves significant resources and effort.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function initialBattle is using block.timestamp and block.number to calculate a pseudorandom number. Both block.timestamp and block.number can potentially be influenced by miners, which makes this method of generating randomness susceptible to manipulation. This could allow an attacker, especially if they are miners, to game the system by ensuring certain outcomes from the battle.",
+        "code": "function initialBattle(uint id1,uint total1,uint id2,uint total2) onlyWit() public returns (uint wid){ uint darklord; if(total1.mul(2)>5000){ darklord=total1.mul(2); }else{ darklord=5000; } uint256 threshold = dataCalc(total1.add(total2),darklord); uint256 i = uint256(sha256(abi.encodePacked(block.timestamp, block.number-i-1))) % 100 +1; if(i <= threshold){ wid = 0; winnerAdd.push(msg.sender); }else{ wid = 1; } battleresults.push(Battlelog(id1,id2,wid,msg.sender)); _delWit(msg.sender); }",
+        "file_name": "0xf28b3a07338cece75502f768626f56bcf1931a41.sol",
+        "final_score": 6.25
+    },
+    {
+        "function_name": "initialBM",
+        "vulnerability": "Use of block.timestamp and block.number",
+        "criticism": "The criticism for initialBM mirrors that of initialBattle, as both functions share the same vulnerability due to the use of block.timestamp and block.number for generating randomness. The reasoning remains solid and the scores for severity and profitability are consistent with the initialBattle function. The vulnerability is correctly identified and the implications are well understood.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "Similar to the initialBattle function, initialBM also uses block.timestamp and block.number for randomness which is insecure and can be manipulated by miners. This can be exploited to affect the outcome of battles in a way favorable to the attacker.",
+        "code": "function initialBM(uint id1,uint total1,uint id2,uint total2,uint id3,uint total3,uint id4,uint total4) onlyWit() public returns (uint wid){ uint teamETH; uint teamTron; teamETH=total1+total2; teamTron=total3+total4; uint256 threshold = dataCalc(teamETH,teamTron); uint256 i = uint256(sha256(abi.encodePacked(block.timestamp, block.number-i-1))) % 100 +1; if(i <= threshold){ wid = 0; winnerAdd.push(msg.sender); }else{ wid = 1; } bmbattleresults.push(BMBattlelog(id1,id2,id3,id4,wid,msg.sender)); _delWit(msg.sender); }",
+        "file_name": "0xf28b3a07338cece75502f768626f56bcf1931a41.sol",
+        "final_score": 6.25
+    },
+    {
+        "function_name": "clearwit",
+        "vulnerability": "Access control flaw",
+        "criticism": "The reasoning correctly identifies an access control flaw where witnesses can deregister themselves, potentially evading responsibilities or consequences after malicious actions. However, the severity might not be as high unless the function of witnesses is critical to the integrity of the contract operations. The profitability is low as there is no direct way for an attacker to gain financially from simply removing themselves from a mapping.",
+        "correctness": 7,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The function clearwit allows any user to remove themselves from the inwitness mapping if they are the caller of the function. This could lead to a situation where witnesses could deregister themselves to evade any kind of responsibility or tracking after performing potentially malicious actions within the contract.",
+        "code": "function clearwit(address _inwitness) public{ if(_inwitness==msg.sender){ delete inwitness[_inwitness]; } }",
+        "file_name": "0xf28b3a07338cece75502f768626f56bcf1931a41.sol",
+        "final_score": 4.5
+    }
+]

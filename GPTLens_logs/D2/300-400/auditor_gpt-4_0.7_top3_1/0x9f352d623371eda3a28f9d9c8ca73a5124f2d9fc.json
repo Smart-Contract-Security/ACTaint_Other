@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "purchaseNotes",
+        "code": "function purchaseNotes(uint256 _numNotes) beforeEndTime() external payable {\n    require(_numNotes <= 100);\n    require(_numNotes <= tokensLeft);\n    require(_numNotes == (msg.value / 0.001 ether));\n    balances[msg.sender] = balances[msg.sender].add(_numNotes);\n    tokensLeft = tokensLeft.sub(_numNotes);\n    TokensBought(_numNotes, tokensLeft);\n}",
+        "vulnerability": "Integer Division Issue",
+        "reason": "The calculation '_numNotes == (msg.value / 0.001 ether)' uses integer division which can lead to rounding errors potentially allowing users to purchase tokens for less ether than intended. This is due to the division of msg.value by 0.001 ether potentially truncating decimals, not accurately representing the amount of ether sent.",
+        "file_name": "0x9f352d623371eda3a28f9d9c8ca73a5124f2d9fc.sol"
+    },
+    {
+        "function_name": "returnNotes",
+        "code": "function returnNotes(uint256 _numNotes) beforeEndTime() external {\n    require(_numNotes <= balances[msg.sender]);\n    uint256 refund = _numNotes * 0.001 ether;\n    balances[msg.sender] = balances[msg.sender].sub(_numNotes);\n    tokensLeft = tokensLeft.add(_numNotes);\n    msg.sender.transfer(refund);\n    TokensReturned(_numNotes, tokensLeft);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'returnNotes' function directly transfers Ether to a user-controlled address ('msg.sender.transfer(refund)') before updating the user's token balance. If the 'msg.sender' is a contract, it can call back into 'returnNotes' during the transfer, allowing it to drain more Ether than it should be able to claim based on its token balance.",
+        "file_name": "0x9f352d623371eda3a28f9d9c8ca73a5124f2d9fc.sol"
+    },
+    {
+        "function_name": "transferToComposition",
+        "code": "function transferToComposition(address _from, uint256 _value) beforeEndTime() public returns (bool) {\n    require(msg.sender == compositionAddress);\n    require(_value <= balances[_from]);\n    balances[_from] = balances[_from].sub(_value);\n    balances[compositionAddress] = balances[compositionAddress].add(_value);\n    Transfer(_from, compositionAddress, _value);\n    return true;\n}",
+        "vulnerability": "Unauthorized Token Transfer",
+        "reason": "The 'transferToComposition' function allows the 'compositionAddress' to transfer tokens from any address without their consent. This is a critical vulnerability as it allows the compositionAddress to arbitrarily move tokens between accounts, potentially disrupting the token economics or enabling theft.",
+        "file_name": "0x9f352d623371eda3a28f9d9c8ca73a5124f2d9fc.sol"
+    }
+]

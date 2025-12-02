@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "cashOut",
+        "code": "function cashOut (uint256 _amount) public payable { require (_amount >= 0); require (_amount == uint256(uint128(_amount))); require (this.balance >= _amount); require (balances[msg.sender] >= _amount); if (_amount == 0){ _amount = balances[msg.sender]; } balances[msg.sender] -= _amount; if (!msg.sender.send(_amount)){ balances[msg.sender] += _amount; } EventCashOut (msg.sender, _amount); return; }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The function `cashOut` allows for a reentrancy attack because it calls `msg.sender.send(_amount)` before updating the sender's balance (`balances[msg.sender] -= _amount;`). If the call to `msg.sender.send` is to a malicious contract, it can re-enter the `cashOut` function and withdraw funds multiple times up to the gas limit, potentially draining the contract's balance.",
+        "file_name": "0x14a3f4795076c0ae67c2aa9efc10e58427a00dff.sol"
+    },
+    {
+        "function_name": "bid",
+        "code": "function bid (uint32 _shipID) public payable { require (_shipID > 0 && _shipID < newIdShip); require (ships[_shipID].selling == true); AuctionEntity memory currentAuction = auctions[ships[_shipID].auctionEntity]; uint256 currentPrice = currentAuction.startPrice-(((currentAuction.startPrice-currentAuction.finishPrice)/(currentAuction.duration))*(now-currentAuction.startTime)); if (currentPrice < currentAuction.finishPrice){ currentPrice = currentAuction.finishPrice; } require (currentPrice >= 0); require (msg.value >= currentPrice); uint256 marketFee = (currentPrice/100)*3; balances[ships[_shipID].owner] += currentPrice-marketFee; balances[AuctionMaster] += marketFee; balances[msg.sender] += msg.value-currentPrice; ships[_shipID].owner = msg.sender; ships[_shipID].selling = false; delete auctions[ships[_shipID].auctionEntity]; ships[_shipID].auctionEntity = 0; EventBid (_shipID); }",
+        "vulnerability": "Integer underflow",
+        "reason": "The calculation of `currentPrice` in the `bid` function does not check for underflow conditions. The expression `(currentAuction.startPrice-currentAuction.finishPrice)/(currentAuction.duration)*(now-currentAuction.startTime)` can underflow if `now - currentAuction.startTime` exceeds the auction duration, leading to a situation where `currentPrice` is computed incorrectly, potentially letting users buy ships for less than the intended price.",
+        "file_name": "0x14a3f4795076c0ae67c2aa9efc10e58427a00dff.sol"
+    },
+    {
+        "function_name": "ChangeUpgradeMaster",
+        "code": "function ChangeUpgradeMaster (address _newMaster) public { require(msg.sender == UpgradeMaster); UpgradeMaster = _newMaster; }",
+        "vulnerability": "Authorization through tx.origin",
+        "reason": "The function `ChangeUpgradeMaster` relies on `msg.sender` to authorize a change in the `UpgradeMaster` address. If `UpgradeMaster` interacts with a malicious contract that then calls `ChangeUpgradeMaster`, it can lead to unauthorized changes in critical system roles, especially since `msg.sender` can be manipulated by calling contracts.",
+        "file_name": "0x14a3f4795076c0ae67c2aa9efc10e58427a00dff.sol"
+    }
+]

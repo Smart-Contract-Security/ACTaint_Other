@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "UpgradeRigETH",
+        "vulnerability": "Denial of service",
+        "criticism": "The reasoning provided is partially correct. The function does not refund excess ETH, which could lock user funds if sent in excess. However, the claim about depleting resources by setting an excessive count value is mitigated by the requirement that count must be less than or equal to 256 and within the rig limit. The severity is moderate due to potential fund lock, but the profitability for an attacker is low as they cannot gain from this action, only cause inconvenience.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "This function allows a payer to send more ETH than the calculated price for upgrading the rig. It does not refund the excess ETH sent, locking user funds unnecessarily. Additionally, by setting an excessive count value within the transaction limits, a user can deplete the resources of the contract by causing maximum computation and state change without proper checks.",
+        "code": "function UpgradeRigETH(uint8 rigIdx, uint256 count) external payable {\n    require(rigIdx < NUMBER_OF_RIG_TYPES);\n    require(count > 0);\n    require(count <= 256);\n    require(rigData[rigIdx].priceInETH > 0);\n    MinerData storage m = miners[msg.sender];\n    require(rigData[rigIdx].limit >= (m.rigs[rigIdx] + count));\n    uint256 price = (rigData[rigIdx].priceInETH).mul(count);\n    require(msg.value >= price);\n    BuyHandler(msg.value);\n    UpdateMoney();\n    m.rigs[rigIdx] = m.rigs[rigIdx] + count;\n    if(m.rigs[rigIdx] > rigData[rigIdx].limit) m.rigs[rigIdx] = rigData[rigIdx].limit;\n}",
+        "file_name": "0xd731c88890ca047cd1bed2e6ea1562c7a425c29d.sol"
+    },
+    {
+        "function_name": "Attack",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning about reentrancy is incorrect. The UpdateMoneyAt function is called, but without further details on its implementation, it's unclear if it allows for reentrancy attacks. Typically, reentrancy vulnerabilities occur when external calls are made before state updates, but the provided code updates the state before making the call. Without evidence of the UpdateMoneyAt function's vulnerability to reentrancy, this claim is speculative. Correctness is low due to lack of evidence, and both severity and profitability are also low unless more details confirm the vulnerability.",
+        "correctness": 2,
+        "severity": 2,
+        "profitability": 2,
+        "reason": "The Attack function allows the attacker to potentially manipulate the state of the contract by recursively calling the function due to the UpdateMoneyAt call before adjusting balances. This could lead to unexpected behaviors where an attacker can drain funds or manipulate game mechanics.",
+        "code": "function Attack(address defenderAddr) external {\n    require(msg.sender != defenderAddr);\n    require(miners[msg.sender].lastUpdateTime != 0);\n    require(miners[defenderAddr].lastUpdateTime != 0);\n    PVPData storage attacker = pvpMap[msg.sender];\n    PVPData storage defender = pvpMap[defenderAddr];\n    uint i = 0;\n    uint256 count = 0;\n    require(block.timestamp > attacker.exhaustTime);\n    require(block.timestamp > defender.immunityTime);\n    if(attacker.immunityTime > block.timestamp) attacker.immunityTime = block.timestamp - 1;\n    attacker.exhaustTime = block.timestamp + 7200;\n    uint256 attackpower = 0;\n    uint256 defensepower = 0;\n    for(i = 0; i < ATTACKER_END_IDX; ++i) {\n        attackpower += attacker.troops[i] * troopData[i].attackPower;\n        defensepower += defender.troops[i + DEFENDER_START_IDX] * troopData[i + DEFENDER_START_IDX].defensePower;\n    }\n    if(attackpower > defensepower) {\n        if(defender.immunityTime < block.timestamp + 14400) defender.immunityTime = block.timestamp + 14400;\n        UpdateMoneyAt(defenderAddr);\n        MinerData storage m = miners[defenderAddr];\n        MinerData storage m2 = miners[msg.sender];\n        uint256 moneyStolen = m.money / 2;\n        for(i = DEFENDER_START_IDX; i < DEFENDER_END_IDX; ++i) {\n            defender.troops[i] = 0;\n        }\n        for(i = ATTACKER_START_IDX; i < ATTACKER_END_IDX; ++i) {\n            if(troopData[i].attackPower > 0) {\n                count = attacker.troops[i];\n                if((count * troopData[i].attackPower) > defensepower) count = defensepower / troopData[i].attackPower;\n                attacker.troops[i] -= count;\n                defensepower -= count * troopData[i].attackPower;\n            }\n        }\n        m.money -= moneyStolen;\n        m2.money += moneyStolen;\n    } else {\n        for(i = ATTACKER_START_IDX; i < ATTACKER_END_IDX; ++i) {\n            attacker.troops[i] = 0;\n        }\n        for(i = DEFENDER_START_IDX; i < DEFENDER_END_IDX; ++i) {\n            if(troopData[i].defensePower > 0) {\n                count = defender.troops[i];\n                if((count * troopData[i].defensePower) > attackpower) count = attackpower / troopData[i].defensePower;\n                defender.troops[i] -= count;\n                attackpower -= count * troopData[i].defensePower;\n            }\n        }\n    }\n}",
+        "file_name": "0xd731c88890ca047cd1bed2e6ea1562c7a425c29d.sol"
+    },
+    {
+        "function_name": "WithdrawICOEarnings",
+        "vulnerability": "Integer overflow",
+        "criticism": "The reasoning is valid as the function does not use SafeMath for arithmetic operations, which could lead to integer overflow if the values are large enough. This could indeed result in incorrect ICO share calculations, potentially allowing users to claim more than they should. The correctness is high, with moderate severity due to financial implications. However, profitability depends on the overflow occurring in a beneficial manner for the user, which is not guaranteed.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 4,
+        "reason": "This function calculates the unclaimed ICO share without proper validation or use of SafeMath library for all arithmetic operations, potentially leading to integer overflow and incorrect ICO share calculations. This could result in users obtaining more funds than they should be entitled to.",
+        "code": "function WithdrawICOEarnings() external {\n    MinerData storage m = miners[msg.sender];\n    require(miners[msg.sender].lastUpdateTime != 0);\n    require(miners[msg.sender].lastPotClaimIndex < cycleCount);\n    uint256 i = m.lastPotClaimIndex;\n    uint256 limit = cycleCount;\n    if((limit - i) > 30) limit = i + 30;\n    m.lastPotClaimIndex = limit;\n    for(; i < cycleCount; ++i) {\n        if(minerICOPerCycle[msg.sender][i] > 0) m.unclaimedPot += (honeyPotPerCycle[i] * minerICOPerCycle[msg.sender][i]) / globalICOPerCycle[i];\n    }\n}",
+        "file_name": "0xd731c88890ca047cd1bed2e6ea1562c7a425c29d.sol"
+    }
+]

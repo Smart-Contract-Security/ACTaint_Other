@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "init",
+        "code": "function init(address newOwner, string calldata tokenName, string calldata tokenSymbol) external { _transferOwnership(newOwner); _tokenName = tokenName; _tokenSymbol = tokenSymbol; _registerInterface(_INTERFACE_ID_ERC721_METADATA); _registerInterface(_INTERFACE_ID_ERC165); _registerInterface(_INTERFACE_ID_ERC721); }",
+        "vulnerability": "Initialization Privilege",
+        "reason": "The 'init' function is designed to initialize token details and transfer ownership. However, it is an external function without restrictions, allowing any caller to set the token's name, symbol, and owner upon multiple calls. This could lead to unauthorized takeover and alteration of the token's metadata or ownership, which poses a severe security risk.",
+        "file_name": "NFT.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address to, uint256 tokenId) external onlyOwner { _safeMint(to, tokenId); }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The 'mint' function allows the contract owner to mint new tokens by providing an address and token ID. However, there is no check to prevent the minting of an already existing token ID or to limit the total supply of tokens. This could be exploited to disrupt the uniqueness and scarcity of the tokens, potentially devaluing them or causing conflicting ownership records.",
+        "file_name": "NFT.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 tokenId) external onlyOwner { _burn(tokenId); }",
+        "vulnerability": "Unchecked Burning",
+        "reason": "The 'burn' function allows the contract owner to burn tokens by specifying a token ID. Similar to the mint function, there is no check to verify the existence of the token before attempting to burn it. This could lead to disruption and inconsistencies in token tracking or enable misuse in scenarios where token existence checks are assumed before calling the burn function.",
+        "file_name": "NFT.sol"
+    }
+]

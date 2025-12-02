@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.code
+Start time: 23/08/2022 04:50:42
+Building CFG...
+CFG generation time (secs): 2.87
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 1954)  7a2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2060)  80c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 2280)  8e8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 2374)  946:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2536)  9e8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 2635)  a4b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 3182)  c6e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3521)  dc1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BITCOIMINIG()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.67
+End time: 23/08/2022 04:50:50

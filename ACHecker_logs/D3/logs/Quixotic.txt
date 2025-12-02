@@ -1,0 +1,35 @@
+Traceback (most recent call last):
+  File "/data1/XXX/AChecker/src/util/frontierset.py", line 81, in copy
+    new._inhibiting_set = self._inhibiting_set.copy()
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "bin/achecker.py", line 423, in <module>
+    main()
+  File "bin/achecker.py", line 419, in main
+    analysis(p, initial_storage, sym_validation =symbolic_validation, mode=mode)
+  File "bin/achecker.py", line 89, in analysis
+    ssa = rattle.Recover(bytes.hex(p.code).encode(), edges=p.cfg.edges(), split_functions=False)
+  File "/data1/XXX/AChecker/src/project.py", line 49, in cfg
+    self._cfg = CFG(generate_BBs(self.code))
+  File "/data1/XXX/AChecker/src/cfg/cfg.py", line 22, in __init__
+    self._xrefs(fix_only_easy_xrefs)
+  File "/data1/XXX/AChecker/src/cfg/cfg.py", line 46, in _xrefs
+    self._hard_xrefs()
+  File "/data1/XXX/AChecker/src/cfg/cfg.py", line 64, in _hard_xrefs
+    succ_addrs, new_succ_addrs = pred.get_succ_addrs_full(self.valid_jump_targets)
+  File "/data1/XXX/AChecker/src/cfg/bb.py", line 136, in get_succ_addrs_full
+    bs = backward_slice(self.ins[-1], [0], must_visits=self.must_visit)
+  File "/data1/XXX/AChecker/src/slicing.py", line 157, in backward_slice
+    slices = [r.backward_slice[::-1] for r in
+MemoryError

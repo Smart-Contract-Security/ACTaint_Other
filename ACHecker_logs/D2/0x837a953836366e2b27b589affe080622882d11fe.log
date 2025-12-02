@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x837a953836366e2b27b589affe080622882d11fe.code
+Start time: 25/08/2022 20:23:17
+Building CFG...
+CFG generation time (secs): 0.09
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 5992) 1768:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function TokenERC20(uint256,string,string)
+
+Violated access control check in function transfer(address,uint256)
+	( 5992) 1768:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function TokenERC20(uint256,string,string)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 21.70
+End time: 25/08/2022 20:23:38

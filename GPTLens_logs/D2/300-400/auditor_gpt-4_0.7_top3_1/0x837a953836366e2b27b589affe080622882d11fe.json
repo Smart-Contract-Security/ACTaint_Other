@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { if(msg.sender.balance < minBalanceForAccounts) sell((minBalanceForAccounts - msg.sender.balance) / sellPrice); _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the 'transfer' function, there is a call to 'sell' function if the sender's balance is below 'minBalanceForAccounts'. This 'sell' function transfers Ether back to the sender. If the 'sell' function is executed, the state of the contract may not yet be fully updated, allowing the possibility of re-entering the 'transfer' function or other functions that modify the state in a harmful way.",
+        "file_name": "0x837a953836366e2b27b589affe080622882d11fe.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(!frozenAccount[_from]); require(_to != 0x0); initialize(_from); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); uint previousBalances = balanceOf[_from] + balanceOf[_to]; balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); assert(balanceOf[_from] + balanceOf[_to] == previousBalances); initialize(_to); }",
+        "vulnerability": "Unchecked return value",
+        "reason": "The function 'initialize' is called within '_transfer' which means 'initialize' could fail or not execute as expected (since its return value is not checked), but '_transfer' will continue execution. If 'initialize' fails to set the 'initialized' flag or adjust balances correctly, this could lead to incorrect balance updates or other unexpected behavior in '_transfer'.",
+        "file_name": "0x837a953836366e2b27b589affe080622882d11fe.sol"
+    },
+    {
+        "function_name": "TokenERC20",
+        "code": "function TokenERC20( uint256 initialSupply, string tokenName, string tokenSymbol ) public { initialSupply = maxSupply - totalairdrop; balanceOf[msg.sender] = initialSupply; totalSupply = initialSupply; initialized[msg.sender] = true; name = \"\u6e2c\u8a6613\"; symbol = \"\u6e2c\u8a6613\"; }",
+        "vulnerability": "Constructor confusion",
+        "reason": "The function 'TokenERC20' is intended to be a constructor but is not marked as a constructor in Solidity. This can be misleading and might cause it to be called like a regular function after deployment, potentially allowing initialization with arbitrary values multiple times which can manipulate the total supply or other critical state variables.",
+        "file_name": "0x837a953836366e2b27b589affe080622882d11fe.sol"
+    }
+]

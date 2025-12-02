@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyRock",
+        "code": "function buyRock (uint rockNumber) payable {\n    require(rocks[rockNumber].currentlyForSale == true);\n    require(msg.value == rocks[rockNumber].price);\n    rocks[rockNumber].currentlyForSale = false;\n    rocks[rockNumber].timesSold++;\n    if (rockNumber != latestNewRockForSale) {\n        rocks[rockNumber].owner.transfer(rocks[rockNumber].price);\n    }\n    rocks[rockNumber].owner = msg.sender;\n    rockOwners[msg.sender].push(rockNumber);\n    if (rockNumber == latestNewRockForSale) {\n        if (rockNumber != 99) {\n            latestNewRockForSale++;\n            rocks[latestNewRockForSale].price = 10**15 + (latestNewRockForSale**2 * 10**15);\n            rocks[latestNewRockForSale].currentlyForSale = true;\n        }\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The transfer of funds to the previous owner occurs before the current owner of the rock is updated. This could allow the previous owner to re-enter the contract and call the buyRock function again before their ownership is revoked, potentially allowing them to withdraw funds multiple times up to the balance of the contract.",
+        "file_name": "0x41f28833be34e6ede3c58d1f597bef429861c4e2.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner {\n    owner.transfer(this.balance);\n}",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function directly transfers all contract balance to the owner without checking the return value of the transfer function. Although it uses the Solidity's .transfer() which has a built-in reentrancy guard due to its gas stipend, if the transfer fails for any reason, the contract does not handle that failure, potentially leading to locked funds without any notification or error.",
+        "file_name": "0x41f28833be34e6ede3c58d1f597bef429861c4e2.sol"
+    },
+    {
+        "function_name": "giftRock",
+        "code": "function giftRock (uint rockNumber, address receiver) {\n    require(msg.sender == rocks[rockNumber].owner);\n    rocks[rockNumber].owner = receiver;\n    rockOwners[receiver].push(rockNumber);\n}",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function changes the ownership of a rock without checking if the rock is currently for sale or performing any additional validation on the receiver. This could be exploited by a malicious owner to transfer rocks to an unintended receiver without their consent or bypass other intended sale mechanisms.",
+        "file_name": "0x41f28833be34e6ede3c58d1f597bef429861c4e2.sol"
+    }
+]

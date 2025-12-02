@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawTokens",
+        "code": "function withdrawTokens () private whenInitialized { uint256 tokensToSend = getAvailableTokensToWithdraw(); sendTokens(tokensToSend); if (dreamToken.balanceOf(this) == 0) { selfdestruct(withdrawalAddress); } }",
+        "vulnerability": "Unexpected contract destruction",
+        "reason": "The selfdestruct function is called when the contract balance reaches zero. This can be problematic as it can be triggered unexpectedly if all tokens are withdrawn, potentially leading to loss of control over the contract and remaining funds if any other assets are stored in the contract.",
+        "file_name": "0xc3dc9479271fa6bea6448eac133468bd613e7276.sol"
+    },
+    {
+        "function_name": "initializeVestingFor",
+        "code": "function initializeVestingFor (address account) external deployerOnly whenNotInitialized { initialTokensBalance = dreamToken.balanceOf(this); require(initialTokensBalance != 0); withdrawalAddress = account; vestingStartUnixTimestamp = block.timestamp; vestingRules(); }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "This function sets the withdrawal address and updates the vesting rules and timestamps. However, it does not have reentrancy protection. If the called contract (e.g., dreamToken.balanceOf or vestingRules) makes an external call to an attacker-controlled address, the attacker could call back into this contract and potentially initialize the vesting again before the first initialization is completed, leading to unexpected behavior or exploitation.",
+        "file_name": "0xc3dc9479271fa6bea6448eac133468bd613e7276.sol"
+    },
+    {
+        "function_name": "sendTokens",
+        "code": "function sendTokens (uint256 tokensToSend) private { if (tokensToSend == 0) { return; } tokensSent = tokensSent.add(tokensToSend); dreamToken.transfer(withdrawalAddress, tokensToSend); emit Withdraw(tokensToSend, now); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function makes an external call to dreamToken.transfer without checking its return value for success or failure. This could lead to a situation where the transfer fails silently, and the contract state is incorrectly updated as if the transfer was successful, potentially leading to inconsistent token tracking and accounting errors.",
+        "file_name": "0xc3dc9479271fa6bea6448eac133468bd613e7276.sol"
+    }
+]

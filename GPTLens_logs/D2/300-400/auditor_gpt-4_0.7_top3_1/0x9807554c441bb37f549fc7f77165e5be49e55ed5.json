@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "depositDAI",
+        "code": "function depositDAI(uint amt) public {\n    ERC20Interface(daiAdd).transferFrom(msg.sender, address(this), amt);\n    CTokenInterface cToken = CTokenInterface(cDaiAdd);\n    assert(cToken.mint(amt) == 0);\n    uint cDaiAmt = wdiv(amt, cToken.exchangeRateCurrent());\n    deposited[msg.sender] += cDaiAmt;\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'depositDAI' interacts with an external contract 'ERC20Interface(daiAdd).transferFrom' before updating the internal state 'deposited[msg.sender] += cDaiAmt;'. This ordering exposes the function to reentrancy attacks where the external call could recursively call back into depositDAI leading to unexpected behavior like multiple deposits.",
+        "file_name": "0x9807554c441bb37f549fc7f77165e5be49e55ed5.sol"
+    },
+    {
+        "function_name": "withdrawDAI",
+        "code": "function withdrawDAI(uint amt) public {\n    require(deposited[msg.sender] != 0, \"Nothing to Withdraw\");\n    CTokenInterface cToken = CTokenInterface(cDaiAdd);\n    uint withdrawAmt = wdiv(amt, cToken.exchangeRateCurrent());\n    uint daiAmt = amt;\n    if (withdrawAmt > deposited[msg.sender]) {\n        withdrawAmt = deposited[msg.sender];\n        daiAmt = wmul(withdrawAmt, cToken.exchangeRateCurrent());\n    }\n    require(cToken.redeem(withdrawAmt) == 0, \"something went wrong\");\n    ERC20Interface(daiAdd).transfer(msg.sender, daiAmt);\n    deposited[msg.sender] -= withdrawAmt;\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to 'depositDAI', this function interacts with external contracts before updating its internal state. It redeems tokens from 'cToken' and transfers 'dai' to the sender before deducting the withdrawn amount from 'deposited'. An attacker could potentially exploit this by recursively calling 'withdrawDAI', extracting more funds than their deposited amount.",
+        "file_name": "0x9807554c441bb37f549fc7f77165e5be49e55ed5.sol"
+    },
+    {
+        "function_name": "transferBackDAI",
+        "code": "function transferBackDAI(uint amt) public isUserWallet {\n    ERC20Interface tokenContract = ERC20Interface(daiAdd);\n    tokenContract.transferFrom(msg.sender, address(this), amt);\n    CTokenInterface cToken = CTokenInterface(cDaiAdd);\n    assert(cToken.mint(amt) == 0);\n}",
+        "vulnerability": "Assert misuse",
+        "reason": "The use of 'assert' for checking the return value of 'cToken.mint(amt)' is inappropriate as 'assert' is generally used for invariant checking and should only fail if there's a bug in the code. Using it here for external call result checking is misuse, and should be replaced with 'require' to avoid wasting gas on failed transactions and potentially causing unintended denial of service.",
+        "file_name": "0x9807554c441bb37f549fc7f77165e5be49e55ed5.sol"
+    }
+]

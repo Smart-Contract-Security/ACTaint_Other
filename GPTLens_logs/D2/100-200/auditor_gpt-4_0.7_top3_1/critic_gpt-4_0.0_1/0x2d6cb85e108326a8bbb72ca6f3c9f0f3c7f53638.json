@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withdraw_privatefund",
+        "vulnerability": "DoS with Block Gas Limit",
+        "criticism": "The reasoning is accurate in identifying a potential DoS vulnerability due to the iteration over a potentially large 'funders' array, which could indeed exceed the block gas limit. This could lock funds indefinitely if not managed properly. However, the severity is somewhat mitigated by the fact that this scenario requires a very large number of funders, which might be less common. Profitability for an attacker is non-existent as this does not provide a direct benefit but rather disrupts the contract's functionality.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 0,
+        "reason": "In the `withdraw_privatefund` function, if `_withdraw_en` is false, the contract iterates over the `funders` array and sends Ether back to all funders. This can lead to a denial of service (DoS) condition because if the number of funders is large enough, the gas required to execute all these sends could exceed the block gas limit, causing the transaction to fail. This means the funds would remain locked in the contract indefinitely, as every attempt to execute this function could potentially run out of gas.",
+        "code": "function withdraw_privatefund(bool _withdraw_en) afterDeadline onlyCreator{ if (_withdraw_en){ beneficiary.send(amountRaised); FundTransfer(beneficiary, amountRaised, false); } else { FundTransfer(0, 11, false); for (uint i = 0; i < funders.length; ++i) { funders[i].addr.send(funders[i].amount); FundTransfer(funders[i].addr, funders[i].amount, false); } } }",
+        "file_name": "0x2d6cb85e108326a8bbb72ca6f3c9f0f3c7f53638.sol"
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Suicidal",
+        "criticism": "The reasoning correctly identifies the risk associated with the unrestricted 'kill' function. The use of 'suicide(beneficiary)' without proper access control can indeed lead to premature or malicious destruction of the contract, potentially leading to loss of functionality and funds. The severity is high due to the irreversible nature of the action. However, profitability is moderate as it depends on the circumstances under which the function is called and the state of the contract's balance.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The `kill` function allows the contract to be destroyed by sending all remaining Ether to the `beneficiary` address and terminating the contract execution permanently using `suicide(beneficiary)`. This function is accessible without any restrictions beyond the contract being destructible by anyone who can provide a transaction. If misused or invoked maliciously, it can lead to loss of contract functionality and potentially loss of funds if not all funds were meant to be released at that point.",
+        "code": "function kill() { suicide(beneficiary); }",
+        "file_name": "0x2d6cb85e108326a8bbb72ca6f3c9f0f3c7f53638.sol"
+    },
+    {
+        "function_name": "deadline_modify",
+        "vulnerability": "Arbitrary Deadline Modification",
+        "criticism": "The reasoning is correct in highlighting the potential for abuse in the 'deadline_modify' function, where the creator can unilaterally change the funding period's deadlines. This could indeed be used to manipulate the funding process or lock funds indefinitely. The severity is significant as it affects the integrity of the funding process and the trust of the funders. Profitability is moderate, as the creator could potentially benefit from manipulating the deadlines to maximize funding or delay refunds.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 4,
+        "reason": "The `deadline_modify` function allows the `creator` to arbitrarily reset the `start` and `deadline` of the funding period. This can be exploited by extending the deadline to an unexpected future date after observing how much funds have been raised, potentially keeping the funds locked in the contract indefinitely or manipulating the funding period to the creator's advantage without consensus from the funders.",
+        "code": "function deadline_modify(uint256 _start ,uint256 _duration) onlyCreator { start = _start; deadline = _start + _duration * 1 days; }",
+        "file_name": "0x2d6cb85e108326a8bbb72ca6f3c9f0f3c7f53638.sol"
+    }
+]

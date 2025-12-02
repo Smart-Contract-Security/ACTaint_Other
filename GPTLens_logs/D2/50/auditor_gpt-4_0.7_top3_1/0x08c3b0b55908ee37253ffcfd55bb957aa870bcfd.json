@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public isRunning validAddress returns (bool success){\n    require(balanceOf[msg.sender] >= _value);\n    require(balanceOf[_to] + _value >= balanceOf[_to]);\n    balanceOf[msg.sender] -= _value;\n    balanceOf[_to] += _value;\n    emit Transfer(msg.sender, _to, _value);\n    return true;\n}",
+        "vulnerability": "Arithmetic overflow",
+        "reason": "The function does not adequately protect against overflow conditions when adding _value to balanceOf[_to]. The condition `require(balanceOf[_to] + _value >= balanceOf[_to]);` would not prevent an overflow if _value is large enough to cause balanceOf[_to] to exceed the maximum uint256 value. An attacker could exploit this to cause the balance to wrap around to a smaller value, potentially leading to unauthorized token creation.",
+        "file_name": "0x08c3b0b55908ee37253ffcfd55bb957aa870bcfd.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public isRunning validAddress returns (bool success) {\n    require(balanceOf[_from] >= _value);\n    require(balanceOf[_to] + _value >= balanceOf[_to]);\n    require(allowance[_from][msg.sender] >= _value);\n    balanceOf[_to] += _value;\n    balanceOf[_from] -= _value;\n    allowance[_from][msg.sender] -= _value;\n    emit Transfer(_from, _to, _value);\n    return true;\n}",
+        "vulnerability": "Arithmetic overflow",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' does not protect against overflow in the addition `_value` to `balanceOf[_to]`. This omission could be exploited in the same manner to wrap the balance value around and manipulate token balances or create tokens.",
+        "file_name": "0x08c3b0b55908ee37253ffcfd55bb957aa870bcfd.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public isRunning validAddress returns (bool success) {\n    require(_value == 0 || allowance[msg.sender][_spender] == 0);\n    allowance[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval race condition",
+        "reason": "The function does not reset the allowance to zero before setting it to a new value, which is recommended to prevent a race condition known as the 'approve/transferFrom' attack. In this attack, an attacker can exploit the timing delay between when an allowance is approved and when it's consumed by `transferFrom` to manipulate balances.",
+        "file_name": "0x08c3b0b55908ee37253ffcfd55bb957aa870bcfd.sol"
+    }
+]

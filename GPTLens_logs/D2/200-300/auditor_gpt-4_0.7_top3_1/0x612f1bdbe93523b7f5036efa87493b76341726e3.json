@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public {\n    uint256 tokens = 0;\n    require( msg.value >= MIN_CONTRIBUTION );\n    require( msg.value > 0 );\n    tokens = tokensPerEth.mul(msg.value) / 1 ether;\n    address investor = msg.sender;\n    if (tokens > 0) {\n        distr(investor, tokens);\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is vulnerable to a reentrancy attack because it calls 'distr' which then calls an external contract through the 'Transfer' event before updating the 'distributionFinished' state. An attacker can recursively call 'getTokens' during the execution of 'distr', leading to multiple tokens being issued beyond the intended limit.",
+        "file_name": "0x612f1bdbe93523b7f5036efa87493b76341726e3.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "ERC20 Approve/Allowance Race Condition",
+        "reason": "The 'approve' function does not correctly prevent the known ERC20 race condition vulnerability, where changing an allowance in a way that sets it to a different non-zero value can be exploited. This function only prevents changing from a non-zero to another non-zero directly, but it does not address the case where an allowance is first changed to zero and then to another non-zero value in two separate transactions, which can still be abused by an attacker.",
+        "file_name": "0x612f1bdbe93523b7f5036efa87493b76341726e3.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    address myAddress = this;\n    uint256 etherBalance = myAddress.balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "Unchecked Send",
+        "reason": "The 'withdraw' function transfers Ether to the owner without checking the return value of the 'transfer' function. Although 'transfer' automatically reverts on failure starting from Solidity 0.4.13, relying on this without explicit checks imposes a risk if there are changes or exceptions in future versions or in the underlying EVM implementation. It's safer to always check the success of the transfer.",
+        "file_name": "0x612f1bdbe93523b7f5036efa87493b76341726e3.sol"
+    }
+]

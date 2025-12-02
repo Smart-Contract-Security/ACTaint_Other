@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "zAddEntry",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning provided is incorrect as it discusses a potential overflow of 'gnEntryCount' which is not an external call issue but rather a potential integer overflow issue. The function does not contain any external calls, so the vulnerability label 'Unchecked External Call' is misplaced. The actual risk is from the integer overflow, which could indeed overwrite existing entries if not properly managed. Correctness is low due to the mislabeling of the vulnerability type. Severity is moderate because if the overflow occurs, it could disrupt the integrity of the data structure. Profitability is low as exploiting this would require a significant number of transactions.",
+        "correctness": 2,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "In the 'zAddEntry' function, the gnEntryCount is incremented after adding an entry but there's no check to prevent the uint32 gnEntryCount from overflowing, which is possible if the function is called 2^32 times. This overflow can lead to unexpected behavior and potentially overwrite existing entries.",
+        "code": "function zAddEntry(bytes32 b32AlphaID, string calldata sParms) external { gmapEntry[b32AlphaID].adrCreator = msg.sender; gmapEntryIndex[gnEntryCount] = b32AlphaID; gnEntryCount++; emit Entries(b32AlphaID, msg.sender, block.timestamp, sParms); }",
+        "file_name": "0xf0f1ccde48447f927307e47bd7b1ff0a147e8c74.sol"
+    },
+    {
+        "function_name": "zSetDisabled",
+        "vulnerability": "Authorization through tx.origin",
+        "criticism": "The reasoning incorrectly mentions 'tx.origin' when the code actually uses 'msg.sender'. The vulnerability described does not exist in the provided code snippet. The use of 'msg.sender' is appropriate for checking permissions based on the direct caller. Therefore, the correctness of the vulnerability claim is very low. The severity and profitability are both rated zero as the described vulnerability does not exist in the function.",
+        "correctness": 0,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'zSetDisabled' uses msg.sender to check if the caller is the owner or the creator of the entry to authorize the action. However, if the function invocation is part of a transaction initiated by a contract, msg.sender would be that contract's address, not the original EOA (externally owned account). This could potentially allow a malicious contract to disable entries if it can get a legitimate address to interact with it first.",
+        "code": "function zSetDisabled(bytes32 b32AlphaID, bool bDisabled) external { require(msg.sender == gadrOwner || msg.sender == gmapEntry[b32AlphaID].adrCreator); gmapEntry[b32AlphaID].bDisabled = bDisabled; }",
+        "file_name": "0xf0f1ccde48447f927307e47bd7b1ff0a147e8c74.sol"
+    },
+    {
+        "function_name": "zKill",
+        "vulnerability": "Self-destruct",
+        "criticism": "The reasoning is correct in identifying the use of 'selfdestruct' as a potential risk for denial of service. However, this is typically a design choice rather than a vulnerability, as it allows the owner to retire the contract. The severity is moderate because it can lead to loss of data and functionality but is controlled by the owner. Profitability is zero as this action does not yield profit but rather terminates the contract.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 0,
+        "reason": "The use of 'selfdestruct' in the 'zKill' function can lead to denial of service by permanently removing the contract from the blockchain when executed by the owner. This action cannot be reversed, and all contract data is removed, potentially leading to loss of critical business or operational data.",
+        "code": "function zKill() onlyByOwner() external {selfdestruct(gadrOwner);}",
+        "file_name": "0xf0f1ccde48447f927307e47bd7b1ff0a147e8c74.sol"
+    }
+]

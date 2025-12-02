@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "godChangeGod",
+        "code": "function godChangeGod(address _newGod) public onlyGod { god = _newGod; }",
+        "vulnerability": "Centralized control",
+        "reason": "The 'godChangeGod' function allows the 'god' (owner) to change the address of the 'god'. This can be exploited if the private key of the current 'god' is compromised, allowing an attacker to take full control of the contract by changing the 'god' address to an address they control.",
+        "file_name": "0x8a07183cec562506f7ec29be42d7f5a14ee9e484.sol"
+    },
+    {
+        "function_name": "increaseBoard",
+        "code": "function increaseBoard() private { uint _increaseLength; if(0 == nextIncreaseDirection) { _increaseLength = boundX2 - boundX1; uint _updatedX2 = boundX2 + _increaseLength; if(_updatedX2 <= boundX2 || _updatedX2 <= _increaseLength) { boundX2 = ~uint(0); } else { boundX2 = _updatedX2; } } else if(1 == nextIncreaseDirection) { _increaseLength = boundY2 - boundY1; uint _updatedY2 = boundY2 + _increaseLength; if(_updatedY2 <= boundY2 || _updatedY2 <= _increaseLength) { boundY2 = ~uint(0); } else { boundY2 = _updatedY2; } } else if(2 == nextIncreaseDirection) { _increaseLength = boundX2 - boundX1; if(boundX1 <= _increaseLength) { boundX1 = 0; } else { boundX1 -= _increaseLength; } } else if(3 == nextIncreaseDirection) { _increaseLength = boundY2 - boundY1; if(boundY1 <= _increaseLength) { boundY1 = 0; } else { boundY1 -= _increaseLength; } } lastIncreaseTime = now; nextIncreaseDirection = (nextIncreaseDirection + 1) % 4; setAuctionsAvailableForBounds(); emit BoardSizeIncreased( msg.sender , boundX1 , boundY1 , boundX2 , boundY2 , now , nextIncreaseDirection , auctionsRemaining ); }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The 'increaseBoard' function computes new boundaries for the game board, using arithmetic operations that can lead to integer overflow. For example, '_updatedX2 = boundX2 + _increaseLength' may overflow if the sum exceeds the maximum representable uint value, leading to an incorrect setting of board boundaries and potential gaming of the system.",
+        "file_name": "0x8a07183cec562506f7ec29be42d7f5a14ee9e484.sol"
+    },
+    {
+        "function_name": "purchaseHouse",
+        "code": "function purchaseHouse(uint _x, uint _y) public payable notPaused existingHouseSale(_x, _y) { require(housePrices[_x][_y] == msg.value); housePrices[_x][_y] = 0; uint taxCut = msg.value / taxDivisor; KingOfEthAbstractInterface(kingOfEthContract).payTaxes.value(taxCut)(); KingOfEthHousesAbstractInterface _housesContract = KingOfEthHousesAbstractInterface(housesContract); address _oldOwner = _housesContract.ownerOf(_x, _y); _housesContract.houseRealtyTransferOwnership( _x , _y , _oldOwner , msg.sender ); _oldOwner.transfer(msg.value - taxCut); emit HouseSold( _x , _y , _oldOwner , msg.sender , msg.value , _housesContract.level(_x, _y) ); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'purchaseHouse' function transfers Ether to the previous owner of the house using '_oldOwner.transfer(msg.value - taxCut)'. This transfer occurs before updating the house ownership in the '_housesContract.houseRealtyTransferOwnership' function. If the '_oldOwner' is a malicious contract, it might call back into 'purchaseHouse' or other functions in this contract leading to reentrancy attacks, which can result in unintended execution flow and potential theft of funds.",
+        "file_name": "0x8a07183cec562506f7ec29be42d7f5a14ee9e484.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The changeOwner function allows the user to become the new owner if they send a certain amount of ETH. During the ownership transfer, the contract sends the entire balance of ETH to the previous owner. If the previous owner is a malicious contract, they could potentially re-enter the changeOwner function during the transfer, leading to reentrancy attacks.",
+        "file_name": "0xd4fac84b747aba53fd86a9951d20e7330daa3414.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized contract destruction",
+        "reason": "The killContract function allows the contract to be destroyed by either the owner or anyone who sends a specific amount of ETH. This could allow attackers to destruct the contract, potentially causing loss of data and funds without proper authorization from all stakeholders or users.",
+        "file_name": "0xd4fac84b747aba53fd86a9951d20e7330daa3414.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Unauthorized change of token metadata",
+        "reason": "The changeNameSymbol function allows for the name and symbol of the token to be changed by either the owner or anyone who sends a sufficient amount of ETH. This could allow an attacker to alter the token's metadata, potentially misleading users or disrupting the token's utility or recognition in the market.",
+        "file_name": "0xd4fac84b747aba53fd86a9951d20e7330daa3414.sol"
+    }
+]

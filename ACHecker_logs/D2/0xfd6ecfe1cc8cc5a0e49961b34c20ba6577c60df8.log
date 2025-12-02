@@ -1,0 +1,45 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xfd6ecfe1cc8cc5a0e49961b34c20ba6577c60df8.code
+Start time: 01/09/2022 16:53:52
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw(uint256)
+	(  683)  2ab:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function init()
+
+Violated access control check in function kill()
+	(  897)  381:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function init()
+
+Violated access control check in function acceptOwnership()
+	(  965)  3c5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function SetLockDate(uint256)
+	( 1094)  446:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function init()
+
+Violated access control check in function unlock()
+	( 1201)  4b1:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function init()
+
+Violated access control check in function transferOwnership(address)
+	( 1428)  594:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function init()
+
+Violated access control check in function lock()
+	( 1556)  614:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function init()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function init()
+Needed to protect following instruction in function kill()
+(  936)  3a8:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 2.23
+End time: 01/09/2022 16:53:55

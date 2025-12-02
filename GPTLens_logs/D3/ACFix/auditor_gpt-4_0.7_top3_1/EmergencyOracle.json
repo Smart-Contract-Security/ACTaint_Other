@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setAssetPrice",
+        "code": "function setAssetPrice(uint256 newPrice) external onlyOwner {\n    price = newPrice;\n    emit AnswerUpdated(SafeCast.toInt256(price), roundId, block.timestamp);\n    roundId += 1;\n}",
+        "vulnerability": "No validation on newPrice",
+        "reason": "The setAssetPrice function allows the owner to set any arbitrary price without checks on the value of newPrice. This can be abused by the owner to manipulate the price reported by the oracle, potentially affecting any dependent contracts or systems relying on this oracle for asset pricing.",
+        "file_name": "EmergencyOracle.sol"
+    },
+    {
+        "function_name": "turnOnOracle",
+        "code": "function turnOnOracle() external onlyOwner {\n    turnOn = true;\n}",
+        "vulnerability": "Single point of failure",
+        "reason": "Turning on the oracle is controlled solely by the owner. If the owner's account is compromised, the attacker can indefinitely turn on the oracle. This can lead to unauthorized use or abuse of the oracle when it should be inactive, especially in emergency scenarios where the oracle's data should not be trusted.",
+        "file_name": "EmergencyOracle.sol"
+    },
+    {
+        "function_name": "turnOffOracle",
+        "code": "function turnOffOracle() external onlyOwner {\n    turnOn = false;\n}",
+        "vulnerability": "Single point of failure",
+        "reason": "Turning off the oracle is controlled solely by the owner. If the owner's account is compromised, the attacker can indefinitely turn off the oracle. This can prevent access to critical data provided by the oracle, affecting dependent functions and systems and potentially causing operational disruptions.",
+        "file_name": "EmergencyOracle.sol"
+    }
+]

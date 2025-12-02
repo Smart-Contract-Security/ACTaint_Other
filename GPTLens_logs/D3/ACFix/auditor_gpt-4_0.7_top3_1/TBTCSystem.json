@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setLotSizes",
+        "code": "function setLotSizes(uint256[] calldata _lotSizes) external onlyOwner { for( uint i = 0; i < _lotSizes.length; i++){ if (_lotSizes[i] == 10**8){ lotSizesSatoshis = _lotSizes; emit LotSizesUpdated(_lotSizes); return; } } revert(\"Lot size array must always contain 1BTC\"); }",
+        "vulnerability": "Input Validation Issue",
+        "reason": "The function 'setLotSizes' only checks for the presence of 1BTC (10**8 satoshis) in the input array, but does not validate other entries in the array. Malicious input containing valid 1BTC followed by arbitrary large or small values could lead to unexpected behavior when these lot sizes are used elsewhere in the contract.",
+        "file_name": "TBTCSystem.sol"
+    },
+    {
+        "function_name": "requestNewKeep",
+        "code": "function requestNewKeep(uint256 _m, uint256 _n, uint256 _bond) external payable returns (address) { IBondedECDSAKeepVendor _keepVendor = IBondedECDSAKeepVendor(keepVendor); IBondedECDSAKeepFactory _keepFactory = IBondedECDSAKeepFactory(_keepVendor.selectFactory()); return _keepFactory.openKeep.value(msg.value)(_n, _m, msg.sender, _bond); }",
+        "vulnerability": "Reentrancy Risk",
+        "reason": "The function 'requestNewKeep' sends Ether (msg.value) to another contract ('_keepFactory.openKeep') which could be a potential target for reentrancy attacks. If the called contract is malicious or has a bug, it could call back into this or other functions in 'TBTCSystem' leading to state corruption or unexpected behavior.",
+        "file_name": "TBTCSystem.sol"
+    },
+    {
+        "function_name": "emergencyPauseNewDeposits",
+        "code": "function emergencyPauseNewDeposits() external onlyOwner returns (bool) { require(pausedTimestamp == 0, \"emergencyPauseNewDeposits can only be called once\"); pausedTimestamp = block.timestamp; allowNewDeposits = false; emit AllowNewDepositsUpdated(false); }",
+        "vulnerability": "Single Use Function",
+        "reason": "The 'emergencyPauseNewDeposits' function can only be called once as it checks if 'pausedTimestamp' is zero and sets it to the current timestamp. This could be a problem if the pause needs to be reactivated after resuming deposits. It limits the flexibility in handling emergency situations.",
+        "file_name": "TBTCSystem.sol"
+    }
+]

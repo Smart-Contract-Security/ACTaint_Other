@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks because it calls the 'distr' function, which can modify state, before it finishes executing. This can be exploited by an attacker by creating a fallback function in their contract that calls 'getTokens' again when it receives Ether, potentially allowing them to withdraw more tokens than intended.",
+        "file_name": "0x0c4f0652d08951982d38f21e8deca798836a1597.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "reason": "The 'withdraw' function directly transfers all Ether in the contract to the owner without any checks or limits on the amount being withdrawn. This could potentially allow the contract owner to drain all Ether from the contract at any time, which might not be the intended logic especially in scenarios where other users are meant to withdraw their funds.",
+        "file_name": "0x0c4f0652d08951982d38f21e8deca798836a1597.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function has a race condition vulnerability due to the way it checks and sets allowances. Specifically, it should reset the spender's allowance to 0 before setting it to a new value to prevent an attack where the spender might use the old allowance and the new one. This could be exploited by an attacker if they are able to call 'transferFrom' between the checks and the update of the allowance.",
+        "file_name": "0x0c4f0652d08951982d38f21e8deca798836a1597.sol"
+    }
+]

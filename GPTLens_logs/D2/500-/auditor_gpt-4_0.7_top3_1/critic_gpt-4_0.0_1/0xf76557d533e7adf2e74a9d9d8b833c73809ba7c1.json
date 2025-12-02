@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "joinMatch",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a reentrancy vulnerability due to the use of 'msg.sender.transfer(purchaseExcess)' before finalizing the player's participation. This could indeed allow an attacker to recursively call 'joinMatch' during the transfer, potentially leading to multiple unintended joins or ether drainage. The severity is high because it can disrupt the game logic and drain funds. The profitability is also high as an attacker can exploit this repeatedly to drain ether.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'joinMatch' function is vulnerable to reentrancy attacks because it calls 'msg.sender.transfer(purchaseExcess)' before marking the player's participation as complete. This allows an attacker to recursively call 'joinMatch' during the transfer, potentially leading to unforeseen side effects or draining of ether.",
+        "code": "function joinMatch(uint256 _matchId, uint256 _team, string _playerName) public payable { if (players[msg.sender].id == 0) { players[msg.sender] = Player(playerCounter++, _playerName, msg.sender, 0); } else { players[msg.sender].name = _playerName; } Match storage theMatch = matches[_matchId]; require(theMatch.id != 0); require(msg.value >= theMatch.playerEntryPrice); require(_addressNotNull(msg.sender)); if (allowInPlayJoining) { require(now < theMatch.fullTime); } else { require(now < theMatch.kickOff); } if (theMatch.homeTeam == _team) { require(theMatch.homeTeamPlayersCount < 11); theMatch.homeTeamPlayers[theMatch.homeTeamPlayersCount++] = players[msg.sender]; } else { require(theMatch.awayTeamPlayersCount < 11); theMatch.awayTeamPlayers[theMatch.awayTeamPlayersCount++] = players[msg.sender]; } theMatch.prize += theMatch.playerEntryPrice; uint256 purchaseExcess = SafeMath.sub(msg.value, theMatch.playerEntryPrice); msg.sender.transfer(purchaseExcess); emit PlayerJoined(_matchId, _team, players[msg.sender].name, msg.sender); }",
+        "file_name": "0xf76557d533e7adf2e74a9d9d8b833c73809ba7c1.sol"
+    },
+    {
+        "function_name": "getMatchReport",
+        "vulnerability": "Integer Overflow/Underflow",
+        "criticism": "The reasoning is partially correct. The function does involve multiple arithmetic operations which could potentially lead to integer overflow/underflow. However, the use of the SafeMath library for operations like 'SafeMath.mul' and 'SafeMath.div' mitigates this risk significantly. The severity and profitability are therefore lower than suggested because the SafeMath library is designed to prevent such vulnerabilities by reverting the transaction in case of an overflow/underflow.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The 'getMatchReport' function is susceptible to integer overflow and underflow. It computes scores and financial calculations based on unchecked arithmetic operations, which can be manipulated by attackers to cause overflow/underflow, leading to incorrect match outcomes or financial distributions.",
+        "code": "function getMatchReport(uint256 _matchId) public { Match storage theMatch = matches[_matchId]; require(theMatch.id > 0 && !theMatch.reported); uint256 index; if (theMatch.homeTeamPlayersCount == 0 || theMatch.awayTeamPlayersCount == 0) { for (index = 0; index < theMatch.homeTeamPlayersCount; index++) { players[theMatch.homeTeamPlayers[index].account].balance += theMatch.playerEntryPrice; } for (index = 0; index < theMatch.awayTeamPlayersCount; index++) { players[theMatch.awayTeamPlayers[index].account].balance += theMatch.playerEntryPrice; } } else { uint256 htpBalance = 0; for (index = 0; index < theMatch.homeTeamPlayersCount; index++) { htpBalance += theMatch.homeTeamPlayers[index].account.balance; } uint256 atpBalance = 0; for (index = 0; index < theMatch.awayTeamPlayersCount; index++) { atpBalance += theMatch.awayTeamPlayers[index].account.balance; } theMatch.homeScore = htpBalance % 5; theMatch.awayScore = atpBalance % 5; if (theMatch.homeScore == theMatch.awayScore) { if(block.timestamp % 2 == 0){ theMatch.homeScore += 1; } else { theMatch.awayScore += 1; } } uint256 prizeMoney = 0; if(theMatch.homeScore > theMatch.awayScore){ theMatch.winningTeam = theMatch.homeTeam; prizeMoney = SafeMath.mul(theMatch.playerEntryPrice, theMatch.awayTeamPlayersCount); } else { theMatch.winningTeam = theMatch.awayTeam; prizeMoney = SafeMath.mul(theMatch.playerEntryPrice, theMatch.homeTeamPlayersCount); } uint256 onePercent = SafeMath.div(prizeMoney, 100); uint256 developerAllocation = SafeMath.mul(onePercent, 1); uint256 teamOwnerAllocation = SafeMath.mul(onePercent, 9); uint256 playersProfit = SafeMath.mul(onePercent, 90); uint256 playersProfitShare = 0; if (theMatch.winningTeam == theMatch.homeTeam) { playersProfitShare = SafeMath.add(SafeMath.div(playersProfit, theMatch.homeTeamPlayersCount), theMatch.playerEntryPrice); for (index = 0; index < theMatch.homeTeamPlayersCount; index++) { players[theMatch.homeTeamPlayers[index].account].balance += playersProfitShare; } } else { playersProfitShare = SafeMath.add(SafeMath.div(playersProfit, theMatch.awayTeamPlayersCount), theMatch.playerEntryPrice); for (index = 0; index < theMatch.awayTeamPlayersCount; index++) { players[theMatch.awayTeamPlayers[index].account].balance += playersProfitShare; } } teams[theMatch.winningTeam].balance += teamOwnerAllocation; theMatch.winningTeamBonus = teamOwnerAllocation; developerBalance += developerAllocation; emit MatchFinished(theMatch.id, theMatch.homeTeam, theMatch.awayTeam, theMatch.winningTeam, teamOwnerAllocation); } theMatch.reported = true; }",
+        "file_name": "0xf76557d533e7adf2e74a9d9d8b833c73809ba7c1.sol"
+    },
+    {
+        "function_name": "destroy",
+        "vulnerability": "Unexpected Ether Transfer",
+        "criticism": "The reasoning is incorrect as it assumes that anyone can call the 'destroy' function and set themselves as the 'contractModifierAddress'. The function is restricted by the 'onlyContractModifier' modifier, which is not detailed in the code snippet but implied by its usage. This means only authorized addresses (presumably the contract owner or a designated modifier) can execute this function. Therefore, the severity and profitability are much lower because unauthorized users cannot exploit this function as described.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'destroy' function can lead to loss of contract funds without any conditions or restrictions. It uses 'selfdestruct' which forcibly sends remaining Ether to the 'contractModifierAddress'. This function can be called by anyone who can set themselves as the 'contractModifierAddress', potentially allowing them to drain all contract funds.",
+        "code": "function destroy() public onlyContractModifier { selfdestruct(contractModifierAddress); }",
+        "file_name": "0xf76557d533e7adf2e74a9d9d8b833c73809ba7c1.sol"
+    }
+]

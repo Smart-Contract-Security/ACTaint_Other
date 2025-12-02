@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "adminClaimAirdrop",
+        "code": "function adminClaimAirdrop(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "vulnerability": "Unbounded loop",
+        "reason": "The function 'adminClaimAirdrop' allows the owner to airdrop any amount of tokens to any participant. Since there is no check on the value of '_amount' other than in 'doAirdrop()' which only checks for positive amount, the owner can airdrop an exceedingly large amount of tokens, potentially leading to overflow issues in 'totalDistributed' and 'balances[_participant]' in the 'doAirdrop()' function.",
+        "file_name": "0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race condition",
+        "reason": "The 'approve' function is vulnerable to a race condition known as the 'approve/transferFrom' attack. If a user wants to change the allowance of a spender that already has a non-zero allowance, they must set the allowance to zero and then set the new value. Between these two operations, a malicious spender can call 'transferFrom' when the allowance is set to zero, and then again after it's been set to a new value, potentially causing unexpected transfers.",
+        "file_name": "0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks. It calls 'distr()' which updates the state of balances and totalDistributed, and then checks if 'totalDistributed' is greater than or equal to 'totalSupply' to potentially finish the distribution. However, since it handles Ether (payable function) and updates user balances, a malicious user could recursively call 'getTokens', leading to unexpected behavior before the distribution is officially finished.",
+        "file_name": "0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.sol"
+    }
+]

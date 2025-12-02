@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setOnlyRunnerScript",
+        "vulnerability": "Arbitrary Control",
+        "criticism": "The reasoning is partially correct in that the owner can change the runner script address, but this is a common pattern in smart contracts where the owner has control over certain parameters. The severity is low because it is a controlled action by the owner, not an external attacker. The profitability is also low because it does not directly lead to financial gain for an attacker unless combined with other vulnerabilities.",
+        "correctness": 5,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "The function allows the owner to change the runner script address arbitrarily which could lead to unauthorized control of the functions that can only be accessed by the runner script.",
+        "code": "function setOnlyRunnerScript(address _onlyRunnerScript) external onlyOwner { runnerScriptAddress = _onlyRunnerScript; }",
+        "file_name": "GymSinglePool.sol"
+    },
+    {
+        "function_name": "updatePool",
+        "vulnerability": "DoS by Block Gas Limit",
+        "criticism": "The reasoning is incorrect because the function does not operate over all shares directly in a loop that would typically cause a block gas limit issue. The operations are simple arithmetic calculations based on already stored values, and the function is designed to exit early under certain conditions to prevent unnecessary computation. Therefore, the risk of hitting the block gas limit is minimal. The severity and profitability are both low as this does not pose a significant threat nor does it provide a direct way to profit.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function requires operations over all shares which could potentially exceed the block gas limit when the number of shares is very large, hence preventing further operations and updates on the pool.",
+        "code": "function updatePool() public { PoolInfo storage pool = poolInfo; if (block.number <= pool.lastRewardBlock) { return; } uint256 sharesTotal = totalGymnetLocked-totalGymnetUnlocked; if (sharesTotal == 0) { pool.lastRewardBlock = block.number; return; } uint256 multiplier = block.number - pool.lastRewardBlock; if (multiplier <= 0) { return; } uint256 _rewardPerBlock = pool.rewardPerBlock; uint256 _reward = (multiplier * _rewardPerBlock); pool.accRewardPerShare = pool.accRewardPerShare + ((_reward * 1e18) / sharesTotal); pool.lastRewardBlock = block.number; }",
+        "file_name": "GymSinglePool.sol"
+    },
+    {
+        "function_name": "safeRewardTransfer",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The reasoning is incorrect. The function does indeed use `require` to check the return value of the `transfer` function. The `require` statement will revert the transaction if the `transfer` function returns false or throws an error, ensuring that the transfer must succeed. Therefore, the function does handle the return values correctly, negating the stated vulnerability. The severity and profitability are both rated zero as there is no actual vulnerability present.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function's transfer calls do not check the return value. Although `require` is used, it only checks against the transfer function throwing an error and does not handle false returns which might mean tokens did not actually get transferred.",
+        "code": "function safeRewardTransfer( address _rewardToken, address _to, uint256 _amount ) internal { uint256 _bal = IERC20Upgradeable(_rewardToken).balanceOf(address(this)); if (_amount > _bal) { require(IERC20Upgradeable(_rewardToken).transfer(_to, _bal), \"GymSinglePool:: Transfer failed\"); } else { require(IERC20Upgradeable(_rewardToken).transfer(_to, _amount), \"GymSinglePool:: Transfer failed\"); } }",
+        "file_name": "GymSinglePool.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Crowdsale",
+        "code": "function () payable { require(!token.lockOf(msg.sender) && !crowdsaleClosed && stage<2 && msg.value >= 1 * (1 ether)/10); if(stage==1 && (now < presaleEndTime.add(countdownDuration) || amountRaisedPreSale+amountRaisedICO+msg.value > hardCap)) { throw; } uint amount = msg.value; balanceOf[msg.sender] += amount; if(stage==0) { amountRaisedPreSale += amount; token.mint(msg.sender, amount.mul(2) / price); } else { amountRaisedICO += amount; token.mint(msg.sender, amount / price); } FundTransfer(msg.sender, amount, true); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function (anonymous function) directly transfers control to external contract 'token.mint()' before updating the sender's balance (balanceOf[msg.sender] += amount;) and internal state variables (amountRaisedPreSale and amountRaisedICO). An attacker can exploit this by making a recursive call back to this function within the mint function call, potentially allowing multiple credits for a single transaction.",
+        "file_name": "0xbb0292ddd8101517640224c40edb67233ae72dd6.sol"
+    },
+    {
+        "function_name": "voteAgainst",
+        "code": "function voteAgainst() { require((stage==2 || stage==3) && !token.lockOf(msg.sender)); token.setLock(msg.sender, true); uint voteWeight = token.balanceOf(msg.sender); against = against.add(voteWeight); }",
+        "vulnerability": "State modification after external call",
+        "reason": "The function 'voteAgainst' first calls an external contract 'token.setLock(msg.sender, true)' and then modifies the state variable 'against'. This could potentially allow an attacker to re-enter the contract and manipulate the state due to the state change occurring after the external call.",
+        "file_name": "0xbb0292ddd8101517640224c40edb67233ae72dd6.sol"
+    },
+    {
+        "function_name": "checkGoalReached",
+        "code": "function checkGoalReached() afterDeadline { require(stage==1 && !crowdsaleClosed); if (amountRaisedPreSale+amountRaisedICO >= fundingGoal) { uint amount = amountRaisedICO/3; if(!icoSuccess) { amount += amountRaisedPreSale/3; } uint amountToken1 = token.totalSupply().mul(67)/(100*4); uint amountToken2 = token.totalSupply().mul(33)/(100*4); forward(amount); icoSuccess = true; token.mint(vault1, amountToken1); token.mint(vault2, amountToken2); stage=2; lastVoteTime = now; GoalReached(amountRaisedPreSale+amountRaisedICO); } crowdsaleClosed = true; token.finishMinting(); }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the fallback function, 'checkGoalReached' involves multiple external calls to 'token.mint' and 'forward' function before updating the state variable 'icoSuccess' and 'stage'. These external calls can be potentially exploited by an attacker to re-enter and manipulate the function logic or state.",
+        "file_name": "0xbb0292ddd8101517640224c40edb67233ae72dd6.sol"
+    }
+]

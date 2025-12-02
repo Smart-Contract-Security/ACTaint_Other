@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "NewShare",
+        "code": "function NewShare(string nickname, bool AllowUpdated, string content) public { allShare[count].push(oneShare(msg.sender, nickname, now, AllowUpdated, content)); EVENT(count,0); count++; }",
+        "vulnerability": "Unbounded Loop",
+        "reason": "The function 'NewShare' increases the 'count' variable indefinitely each time a new share is posted. This can lead to excessive growth of the 'allShare' mapping, potentially causing gas costs to escalate disproportionately when adding new shares or iterating over 'allShare'. This can degrade performance and lead to denial of service if the contract becomes too expensive to interact with due to high gas costs.",
+        "file_name": "0xc86bdf9661c62646194ef29b1b8f5fe226e8c97e.sol"
+    },
+    {
+        "function_name": "Update",
+        "code": "function Update(uint ShareID, uint ReplyID, string content) public { require(msg.sender==allShare[ShareID][ReplyID].sender && allShare[ShareID][ReplyID].AllowUpdated); allShare[ShareID][ReplyID].content = content; allShare[ShareID][ReplyID].timestamp = now; EVENT(ShareID,ReplyID); }",
+        "vulnerability": "Authorization Bypass via Front Running",
+        "reason": "The 'Update' function checks if 'msg.sender' is the original sender of the share and if updates are allowed. However, due to the nature of public blockchains, a malicious user could observe a pending transaction intended to update a share, and then issue a similar transaction with a higher gas price to have their update confirmed first, effectively hijacking the update process. This is known as a front-running attack.",
+        "file_name": "0xc86bdf9661c62646194ef29b1b8f5fe226e8c97e.sol"
+    },
+    {
+        "function_name": "ReplyShare",
+        "code": "function ReplyShare(uint ShareID, string nickname, bool AllowUpdated, string content) public { require(ShareID<count); allShare[ShareID].push(oneShare(msg.sender, nickname, now, AllowUpdated, content)); EVENT(ShareID,allShare[ShareID].length-1); }",
+        "vulnerability": "Denial of Service",
+        "reason": "The 'ReplyShare' function appends a new share to the 'allShare' mapping without limiting the size or depth of threads. A malicious user could exploit this by repeatedly posting replies to increase the storage significantly, causing legitimate users to experience increased gas costs and delays. This can lead to a denial of service as the contract becomes too costly and slow to use.",
+        "file_name": "0xc86bdf9661c62646194ef29b1b8f5fe226e8c97e.sol"
+    }
+]

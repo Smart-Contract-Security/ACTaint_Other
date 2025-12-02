@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "BuyBooster",
+        "code": "function BuyBooster() external payable { require(msg.value >= nextBoosterPrice); require(miners[msg.sender].lastUpdateTime != 0); for(uint i = 0; i < NUMBER_OF_BOOSTERS; ++i) if(boosterHolders[i] == msg.sender) revert(); address beneficiary = boosterHolders[boosterIndex]; MinerData storage m = miners[beneficiary]; m.unclaimedPot += (msg.value * 9403) / 10000; honeyPotAmount += (msg.value * 597) / 20000; devFund += (msg.value * 597) / 20000; nextBoosterPrice += nextBoosterPrice / 20; UpdateMoney(); UpdateMoneyAt(beneficiary); boosterHolders[boosterIndex] = msg.sender; boosterIndex += 1; if(boosterIndex >= 5) boosterIndex = 0; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function updates the state after making external calls to 'UpdateMoney' and 'UpdateMoneyAt', which might allow an attacker to re-enter the function with the same state before it is updated.",
+        "file_name": "0x7300ec2d49be15cde7adac31e7e8523e49b65471.sol"
+    },
+    {
+        "function_name": "WithdrawPotShare",
+        "code": "function WithdrawPotShare() public { MinerData storage m = miners[msg.sender]; require(m.unclaimedPot > 0); require(m.lastUpdateTime != 0); uint256 amntToSend = m.unclaimedPot; m.unclaimedPot = 0; if(msg.sender.send(amntToSend)) { m.unclaimedPot = 0; } }",
+        "vulnerability": "Reentrancy on Ether transfer",
+        "reason": "The function uses 'send' to transfer Ether and sets 'm.unclaimedPot' to 0 after the transfer. If the 'send' call fails, it will not revert the transaction, allowing potential reentrancy or other state inconsistencies.",
+        "file_name": "0x7300ec2d49be15cde7adac31e7e8523e49b65471.sol"
+    },
+    {
+        "function_name": "BuyUpgrade",
+        "code": "function BuyUpgrade(uint256 idx) external payable { require(idx < NUMBER_OF_UPGRADES); require(msg.value >= boostData[idx].priceInWEI); require(miners[msg.sender].hasUpgrade[idx] == 0); require(miners[msg.sender].lastUpdateTime != 0); BuyHandler(msg.value); UpdateMoney(); miners[msg.sender].hasUpgrade[idx] = 1; miners[msg.sender].premamentMineBonusPct += boostData[idx].percentBonus; }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function performs a call to 'BuyHandler' and 'UpdateMoney' without checking their return values or potential exceptions, which might lead to unexpected behavior if those functions fail to execute as intended.",
+        "file_name": "0x7300ec2d49be15cde7adac31e7e8523e49b65471.sol"
+    }
+]

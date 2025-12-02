@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Logic flaw in distribution control",
+        "criticism": "The criticism is accurate in identifying a critical logic flaw where the condition to stop distribution is unreachable due to a return statement placed before it. This indeed allows for the possibility of distributing tokens beyond the intended total supply, which can severely impact the token economics and trust in the contract. The severity is high because it affects the fundamental token supply control, and the profitability is moderate as it could potentially be exploited to gain additional tokens, although it depends on the distribution mechanism's specifics.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The condition to check if the total distributed amount has reached the total supply and setting the distributionFinished flag is unreachable as it is placed after the return statement. This flaw allows the continuous distribution of tokens beyond the intended total supply.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "file_name": "0x2dfd9ec3000e5f9a0e585174d540f19322e90942.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Improper burn implementation",
+        "criticism": "The reasoning correctly identifies a potential issue with the burn function where 'totalDistributed' could go negative. However, the severity of this issue is contingent on the actual use and checks around 'totalDistributed' elsewhere in the contract. If 'totalDistributed' is not critical to the contract's operation or is checked adequately elsewhere, the impact might be limited. The profitability is also low as exploiting this would generally not yield any benefit to an attacker, other than potentially disrupting the contract's intended behavior.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The burn function allows the owner to reduce the total supply and total distributed count by an arbitrary value. However, this function does not check if the value to burn actually exists beyond the owner's balance, potentially allowing the 'totalDistributed' to go negative if the burned amount is greater than the balance but less than or equal to the owner's balance, which could lead to undefined behavior in token accounting.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "file_name": "0x2dfd9ec3000e5f9a0e585174d540f19322e90942.sol",
+        "final_score": 4.25
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy vulnerability",
+        "criticism": "The reasoning provided is somewhat misleading. The function 'getTokens' does indeed call another function 'distr' which changes the state, but the reentrancy vulnerability specifically would require that the called function allows for re-entering into 'getTokens'. The provided code does not clearly show that 'distr' allows for such reentrancy. Moreover, setting the blacklist after distribution does not necessarily prevent reentrancy but prevents further calls in subsequent transactions. The severity and profitability are overestimated without clear evidence of reentrancy being possible.",
+        "correctness": 4,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The function 'getTokens' allows for potential reentrancy attacks since it calls 'distr' which might lead to state changes, and after that, it modifies the state of the contract and blacklists the user. An attacker could potentially exploit this by recursively calling 'getTokens' before the blacklist state is set, allowing multiple distributions to the same address within one transaction.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(50000).mul(49999);\n}",
+        "file_name": "0x2dfd9ec3000e5f9a0e585174d540f19322e90942.sol",
+        "final_score": 3.25
+    }
+]

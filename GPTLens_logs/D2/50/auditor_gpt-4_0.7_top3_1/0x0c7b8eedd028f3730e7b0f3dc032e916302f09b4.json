@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "BookCafe",
+        "code": "function BookCafe(){ if(DeviceAddr != msg.sender) throw; CafeDelivered += 1; if(CafePayed - CafeDelivered < 1) locked=true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'BookCafe' increases the 'CafeDelivered' without checking if the cafe has been paid for adequately before unlocking or performing other state changes. An attacker can exploit this by recursively calling 'BookCafe', which can lead to inconsistency between 'CafePayed' and 'CafeDelivered' before the function execution is completed, potentially allowing acquiring services without adequate payment.",
+        "file_name": "0x0c7b8eedd028f3730e7b0f3dc032e916302f09b4.sol"
+    },
+    {
+        "function_name": "CollectMoney",
+        "code": "function CollectMoney(uint amount){ if (!DeviceOwner.send(amount)) throw; }",
+        "vulnerability": "Unchecked send",
+        "reason": "The function 'CollectMoney' uses 'send' to transfer ether, which is known to be risky as it only provides 2300 gas, potentially leading to failed transactions if the fallback function of the receiver requires more than 2300 gas. Moreover, the function does not handle the case when the 'send' fails apart from reverting the transaction, which can be exploited by an attacker if the contract balance is manipulated such that the 'send' consistently fails, effectively locking funds within the contract.",
+        "file_name": "0x0c7b8eedd028f3730e7b0f3dc032e916302f09b4.sol"
+    },
+    {
+        "function_name": "RegisterDevice",
+        "code": "function RegisterDevice() { DeviceAddr = msg.sender; }",
+        "vulnerability": "Authorization flaw",
+        "reason": "The 'RegisterDevice' function allows any user to set themselves as the 'DeviceAddr', which is used in the 'BookCafe' to validate the caller. This can be exploited by an attacker to register as the device and then proceed to call 'BookCafe', bypassing intended usage controls and potentially causing unauthorized cafe bookings or other state changes within the contract.",
+        "file_name": "0x0c7b8eedd028f3730e7b0f3dc032e916302f09b4.sol"
+    }
+]

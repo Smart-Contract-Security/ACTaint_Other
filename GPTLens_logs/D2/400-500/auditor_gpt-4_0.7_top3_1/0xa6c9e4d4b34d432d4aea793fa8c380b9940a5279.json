@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool success) { if (_to == 0x0) return false; if (!frozenAccount[msg.sender] && balances[msg.sender] >= _value && _value > 0) { balances[msg.sender] -= _value; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "vulnerability": "Missing input validation",
+        "reason": "The function does not validate that the '_to' address is not the zero address before executing the transfer. This could lead to accidental burning of tokens if '_to' is set as the zero address, which is often used as a burn address in token contracts.",
+        "file_name": "0xa6c9e4d4b34d432d4aea793fa8c380b9940a5279.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) returns (bool success) { if(!frozenAccount[msg.sender] && balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) { balances[_to] += _value; balances[_from] -= _value; allowed[_from][msg.sender] -= _value; Transfer(_from, _to, _value); return true; } return false; }",
+        "vulnerability": "Potential reentrancy attack",
+        "reason": "The function does not implement reentrancy guards such as the checks-effects-interactions pattern. An attacker could exploit this by creating a fallback function in the '_to' contract that calls back into 'transferFrom', potentially leading to unexpected behaviors or draining of tokens.",
+        "file_name": "0xa6c9e4d4b34d432d4aea793fa8c380b9940a5279.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) returns (bool success) { if (balances[msg.sender] < _value) throw; balances[msg.sender] -= _value; totalSupply -= _value; Burn(msg.sender, _value); return true; }",
+        "vulnerability": "Unchecked return value",
+        "reason": "The function directly modifies the state without checking the return value of the operation that decreases the balance. This can potentially lead to an underflow if '_value' is greater than 'balances[msg.sender]', though the initial check should prevent this specific case. It would be safer to use SafeMath for subtraction to ensure that no underflow occurs.",
+        "file_name": "0xa6c9e4d4b34d432d4aea793fa8c380b9940a5279.sol"
+    }
+]

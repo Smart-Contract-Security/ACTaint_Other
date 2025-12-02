@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism is valid as the 'getTokens' function does not implement reentrancy guards such as the 'nonReentrant' modifier from OpenZeppelin, which is a common practice to prevent reentrancy attacks. The function calls an external contract ('distr') which could be exploited to re-enter the 'getTokens' function, potentially leading to draining of tokens or other unintended effects. The severity is high due to the potential loss of tokens, and profitability is also high as an attacker could gain tokens without proper payment.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'getTokens' function does not guard against reentrancy attacks. The function first calculates the number of tokens to distribute, then calls 'distr' which updates the state and emits events. Since 'distr' is not marked as non-reentrant, an attacker can recursively call 'getTokens' through a fallback in a malicious contract, potentially causing unexpected behavior or draining the contract of tokens.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x102e3bcc2fb6a2fe4c1c4cf09021a5638008b721.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning correctly identifies a common issue in ERC-20 token contracts known as the 'approval double-spend' problem. However, the provided code does include a check that prevents setting a new non-zero allowance if a non-zero allowance already exists, which mitigates this issue to some extent. Therefore, while the vulnerability exists, its impact is somewhat limited by the checks in place. The severity and profitability are moderate because although the issue can lead to unexpected withdrawals, the conditions under which this can be exploited are reduced by the existing checks.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'approve' function is susceptible to a race condition known as the 'approval double-spend' issue. An attacker can exploit the race condition by first calling approve to set allowances for a spender, then quickly transferring the allowed amount out before the victim user can set the new allowance to zero. This can lead to unexpected withdrawals if the spender uses the original allowance between the two approve calls.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x102e3bcc2fb6a2fe4c1c4cf09021a5638008b721.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Underflow Risk",
+        "criticism": "The reasoning is partially correct. The 'burn' function does subtract from 'totalDistributed', but it uses the SafeMath 'sub' function which includes an underflow check. This means that the function will revert if an underflow would occur, preventing the vulnerability from being exploited. Therefore, the severity and profitability of this vulnerability are very low because the SafeMath library effectively mitigates the risk of underflow.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'burn' function reduces the 'totalDistributed' variable by the _value amount burned without ensuring that the totalDistributed won't underflow, which could lead to unexpected behavior. Since 'totalDistributed' is used in logic to control distribution, underflowing it could lead to unanticipated excessive token minting or distribution.",
+        "code": "function burn(uint256 _value) onlyOwner public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply = totalSupply.sub(_value); totalDistributed = totalDistributed.sub(_value); emit Burn(burner, _value); }",
+        "file_name": "0x102e3bcc2fb6a2fe4c1c4cf09021a5638008b721.sol",
+        "final_score": 1.25
+    }
+]

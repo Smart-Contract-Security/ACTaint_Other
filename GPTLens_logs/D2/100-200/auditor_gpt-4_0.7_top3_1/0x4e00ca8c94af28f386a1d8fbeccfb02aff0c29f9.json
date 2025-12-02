@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "function()",
+        "code": "function() public payable {\n    if (IsDistribRunning) {\n        uint256 _amount;\n        if (((_CurrentDistribPublicSupply + _amount) > _MaxDistribPublicSupply) && _MaxDistribPublicSupply > 0) revert();\n        if (!_DistribFundsReceiverAddress.send(msg.value)) revert();\n        if (Claimed[msg.sender] == false) {\n            _amount = _FreeiBird * 1e18;\n            _CurrentDistribPublicSupply += _amount;\n            balances[msg.sender] += _amount;\n            _totalSupply += _amount;\n            Transfer(this, msg.sender, _amount);\n            Claimed[msg.sender] = true;\n        }\n        if (msg.value >= 9e15) {\n            _amount = msg.value * _ExtraTokensPerETHSended * 4;\n        } else {\n            if (msg.value >= 6e15) {\n                _amount = msg.value * _ExtraTokensPerETHSended * 3;\n            } else {\n                if (msg.value >= 3e15) {\n                    _amount = msg.value * _ExtraTokensPerETHSended * 2;\n                } else {\n                    _amount = msg.value * _ExtraTokensPerETHSended;\n                }\n            }\n        }\n        _CurrentDistribPublicSupply += _amount;\n        balances[msg.sender] += _amount;\n        _totalSupply += _amount;\n        Transfer(this, msg.sender, _amount);\n    } else {\n        revert();\n    }\n}",
+        "vulnerability": "Uninitialized variable",
+        "reason": "The variable '_amount' is used without being initialized explicitly in the context where it's first used to check if adding it to '_CurrentDistribPublicSupply' would exceed '_MaxDistribPublicSupply'. This could lead to unexpected behavior as '_amount' could have any arbitrary garbage value.",
+        "file_name": "0x4e00ca8c94af28f386a1d8fbeccfb02aff0c29f9.sol"
+    },
+    {
+        "function_name": "SetupiBird",
+        "code": "function SetupiBird(string tokenName, string tokenSymbol, uint256 ExtraTokensPerETHSended, uint256 MaxDistribPublicSupply, uint256 OwnerDistribSupply, address remainingTokensReceiverAddress, address DistribFundsReceiverAddress, uint256 FreeiBird) public {\n    if (msg.sender == owner && !setupDone) {\n        symbol = tokenSymbol;\n        name = tokenName;\n        _FreeiBird = FreeiBird;\n        _ExtraTokensPerETHSended = ExtraTokensPerETHSended;\n        _MaxDistribPublicSupply = MaxDistribPublicSupply * 1e18;\n        if (OwnerDistribSupply > 0) {\n            _OwnerDistribSupply = OwnerDistribSupply * 1e18;\n            _totalSupply = _OwnerDistribSupply;\n            balances[owner] = _totalSupply;\n            _CurrentDistribPublicSupply += _totalSupply;\n            Transfer(this, owner, _totalSupply);\n        }\n        _DistribFundsReceiverAddress = DistribFundsReceiverAddress;\n        if (_DistribFundsReceiverAddress == 0) _DistribFundsReceiverAddress = owner;\n        _remainingTokensReceiverAddress = remainingTokensReceiverAddress;\n        setupDone = true;\n    }\n}",
+        "vulnerability": "Authorization bypass",
+        "reason": "The function SetupiBird lacks a proper access control mechanism, allowing anyone to call it as long as it hasn't been set up yet ('!setupDone'). This could potentially allow an unauthorized user to initialize the contract with arbitrary parameters, including directing funds and token ownership.",
+        "file_name": "0x4e00ca8c94af28f386a1d8fbeccfb02aff0c29f9.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) public returns(bool success) {\n    if (balances[msg.sender] >= _amount && _amount > 0 && balances[_to] + _amount > balances[_to]) {\n        balances[msg.sender] -= _amount;\n        balances[_to] += _amount;\n        Transfer(msg.sender, _to, _amount);\n        return true;\n    } else {\n        return false;\n    }\n}",
+        "vulnerability": "Integer overflow",
+        "reason": "The function does not properly validate that 'balances[_to] + _amount' does not overflow, which could lead to unexpected behavior where tokens essentially vanish or are created out of thin air. This is critical in the context of a financial or token-based system.",
+        "file_name": "0x4e00ca8c94af28f386a1d8fbeccfb02aff0c29f9.sol"
+    }
+]

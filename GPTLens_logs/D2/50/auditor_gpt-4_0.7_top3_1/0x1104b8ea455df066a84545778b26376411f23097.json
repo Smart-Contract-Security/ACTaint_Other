@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawPrize",
+        "code": "function withdrawPrize() private { require(lastDepositInfo.time > 0 && lastDepositInfo.time <= now - MAX_IDLE_TIME, 'The last depositor is not confirmed yet'); require(currentReceiverIndex <= lastDepositInfo.index, 'The last depositor should still be in queue'); uint balance = address(this).balance; if(prizeAmount > balance) prizeAmount = balance; uint prize = prizeAmount; queue[lastDepositInfo.index].depositor.transfer(prize); prizeAmount = 0; proceedToNewStage(stage + 1); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'withdrawPrize' allows transferring ether to an arbitrary address without updating related state variables beforehand ('prizeAmount = 0;' comes after the transfer), which could allow the recipient to call back into the contract and withdraw the prize again before the state is updated (reentrancy attack).",
+        "file_name": "0x1104b8ea455df066a84545778b26376411f23097.sol"
+    },
+    {
+        "function_name": "pay",
+        "code": "function pay() private { uint balance = address(this).balance; uint128 money = 0; if(balance > prizeAmount) money = uint128(balance - prizeAmount); for(uint i=currentReceiverIndex; i<currentQueueSize; i++){ Deposit storage dep = queue[i]; if(money >= dep.expect){ dep.depositor.transfer(dep.expect); money -= dep.expect; delete queue[i]; }else{ dep.depositor.transfer(money); dep.expect -= money; break; } if(gasleft() <= 50000) break; } currentReceiverIndex = i; }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "The 'pay' function iterates over an array and performs transfers within a loop. If any transfer fails (e.g., if the recipient is a contract that reverts on receiving ether), the entire function will revert. This could lead to denial of service as legitimate users might not be able to receive their funds.",
+        "file_name": "0x1104b8ea455df066a84545778b26376411f23097.sol"
+    },
+    {
+        "function_name": "addDeposit",
+        "code": "function addDeposit(address depositor, uint value) private { DepositCount storage c = depositsMade[depositor]; if(c.stage != stage){ c.stage = int128(stage); c.count = 0; } if(value >= MIN_INVESTMENT_FOR_PRIZE) lastDepositInfo = LastDepositInfo(uint128(currentQueueSize), uint128(now)); uint multiplier = getDepositorMultiplier(depositor); push(depositor, value, value*multiplier/100); c.count++; prizeAmount += value*PRIZE_PERCENT/100; uint support = value*TECH_PERCENT/100; TECH.transfer(support); uint adv = value*PROMO_PERCENT/100; PROMO.transfer(adv); }",
+        "vulnerability": "Unbounded loop",
+        "reason": "The function 'addDeposit' indirectly influences the length of the queue through the 'push' function, which can cause the size of the queue to grow indefinitely. This unbounded loop can result in high gas costs, making it difficult or impossible to execute functions that iterate over the queue, potentially leading to denial of service.",
+        "file_name": "0x1104b8ea455df066a84545778b26376411f23097.sol"
+    }
+]

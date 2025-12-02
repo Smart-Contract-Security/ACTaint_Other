@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initialize",
+        "code": "function initialize(address _controller, uint256 _cap) public { require(owner == 0); owner = msg.sender; delegation = _controller; delegatedFwd(_controller, msg.data); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The 'initialize' function uses 'require(owner == 0)' as a form of access control, assuming that if 'owner' is zero, the contract has not been initialized. However, this check can be bypassed if 'owner' is explicitly set to zero after it has been initialized. This allows any user to reinitialize the contract, overwriting the 'owner' and 'delegation' variables, and potentially hijacking the contract.",
+        "file_name": "0x7f0a51cbebc0aef083b9f54ae5fb789de71b23b8.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { require(newOwner != address(0)); emit OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Potential Ownership Hijack",
+        "reason": "The 'transferOwnership' function allows the current 'owner' to transfer ownership to a new address. However, there is no mechanism to ensure that the new owner address is aware of the ownership or has consented to becoming the owner, potentially leading to accidental or malicious loss of contract control.",
+        "file_name": "0x7f0a51cbebc0aef083b9f54ae5fb789de71b23b8.sol"
+    },
+    {
+        "function_name": "delegatedFwd",
+        "code": "function delegatedFwd(address _dst, bytes _calldata) internal { assembly { let result := delegatecall(sub(gas, 10000), _dst, add(_calldata, 0x20), mload(_calldata), 0, 0) let size := returndatasize let ptr := mload(0x40) returndatacopy(ptr, 0, size) switch result case 0 { revert(ptr, size) } default { return(ptr, size) } } }",
+        "vulnerability": "Delegatecall to Arbitrary Location",
+        "reason": "The 'delegatedFwd' function uses 'delegatecall' to forward calls to an address specified by '_dst', which is controlled by the 'delegation' state variable in the 'Delegatable' contract. If the 'delegation' address is set to a malicious contract, it could lead to execution of arbitrary code within the context of the Proxy contract's storage. This can result in unintended alterations of the contract state or hijacking of the contract's logic.",
+        "file_name": "0x7f0a51cbebc0aef083b9f54ae5fb789de71b23b8.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Unchecked Distribution Limit",
+        "criticism": "The criticism is valid as the function does not check if the total distributed tokens exceed the total supply, which could indeed lead to token inflation. However, the severity is high because it can disrupt the token economy, but the profitability is moderate as it requires specific conditions and permissions to exploit.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'distr' function does not check if the '_amount' being distributed plus the 'totalDistributed' exceeds the 'totalSupply'. This could lead to overflowing 'totalDistributed' and creating tokens out of thin air, which violates the token conservation law and can severely impact the token's economy.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "file_name": "0x78af01b310a23d25009bdfb95ef06e9a5584fb80.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is partially correct. The function does call 'distr' which can trigger external events, but the reentrancy vulnerability primarily concerns state changes after external calls, not just the presence of external calls. The 'distributionFinished' state is updated after the 'distr' function, which mitigates the reentrancy risk. Therefore, the severity and profitability are overestimated.",
+        "correctness": 4,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks because it calls 'distr' which triggers external calls via events before updating the 'distributionFinished' state. An attacker can recursively call 'getTokens' in the callback of these events to drain funds or acquire more tokens than intended.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x78af01b310a23d25009bdfb95ef06e9a5584fb80.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "criticism": "The reasoning is incorrect. The function is protected by the 'onlyOwner' modifier, which restricts the execution to the contract owner. This means that only the owner can withdraw Ether, and there is no risk of unauthorized withdrawals. The vulnerability is non-existent, and the severity and profitability are both zero.",
+        "correctness": 0,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'withdraw' function transfers all Ether in the contract to the owner without any checks or limitations. This function should have security checks or limits to prevent potential abuse where the owner can continuously drain Ether sent to the contract by users.",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "file_name": "0x78af01b310a23d25009bdfb95ef06e9a5584fb80.sol"
+    }
+]

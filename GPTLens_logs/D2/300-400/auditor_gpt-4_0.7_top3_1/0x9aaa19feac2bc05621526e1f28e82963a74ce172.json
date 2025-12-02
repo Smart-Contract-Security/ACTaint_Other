@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint lockBoxNumber) public returns(bool success) { LockBoxStruct storage l = lockBoxStructs[lockBoxNumber]; require(l.beneficiary == msg.sender); require(l.releaseTime <= now); uint amount = l.balance; l.balance = 0; emit LogLockBoxWithdrawal(msg.sender, amount); require(token.transfer(msg.sender, amount)); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function is vulnerable to reentrancy attacks because it calls an external contract (token.transfer) after updating the balance of the lockbox. A malicious contract can call back into 'withdraw' during the token.transfer execution, before the transaction is completed, potentially allowing repeated withdrawals and draining the contract's funds.",
+        "file_name": "0x9aaa19feac2bc05621526e1f28e82963a74ce172.sol"
+    },
+    {
+        "function_name": "deposit",
+        "code": "function deposit(address beneficiary, uint amount, uint releaseTime) public returns(bool success) { require(token.transferFrom(msg.sender, address(this), amount)); LockBoxStruct memory l; l.beneficiary = beneficiary; l.balance = amount; l.releaseTime = releaseTime; lockBoxStructs.push(l); emit LogLockBoxDeposit(msg.sender, amount, releaseTime); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In the 'deposit' function, the return value of 'token.transferFrom' is checked with a 'require' statement for successful token transfer. However, if the 'token' contract is malicious or poorly implemented, it could cause unexpected behaviors that might lead to loss of funds or incorrect contract state.",
+        "file_name": "0x9aaa19feac2bc05621526e1f28e82963a74ce172.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint lockBoxNumber) public returns(bool success) { LockBoxStruct storage l = lockBoxStructs[lockBoxNumber]; require(l.beneficiary == msg.sender); require(l.releaseTime <= now); uint amount = l.balance; l.balance = 0; emit LogLockBoxWithdrawal(msg.sender, amount); require(token.transfer(msg.sender, amount)); return true; }",
+        "vulnerability": "Array Index Out of Bounds",
+        "reason": "The 'withdraw' function does not validate the 'lockBoxNumber' parameter to ensure it is within the bounds of the 'lockBoxStructs' array. This could lead to out-of-bounds access, causing the contract to revert or behave unexpectedly.",
+        "file_name": "0x9aaa19feac2bc05621526e1f28e82963a74ce172.sol"
+    }
+]

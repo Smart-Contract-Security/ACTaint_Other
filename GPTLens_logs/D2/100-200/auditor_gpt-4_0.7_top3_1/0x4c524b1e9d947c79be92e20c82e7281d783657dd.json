@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Donate",
+        "code": "function Donate() payable { if(msg.value > patronOne.balance || patronOne == 0x0){ patronOne = msg.sender; return; } if(msg.value > patronTwo.balance || patronTwo == 0x0){ patronTwo = msg.sender; return; } if(msg.value > patronThree.balance || patronThree == 0x0){ patronThree = msg.sender; return; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the Donate function, there is no guard against reentrancy attacks. A malicious sender could recursively call Donate before the function completes execution. This is particularly exploitable when the balance condition check (msg.value > patronX.balance) becomes true, allowing the same address to potentially occupy all patron spots continuously if the conditions are met, leading to uncontrolled flow of funds.",
+        "file_name": "0x4c524b1e9d947c79be92e20c82e7281d783657dd.sol"
+    },
+    {
+        "function_name": "Withdrawal",
+        "code": "function Withdrawal(address withdrawalAddress) onlyOwner { if(patronOneWd && patronTwoWd && patronThreeWd){ selfdestruct(withdrawalAddress); } }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "The Withdrawal function is vulnerable to an arbitrary destruction attack. Although protected by an onlyOwner modifier, the function checks if all patrons have set their withdrawal flags to true before calling selfdestruct. However, if the owner is malicious or if the owner's account is compromised, they can destruct the contract at any time, potentially causing loss of funds and preventing legitimate withdrawals.",
+        "file_name": "0x4c524b1e9d947c79be92e20c82e7281d783657dd.sol"
+    },
+    {
+        "function_name": "KillContract",
+        "code": "function KillContract() onlyOwner { selfdestruct(0x0); }",
+        "vulnerability": "Unchecked selfdestruct",
+        "reason": "The KillContract function contains an unchecked call to selfdestruct that immediately destructs the contract and sends all remaining Ether to address 0x0, effectively burning all the contained Ether. This function poses a high risk especially if the owner's key is compromised or if the owner turns out to be malicious, leading to potential loss of all contract funds without any recovery possibility.",
+        "file_name": "0x4c524b1e9d947c79be92e20c82e7281d783657dd.sol"
+    }
+]

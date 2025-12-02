@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x3a6984181f49c9ef64ada32373e736db0c9f1078.code
+Start time: 20/08/2022 12:43:41
+Building CFG...
+CFG generation time (secs): 0.02
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Non protected SELFDESTRUCT) Missing access control check in function cleanUpAfterYourself()
+Needed to protect following instruction in function cleanUpAfterYourself()
+( 1841)  731:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function cleanUpAfterYourself()
+Needed to protect following instruction in function cleanUpAfterYourself()
+( 1855)  73f:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 2.21
+End time: 20/08/2022 12:43:44

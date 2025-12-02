@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fillTrade",
+        "code": "function fillTrade(uint _tradeId, uint _amount) public { require(0 < _amount); Trade storage _trade = trades[_tradeId]; require(_trade.amountRemaining >= _amount); uint _size = _amount * _trade.numerator; require(_amount == _size / _trade.numerator); require(0 == _size % _trade.denominator); _size /= _trade.denominator; _trade.amountRemaining -= _amount; KingOfEthResourcesInterface(interfaceContract).exchangeFrozenTransfer( _trade.resource , _trade.creator , msg.sender , _amount ); KingOfEthResourcesInterface(interfaceContract).exchangeTransfer( _trade.tradingFor , msg.sender , _trade.creator , _size ); emit ResourceTradeFilled( _tradeId , _trade.resource , _trade.tradingFor , _amount , _trade.numerator , _trade.denominator , _trade.creator , msg.sender ); }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The calculation '_size = _amount * _trade.numerator' is susceptible to an integer overflow if the values of _amount or _trade.numerator are large enough. This can lead to incorrect calculations of _size, affecting how many resources are transferred, potentially allowing an attacker to manipulate trades to their advantage.",
+        "file_name": "0x4bda2ed2be4f6f4c3652fd1cc2e6c0e47e694ade.sol"
+    },
+    {
+        "function_name": "godSetEthExchangeContract",
+        "code": "function godSetEthExchangeContract(address _ethExchangeContract) public onlyGod { ethExchangeContract = _ethExchangeContract; }",
+        "vulnerability": "Centralization Risk",
+        "reason": "This function allows the 'god' account to change the address of the 'ethExchangeContract' at any time, which can lead to a central point of failure. If the god account is compromised, the attacker can redirect contract interactions to a malicious address, potentially leading to loss or theft of funds.",
+        "file_name": "0x4bda2ed2be4f6f4c3652fd1cc2e6c0e47e694ade.sol"
+    },
+    {
+        "function_name": "interfaceBurnTokens",
+        "code": "function interfaceBurnTokens(address _owner, uint _tokens) public onlyInterfaceContract hasAvailableTokens(_owner, _tokens) { holdings[_owner] -= _tokens; resourceSupply -= _tokens; emit Transfer(_owner, 0x0, _tokens); }",
+        "vulnerability": "Missing Input Validation",
+        "reason": "This function burns tokens from a user's holdings without validating that the '_tokens' parameter is a sensible amount (e.g., not excessively large). Malicious or erroneous calls could burn an unintended number of tokens, potentially disrupting the token economy or leading to loss of funds.",
+        "file_name": "0x4bda2ed2be4f6f4c3652fd1cc2e6c0e47e694ade.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "burnTokensAndWithdrawKitties",
+        "code": "function burnTokensAndWithdrawKitties(uint256[] calldata _kittyIds, address[] calldata _destinationAddresses) external nonReentrant { require(_kittyIds.length == _destinationAddresses.length, 'you did not provide a destination address for each of the cats you wish to withdraw'); require(_kittyIds.length > 0, 'you must submit an array with at least one element'); uint256 numTokensToBurn = _kittyIds.length; require(balanceOf(msg.sender) >= numTokensToBurn.mul(10**18), 'you do not own enough tokens to withdraw this many ERC721 cats'); _burn(msg.sender, numTokensToBurn.mul(10**18)); for(uint i = 0; i < numTokensToBurn; i++){ uint256 kittyToWithdraw = _kittyIds[i]; if(kittyToWithdraw == 0){ kittyToWithdraw = _popKitty(); } else { require(kittyIsDepositedInContract[kittyToWithdraw] == true, 'this kitty has already been withdrawn'); require(address(this) == kittyCore.ownerOf(kittyToWithdraw), 'the contract does not own this cat'); kittyIsDepositedInContract[kittyToWithdraw] = false; } kittyCore.transfer(_destinationAddresses[i], kittyToWithdraw); emit BurnTokenAndWithdrawKitty(kittyToWithdraw); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'burnTokensAndWithdrawKitties' is susceptible to reentrancy attacks. Despite the presence of a 'nonReentrant' modifier, the 'kittyCore.transfer' call within the loop can potentially lead to reentrancy. Since the state update 'kittyIsDepositedInContract[kittyToWithdraw] = false;' happens after this call, an attacker can re-enter the contract and manipulate balances or state before the original transaction is complete.",
+        "file_name": "0x09fe5f0236f0ea5d930197dce254d77b04128075.sol"
+    },
+    {
+        "function_name": "depositKittiesAndMintTokens",
+        "code": "function depositKittiesAndMintTokens(uint256[] calldata _kittyIds) external nonReentrant { require(_kittyIds.length > 0, 'you must submit an array with at least one element'); for(uint i = 0; i < _kittyIds.length; i++){ uint256 kittyToDeposit = _kittyIds[i]; require(msg.sender == kittyCore.ownerOf(kittyToDeposit), 'you do not own this cat'); require(kittyCore.kittyIndexToApproved(kittyToDeposit) == address(this), 'you must approve() this contract to give it permission to withdraw this cat before you can deposit a cat'); kittyCore.transferFrom(msg.sender, address(this), kittyToDeposit); _pushKitty(kittyToDeposit); emit DepositKittyAndMintToken(kittyToDeposit); } _mint(msg.sender, (_kittyIds.length).mul(10**18)); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'depositKittiesAndMintTokens' uses 'kittyCore.transferFrom' to transfer kitty ownership. This external call is not checked for success or failure, which may lead to inconsistencies in state if the call fails. This can result in a situation where the tokens are minted even though the kitty has not been successfully deposited in the contract.",
+        "file_name": "0x09fe5f0236f0ea5d930197dce254d77b04128075.sol"
+    },
+    {
+        "function_name": "batchRemoveWithdrawnKittiesFromStorage",
+        "code": "function batchRemoveWithdrawnKittiesFromStorage(uint256 _numSlotsToCheck) external { require(_numSlotsToCheck <= depositedKittiesArray.length, 'you are trying to batch remove more slots than exist in the array'); uint256 arrayIndex = depositedKittiesArray.length; for(uint i = 0; i < _numSlotsToCheck; i++){ arrayIndex = arrayIndex.sub(1); uint256 kittyId = depositedKittiesArray[arrayIndex]; if(kittyIsDepositedInContract[kittyId] == false){ depositedKittiesArray.length--; } else { return; } } }",
+        "vulnerability": "Denial of Service",
+        "reason": "In 'batchRemoveWithdrawnKittiesFromStorage', the function iteratively checks for withdrawn kitties and decreases the length of 'depositedKittiesArray'. An attacker can cause the function to always exit early by ensuring all checked kitties are not marked as withdrawn, leading to unexpected behavior and potential denial of service as legitimate users may not be able to remove their kitties.",
+        "file_name": "0x09fe5f0236f0ea5d930197dce254d77b04128075.sol"
+    }
+]

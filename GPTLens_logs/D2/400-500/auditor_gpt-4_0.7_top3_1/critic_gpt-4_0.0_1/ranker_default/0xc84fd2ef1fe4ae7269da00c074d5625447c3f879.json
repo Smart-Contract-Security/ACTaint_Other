@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning about reentrancy in the 'getTokens' function is valid. The function updates the state variable 'distributionFinished' after calling 'distr', which indeed could lead to reentrancy issues where an attacker might call 'getTokens' repeatedly before the state is updated. This could potentially drain the token supply if not properly managed. The correctness of the vulnerability identification is high, and the severity is also considerable given the potential impact. However, the profitability depends on the token's value and system constraints.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The getTokens function allows for ETH to be sent and tokens to be received in exchange. The function first calculates the number of tokens to be distributed and then calls distr to transfer these tokens. However, since the state variable 'distributionFinished' is only set after calling distr, this could allow for reentrancy where an attacker could repeatedly call getTokens before distributionFinished is updated, potentially exhausting the token supply.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xc84fd2ef1fe4ae7269da00c074d5625447c3f879.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Missing zero-value check for approvals",
+        "criticism": "The criticism regarding the lack of a zero-value check in the 'transferFrom' function is somewhat valid but not critical. The absence of a check for _amount being greater than zero could indeed lead to unnecessary gas usage and event emissions, but it does not pose a severe security risk. The issue with zero allowances is also not a direct vulnerability but more of a design choice that should be handled by client implementations. The correctness is moderate, but the severity and profitability are low.",
+        "correctness": 5,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "In the transferFrom function, there is no explicit check for _amount being greater than zero. This can lead to unnecessary gas usage and event emissions when zero tokens are transferred. Moreover, it does not prevent users from setting zero allowances, which could be used to exploit potential bugs in client implementations that do not expect an allowance of zero.",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) onlyPayloadSize(3 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[_from]); require(_amount <= allowed[_from][msg.sender]); balances[_from] = balances[_from].sub(_amount); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); Transfer(_from, _to, _amount); return true; }",
+        "file_name": "0xc84fd2ef1fe4ae7269da00c074d5625447c3f879.sol",
+        "final_score": 3.25
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Unchecked return value",
+        "criticism": "The criticism of the 'distr' function not checking the return value of the 'add' function from the SafeMath library is misplaced. The SafeMath 'add' function inherently uses 'require' to ensure that there is no overflow, and it reverts the transaction if an overflow occurs. Therefore, there is no need to check the return value because the transaction will not proceed in case of an error. The reasoning is incorrect, and the severity and profitability are both low as the function protects against overflow by design.",
+        "correctness": 1,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The distr function, which is used to distribute tokens and transfer them to the target address, does not check the return value of the 'add' function from the SafeMath library. If there's an overflow in 'balances[_to].add(_amount)', it could lead to incorrect balances without reverting the transaction.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "file_name": "0xc84fd2ef1fe4ae7269da00c074d5625447c3f879.sol",
+        "final_score": 0.75
+    }
+]

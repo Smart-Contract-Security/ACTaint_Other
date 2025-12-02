@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "placeBet",
+        "code": "function placeBet() public payable returns(bool _newGroupCreated) { require(msg.value >= minBet && msg.value <= maxBet, \"Wrong bet size\"); uint foundIndex = 0; bool foundGroup = false; for (uint i = Groups.length ; i > 0; i--) { if (Groups[i - 1].completed == false && Groups[i - 1].betSize == msg.value) { foundGroup = true; foundIndex = (i - 1); break; } } if (foundGroup == false) { uint groupId = Groups.length; uint rewardSize = (msg.value / 100) * 120; Groups.push(GroupData({ groupId: groupId, participants: new address[](0), timestamp: block.timestamp, betSize: msg.value, rewardSize: rewardSize, rewardsAvailable: 4, rewardedParticipants: new address[](0), completed: false })); Groups[Groups.length - 1].participants.push(msg.sender); emit GroupCreated( groupId, msg.sender, block.timestamp, msg.value, rewardSize ); return true; } Groups[foundIndex].participants.push(msg.sender); if (Groups[foundIndex].participants.length == 5) { Groups[foundIndex].completed = true; maxPossibleWithdraw += ((msg.value / 100) * 20); } emit GroupJoin( foundIndex, msg.sender ); return false; }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The 'placeBet' function iterates over an array 'Groups' to find a group where the participant can join. If the number of groups becomes very large, the gas required to execute the loop might exceed the block gas limit, causing the transaction to fail. This vulnerability can be exploited by a malicious user who repeatedly creates groups until the gas cost of the loop operation becomes too high for further transactions to succeed.",
+        "file_name": "0x93143d3e34a50aebab466368c3455fd858f77ad3.sol"
+    },
+    {
+        "function_name": "claimReward",
+        "code": "function claimReward(uint _groupId) public { require(Groups[_groupId].completed == true, \"Groups is not completed\"); require(Groups[_groupId].rewardsAvailable > 0, \"No reward found.\"); uint8 rewardsTotal; uint8 rewardsClaimed; for (uint8 i = 0; i < Groups[_groupId].participants.length; i++) { if (Groups[_groupId].participants[i] == msg.sender) rewardsTotal += 1; } for (uint8 j = 0; j < Groups[_groupId].rewardedParticipants.length; j++) { if (Groups[_groupId].rewardedParticipants[j] == msg.sender) rewardsClaimed += 1; } require(rewardsTotal > rewardsClaimed, \"No rewards found for this user\"); Groups[_groupId].rewardedParticipants.push(msg.sender); emit RewardClaimed( _groupId, msg.sender, Groups[_groupId].rewardSize, block.timestamp ); Groups[_groupId].rewardsAvailable -= 1; msg.sender.transfer(Groups[_groupId].rewardSize); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'claimReward' function transfers Ether to a participant before updating the state that tracks whether the participant has already claimed their reward. This could allow a participant to recursively call 'claimReward' within the same transaction before the state is updated, potentially allowing them to claim more rewards than they are entitled to.",
+        "file_name": "0x93143d3e34a50aebab466368c3455fd858f77ad3.sol"
+    },
+    {
+        "function_name": "withdrawOwnerMaxPossibleSafe",
+        "code": "function withdrawOwnerMaxPossibleSafe() public onlyOwner { owner.transfer(maxPossibleWithdraw); maxPossibleWithdraw = 0; }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The 'withdrawOwnerMaxPossibleSafe' function transfers Ether to the owner but does not check the success of the transfer. In Solidity, transfers can fail (for example, if the contract does not have enough balance), and ignoring the return value of 'transfer' can lead to state inconsistencies or locked funds. This vulnerability can be exploited to potentially lock funds within the contract by causing the 'transfer' to always fail.",
+        "file_name": "0x93143d3e34a50aebab466368c3455fd858f77ad3.sol"
+    }
+]

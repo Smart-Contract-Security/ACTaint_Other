@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "mul",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The reasoning provided is incorrect. The function does not lead to integer overflow but rather has a logic flaw where it sets the result to 0 if the product is non-zero, which is not typical behavior for a multiplication function. This could lead to unexpected results but not specifically to integer overflow. The vulnerability is more related to incorrect output rather than overflow. Correctness is low because the reasoning does not align with the actual issue. Severity is moderate due to potential widespread incorrect calculations, but profitability is low as it does not directly lead to exploitable conditions for an attacker.",
+        "correctness": 2,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The multiplication function in the SafeMath library sets the result to 0 when the product of `a` and `b` is non-zero. This is incorrect and can lead to unexpected behavior in any function that relies on `mul` for multiplication, potentially leading to vulnerabilities like integer overflow when used in the contract logic.",
+        "code": "function mul(uint256 a, uint256 b) internal constant returns (uint256) { uint256 c = a * b; assert(a == 0 || c / a == b); if (0 < c) c = 0; return c; }",
+        "file_name": "0xd87d3d9fb80a5f009b3812b536256b6f457176b1.sol"
+    },
+    {
+        "function_name": "refund",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is mostly correct. The function does indeed update the user's deposit balance after sending ether, which can lead to reentrancy attacks. However, the deposits are set to zero before any funds are sent, which mitigates the typical reentrancy attack vector where the state is unchanged before external calls. The severity is moderate because if there are other state variables manipulated after the send, it could still be vulnerable. Profitability is moderate as well, depending on the contract's balance and additional state manipulations.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The `refund` function sends ether to an arbitrary address using `msg.sender.send()` without updating the user's deposit balance first (`deposits[msg.sender] = 0` is done afterwards). This could allow a caller to recursively call the `refund` function within a fallback function in a malicious contract, draining the contract's balance unexpectedly as the balance update is not yet reflected.",
+        "code": "function refund() payable { require(now >= refundTime && now < ownerTime); require(msg.value >= 100 finney); uint256 dep = deposits[msg.sender]; uint256 depHalf = this.balance.div(2); uint256 dep3x = dep.mul(3); deposits[msg.sender] = 0; if (this.balance > 0 && dep3x > 0){ if (dep3x > this.balance){ msg.sender.send(dep3x); } else{ msg.sender.send(depHalf); } } }",
+        "file_name": "0xd87d3d9fb80a5f009b3812b536256b6f457176b1.sol"
+    },
+    {
+        "function_name": "refundOwner",
+        "vulnerability": "Unexpected Self-Destruction",
+        "criticism": "The reasoning is accurate in identifying a critical issue with the use of 'suicide(owner)' without ensuring the success of the 'send' operation. This could indeed lead to loss of funds and access, making it a severe issue. However, the reasoning could emphasize the risk of using 'suicide' in general, as it is a deprecated function in newer versions of Solidity, replaced by 'selfdestruct'. The severity is high due to the irreversible nature of the action and potential loss of funds. Profitability for an attacker is low as this function is likely restricted to the owner.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 1,
+        "reason": "The `refundOwner` function uses `suicide(owner)`, which forcefully destroys the contract and sends the remaining funds to the owner address. This action is irreversible and can lead to loss of access to the contract without recovery option, especially if there is still functionality that users depend on. Additionally, there's no check to ensure that the `send` operation actually succeeded before calling `suicide`, potentially leading to loss of contract funds if the send fails.",
+        "code": "function refundOwner() { require(now >= ownerTime); if(owner.send(this.balance)){ suicide(owner); } }",
+        "file_name": "0xd87d3d9fb80a5f009b3812b536256b6f457176b1.sol"
+    }
+]

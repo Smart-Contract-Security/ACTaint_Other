@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(balanceOf[_from] >= _value); require(_value <= allowance[_from][msg.sender]); balanceOf[_from] = balanceOf[_from].sub(_value); allowance[_from][msg.sender] = allowance[_from][msg.sender].sub(_value); totalSupply = totalSupply.sub(_value); emit Burn(_from, _value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'burnFrom' function decreases the allowance and burns the tokens from a user's balance based on the allowance set for the msg.sender. However, it does not prevent re-entry attacks, making it possible for an attacker to re-enter the contract and potentially manipulate balances or allowances in between the calls.",
+        "file_name": "0x44600dbc85b6b991b21ca515279b5647ba79998d.sol"
+    },
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] = balanceOf[target].add(mintedAmount); totalSupply = totalSupply.add(mintedAmount); emit Transfer(0, this, mintedAmount); emit Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The 'mintToken' function allows the owner to mint an arbitrary amount of tokens to any account. This can lead to a serious risk of inflation if the function is called indiscriminately or maliciously, as it does not impose any checks or limits on the amount of tokens that can be created.",
+        "file_name": "0x44600dbc85b6b991b21ca515279b5647ba79998d.sol"
+    },
+    {
+        "function_name": "forwardEherToOwner",
+        "code": "function forwardEherToOwner() internal { owner.transfer(msg.value); }",
+        "vulnerability": "Denial of Service (DoS) via Block Gas Limit",
+        "reason": "This function is used to forward all the Ether sent in the transaction to the owner. If the transaction gas cost is very high or if the owner's address is a contract that requires a significant amount of gas to receive Ether, it might cause the transaction to fail due to block gas limit. This can be used by an attacker to prevent processing of legitimate transactions, effectively causing a denial of service.",
+        "file_name": "0x44600dbc85b6b991b21ca515279b5647ba79998d.sol"
+    }
+]

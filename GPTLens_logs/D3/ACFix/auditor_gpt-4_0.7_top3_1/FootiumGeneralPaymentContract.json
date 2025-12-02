@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setPaymentReceiverAddress",
+        "code": "function setPaymentReceiverAddress(address _paymentReceiverAddress) external onlyOwner {\n    paymentReceiverAddress = _paymentReceiverAddress;\n    emit PaymentReceiverUpdated(paymentReceiverAddress);\n}",
+        "vulnerability": "Arbitrary Payment Redirection",
+        "reason": "The function allows the owner to change the payment receiver address. If the account of the owner is compromised, the attacker can redirect the payments to any address they control. The emitted event does not help in preventing or identifying unauthorized changes sufficiently early as it logs the change after it has already occurred.",
+        "file_name": "FootiumGeneralPaymentContract.sol"
+    },
+    {
+        "function_name": "makePayment",
+        "code": "function makePayment(uint256 _clubId, string calldata _message) external payable whenNotPaused nonReentrant {\n    if (msg.sender != footiumClub.ownerOf(_clubId)) {\n        revert NotClubOwner(_clubId, msg.sender);\n    }\n    if (msg.value <= 0) {\n        revert IncorrectETHAmount(msg.value);\n    }\n    (bool sent, ) = paymentReceiverAddress.call{value: msg.value}(\"\");\n    if (!sent) {\n        revert FailedToSendETH(msg.value);\n    }\n    emit PaymentMade(_clubId, msg.value, _message);\n}",
+        "vulnerability": "Reentrancy on External Call",
+        "reason": "Despite the use of a reentrancy guard, the function involves an external call to an arbitrary address (paymentReceiverAddress) which can potentially lead to reentrancy attacks. If the receiver address is a contract, it could include malicious code in its fallback function that could be used to re-enter the smart contract before the first execution completes. This could lead to unexpected behaviors or drained funds if the state is not managed properly before the external call.",
+        "file_name": "FootiumGeneralPaymentContract.sol"
+    },
+    {
+        "function_name": "makePayment",
+        "code": "function makePayment(uint256 _clubId, string calldata _message) external payable whenNotPaused nonReentrant {\n    if (msg.sender != footiumClub.ownerOf(_clubId)) {\n        revert NotClubOwner(_clubId, msg.sender);\n    }\n    if (msg.value <= 0) {\n        revert IncorrectETHAmount(msg.value);\n    }\n    (bool sent, ) = paymentReceiverAddress.call{value: msg.value}(\"\");\n    if (!sent) {\n        revert FailedToSendETH(msg.value);\n    }\n    emit PaymentMade(_clubId, msg.value, _message);\n}",
+        "vulnerability": "Denial of Service by Failed Transfer",
+        "reason": "The function reverts if the ETH transfer fails. An attacker could exploit this by setting the paymentReceiverAddress to a contract that rejects incoming Ether transfers. This would prevent all users from successfully making payments, effectively causing a denial of service condition on the functionality to make payments.",
+        "file_name": "FootiumGeneralPaymentContract.sol"
+    }
+]

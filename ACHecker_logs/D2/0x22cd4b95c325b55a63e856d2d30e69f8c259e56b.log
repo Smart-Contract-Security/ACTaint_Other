@@ -1,0 +1,41 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x22cd4b95c325b55a63e856d2d30e69f8c259e56b.code
+Start time: 19/08/2022 19:49:54
+Building CFG...
+CFG generation time (secs): 0.87
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 3310)  cee:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+Violated access control check in function allocateBountyAndEcosystemTokens()
+	( 3563)  deb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+Violated access control check in function halt()
+	( 4392) 1128:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+Violated access control check in function changeFounder(address)
+	( 4622) 120e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+Violated access control check in function transfer(address,uint256)
+	( 5250) 1482:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+Violated access control check in function allocateFounderTokens()
+	( 5379) 1503:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+Violated access control check in function unhalt()
+	( 5956) 1744:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function FirstBloodToken(address,address,uint256,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.38
+End time: 19/08/2022 19:50:00

@@ -1,0 +1,48 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x1088eec81b9aa8edb5937fdfc9aa5556bcd3ebcb.code
+Start time: 19/08/2022 07:01:06
+Building CFG...
+CFG generation time (secs): 68.67
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 3514)  dba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+Violated access control check in function burn(uint256)
+	( 3514)  dba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+Violated access control check in function () payable
+	( 3514)  dba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+Violated access control check in function mintToken(address,uint256)
+	( 3535)  dcf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+Violated access control check in function burnFrom(address,uint256)
+	( 3514)  dba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+Violated access control check in function transfer(address,uint256)
+	( 3514)  dba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+Violated access control check in function buy()
+	( 3514)  dba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function giveBlockReward()
++--Attacker can make changes to AC item {4} in function giveBlockReward()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 26.85
+End time: 19/08/2022 07:02:42

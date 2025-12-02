@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race condition vulnerability",
+        "reason": "The approve function is susceptible to a race condition attack known as the 'ERC20 approve/transferFrom attack'. An attacker can exploit this condition by first calling approve to set a non-zero allowance, then quickly calling it again to change the allowance before the spender has the chance to use the original allowance. This can lead to the spender being able to use more tokens than intended by the token owner.",
+        "file_name": "0xceae314d493855918ab12705d944d3af81beeb3d.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The getTokens function is vulnerable to reentrancy attacks as it calls an external contract (distr function) without setting the state (distributionFinished) before making the call. This can allow an attacker to recursively call getTokens, leading to multiple distributions before the state is updated to indicate distribution is finished.",
+        "file_name": "0xceae314d493855918ab12705d944d3af81beeb3d.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unchecked send",
+        "reason": "The withdraw function transfers Ether to the owner address without checking the return value of the transfer function. If the transfer fails (e.g., if the contract balance is insufficient), the contract will not be aware of the failure, potentially leading to inconsistent state or denial of service.",
+        "file_name": "0xceae314d493855918ab12705d944d3af81beeb3d.sol"
+    }
+]

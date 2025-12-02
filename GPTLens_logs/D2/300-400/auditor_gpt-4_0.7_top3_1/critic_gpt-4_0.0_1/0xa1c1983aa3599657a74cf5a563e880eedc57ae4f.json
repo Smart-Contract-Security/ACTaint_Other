@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "fallback function",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism is valid as the fallback function does use the 'send' method which is known for its reentrancy risks due to its low gas stipend. However, the severity is somewhat mitigated by the fact that the state is updated immediately after the send operation with 'setFacts()', which could potentially limit the impact of a reentrancy attack depending on what 'setFacts()' does. The profitability of exploiting this vulnerability could be high if an attacker can repeatedly invoke the fallback function to drain the contract's funds.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 6,
+        "reason": "The fallback function allows for reentrancy due to the use of the 'send' method without setting the state beforehand. The 'send' method is called on 'whale' and 'msg.sender' before the state (such as 'blockheight') is updated with 'setFacts()'. This may allow an attacker to recursively call the fallback function, potentially leading to unexpected behavior or draining the contract's balance.",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "file_name": "0xa1c1983aa3599657a74cf5a563e880eedc57ae4f.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "vulnerability": "Unchecked send",
+        "criticism": "The reasoning is correct in identifying that the results of 'send' are not checked, which is a common mistake leading to funds being locked or lost. However, the severity and profitability are not as high as suggested because the function does not halt or change its behavior based on the success of the send operation. The impact is primarily on the reliability of the event logs and state updates, which while important, do not typically result in direct financial loss or gain for an attacker.",
+        "correctness": 7,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "In the fallback function, the 'send' method results are stored in variables 'isSuccess' and 'isOtherSuccess', but these results are not checked before proceeding. If 'send' fails (returning false), the function continues to execute as if it had succeeded. This could lead to a state where the contract thinks it has successfully sent funds even though it has not, potentially leading to incorrect event logs and state updates.",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "file_name": "0xa1c1983aa3599657a74cf5a563e880eedc57ae4f.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "vulnerability": "DoS with (unexpected) revert",
+        "criticism": "The reasoning correctly identifies a potential DoS attack vector through the use of the 'throw' statement. This vulnerability could indeed prevent legitimate interactions with the contract if exploited by sending transactions with values just below the threshold. The severity is moderate because it affects the availability of the contract. However, the profitability for an attacker is low, as this type of attack generally does not yield financial gain but rather disrupts service.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The fallback function uses the 'throw' statement to revert the transaction if the incoming transaction value is less than 'this.balance + DELTA'. This could be used to deny service by repeatedly sending transactions with value slightly less than required, causing all transactions to revert and potentially preventing legitimate interactions with the contract.",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "file_name": "0xa1c1983aa3599657a74cf5a563e880eedc57ae4f.sol"
+    }
+]

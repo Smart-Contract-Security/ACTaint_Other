@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "revoke",
+        "vulnerability": "Time manipulation and access control",
+        "criticism": "The reasoning provided is incorrect. The function checks if the current time is greater than or equal to the unlockTime, which is a correct implementation to prevent premature access. The claim about the owner manipulating system time or deploying a similar contract is not valid because blockchain timestamps (like 'now' in Solidity) are determined by the block timestamp, not the system clock, and cannot be manipulated by the contract owner. Therefore, the vulnerability described does not exist, leading to low scores in correctness, severity, and profitability.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'revoke' function allows the contract owner to withdraw tokens from a vault even before the unlockTime has been reached, due to the incorrect condition check order. The function first checks if the current time is greater than or equal to unlockTime, which is correct, but the owner can bypass this by manipulating the system time or deploying a similar contract in his control. This could let the owner access and withdraw tokens prematurely.",
+        "code": "function revoke(address to, uint256 index) public onlyOwner { vault storage v = vaults[to][index]; require(now >= v.unlockTime); require(!v.claimed); v.claimed = true; require(EST.transfer(msg.sender, v.amount)); emit Revoke(to, index); }",
+        "file_name": "0x582bddb3bfd7e3d8fd6d0b132238eb0a28fd11fa.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning about reentrancy vulnerability due to the event emission after state change is incorrect. In Solidity, the state change (adjustment of the allowance) happens before the actual transfer, which is a correct pattern to prevent reentrancy attacks. The event emission does not allow reentrancy as it does not call external contracts or pass control flow. Therefore, the vulnerability claim is incorrect, and the function is not susceptible to the described attack, resulting in low scores across all metrics.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'transferFrom' function is vulnerable to reentrancy attacks. It modifies the allowed mapping (state change) after calling the internal '_transfer' function which emits an event. This ordering allows a malicious contract to call 'transferFrom' again when it receives tokens (via the emitted event) in the middle of execution, potentially leading to unexpected behavior or draining of tokens.",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns(bool) { allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value); _transfer(_from, _to, _value); return true; }",
+        "file_name": "0x582bddb3bfd7e3d8fd6d0b132238eb0a28fd11fa.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is partially correct. The 'approveAndCall' function does indeed call an external contract, which could potentially lead to reentrancy. However, the function first completes the approval process before making the external call, which reduces the risk. The external call is made to a predefined interface which should be designed to handle such calls safely. The actual risk depends on the implementation of the external contract. Therefore, while there is a potential for reentrancy, the severity and profitability depend on external factors, leading to moderate scores.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 3,
+        "reason": "In the 'approveAndCall' function, after approving tokens, it calls an external contract ('spender.receiveApproval'). This external call can potentially be exploited by a malicious contract to re-enter the ERC20 contract and call functions such as 'transfer' or 'transferFrom' before the original call finishes executing. This can lead to unexpected behavior or loss of funds.",
+        "code": "function approveAndCall(address _spender, uint256 _value, bytes _extraData) public returns(bool) { tokenRecipient spender = tokenRecipient(_spender); if (approve(_spender, _value)) { spender.receiveApproval(msg.sender, _value, this, _extraData); return true; } return false; }",
+        "file_name": "0x582bddb3bfd7e3d8fd6d0b132238eb0a28fd11fa.sol"
+    }
+]

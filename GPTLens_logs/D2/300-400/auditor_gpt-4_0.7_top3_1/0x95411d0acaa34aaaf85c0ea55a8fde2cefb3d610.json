@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint tokenCount) public returns (bool) { var balance = dividends(msg.sender); payouts[msg.sender] += (int256) (balance * PRECISION); totalPayouts += (int256) (balance * PRECISION); msg.sender.transfer(balance); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function transfers Ether to the caller using msg.sender.transfer(balance) before updating the sender's balance. This allows a malicious contract to call withdraw again in its fallback function during the transfer, potentially leading to a reentrancy attack where more Ether is withdrawn than the user is entitled to.",
+        "file_name": "0x95411d0acaa34aaaf85c0ea55a8fde2cefb3d610.sol"
+    },
+    {
+        "function_name": "transferTokens",
+        "code": "function transferTokens(address _from, address _to, uint256 _value) internal { if (balanceOfOld[_from] < _value) revert(); if (_to == address(this)) { sell(_value); } else { int256 payoutDiff = (int256) (earningsPerShare * _value); balanceOfOld[_from] -= _value; balanceOfOld[_to] += _value; payouts[_from] -= payoutDiff; payouts[_to] += payoutDiff; } Transfer(_from, _to, _value); }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The 'sell' function called within 'transferTokens' may fail (e.g., due to a call to a contract that throws an error), but the return value is not checked. This can lead to unexpected behavior as the transfer will continue even if the sell operation fails, potentially leading to incorrect token balances.",
+        "file_name": "0x95411d0acaa34aaaf85c0ea55a8fde2cefb3d610.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() internal { if (msg.value < 0.000001 ether || msg.value > 1000000 ether) revert(); var sender = msg.sender; var fee = (uint)(msg.value / 10); var numEther = msg.value - fee; var numTokens = getTokensForEther(numEther); var buyerfee = fee * PRECISION; if (totalSupply > 0) { var holderreward = (PRECISION - (reserve() + numEther) * numTokens * PRECISION / (totalSupply + numTokens) / numEther) * (uint)(CRRD) / (uint)(CRRD-CRRN); var holderfee = fee * holderreward; buyerfee -= holderfee; var feePerShare = holderfee / totalSupply; earningsPerShare += feePerShare; } totalSupply += numTokens; balanceOfOld[sender] += numTokens; var payoutDiff = (int256) ((earningsPerShare * numTokens) - buyerfee); payouts[sender] += payoutDiff; totalPayouts += payoutDiff; }",
+        "vulnerability": "Integer Overflow and Underflow",
+        "reason": "The function 'buy' manipulates several mathematical operations without proper checks for overflows or underflows. This could lead to integer overflow or underflow, allowing users to manipulate token amounts or ether values maliciously.",
+        "file_name": "0x95411d0acaa34aaaf85c0ea55a8fde2cefb3d610.sol"
+    }
+]

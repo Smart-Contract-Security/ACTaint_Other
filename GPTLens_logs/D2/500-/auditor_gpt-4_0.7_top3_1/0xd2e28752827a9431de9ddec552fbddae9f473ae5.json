@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Mint",
+        "code": "function Mint() public{ owner = msg.sender; }",
+        "vulnerability": "Owner Privilege Overwrite",
+        "reason": "The Mint function allows any caller to set themselves as the owner of the contract, which should be a privileged control set only once, ideally during contract deployment. This vulnerability allows any user to gain administrative control of the contract, including accessing functions restricted to the owner, such as the 'collect' function.",
+        "file_name": "0xd2e28752827a9431de9ddec552fbddae9f473ae5.sol"
+    },
+    {
+        "function_name": "create",
+        "code": "function create(address beneficiary)public payable{ uint256 amount = msg.value; if(amount > 0){ balances[beneficiary] += amount/rate; totalSupply += amount/rate; } }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The 'create' function allows an unbounded increase in the total supply of tokens by accepting Ether and minting new tokens based on the 'rate'. There is no cap or limit check on the totalSupply or the amount of tokens that can be minted per transaction. This can lead to hyperinflation of the token and devaluation, as users can mint an arbitrary amount of tokens.",
+        "file_name": "0xd2e28752827a9431de9ddec552fbddae9f473ae5.sol"
+    },
+    {
+        "function_name": "collect",
+        "code": "function collect(uint256 amount) onlyOwner public{ msg.sender.transfer(amount); }",
+        "vulnerability": "Arbitrary Withdrawal",
+        "reason": "The 'collect' function allows the contract owner to transfer any amount of Ether stored in the contract to their address. Due to the vulnerability in the 'Mint' function where ownership can be easily overtaken, a malicious actor can set themselves as the owner and drain all Ether from the contract. This poses a severe risk to the funds stored within the contract.",
+        "file_name": "0xd2e28752827a9431de9ddec552fbddae9f473ae5.sol"
+    }
+]

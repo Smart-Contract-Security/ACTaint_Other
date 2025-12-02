@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "retrait_1",
+        "code": "function retrait_1 () public { require( msg.sender == User_1 ); require( Token_1.transfer(User_1, retraitStandard_1) ); require( inData_1 == inData_2 ); require( inData_3 == inData_4 ); require( inData_5 == inData_6 ); }",
+        "vulnerability": "Token Transfer Without Balance Check",
+        "reason": "The function retrait_1 does not check if the Token_1 contract has enough tokens to perform the transfer operation before executing it. This can lead to an underflow in the token contract if the token balance in the contract is less than the 'retraitStandard_1'. It can potentially allow users to withdraw tokens they are not entitled to, or disrupt the contract's ability to function by causing token transfer operations to fail.",
+        "file_name": "0x712f0350df4f56fad07bd5e2c74941cc30c5df88.sol"
+    },
+    {
+        "function_name": "retrait_2",
+        "code": "function retrait_2 () public { require( msg.sender == User_2 ); require( Token_2.transfer(User_2, retraitStandard_2) ); require( inData_1 == inData_2 ); require( inData_3 == inData_4 ); require( inData_5 == inData_6 ); }",
+        "vulnerability": "Token Transfer Without Balance Check",
+        "reason": "Similar to the retrait_1 function, retrait_2 does not verify if there are sufficient tokens in the Token_2 contract to complete the transfer specified by 'retraitStandard_2'. This oversight can result in failed transfers if the balance is insufficient, potentially causing negative effects on the token's integrity and user's assets.",
+        "file_name": "0x712f0350df4f56fad07bd5e2c74941cc30c5df88.sol"
+    },
+    {
+        "function_name": "retrait_3",
+        "code": "function retrait_3 () public { require( msg.sender == User_3 ); require( Token_3.transfer(User_3, retraitStandard_3) ); require( inData_1 == inData_2 ); require( inData_3 == inData_4 ); require( inData_5 == inData_6 ); }",
+        "vulnerability": "Token Transfer Without Balance Check",
+        "reason": "This function continues the pattern observed in previous retrait functions by not ensuring that the Token_3 contract contains adequate tokens for the 'retraitStandard_3' amount prior to initiating a transfer. This lack of validation can lead to transactions that fail due to insufficient balance, which affects the reliability and trustworthiness of the contract operations.",
+        "file_name": "0x712f0350df4f56fad07bd5e2c74941cc30c5df88.sol"
+    }
+]

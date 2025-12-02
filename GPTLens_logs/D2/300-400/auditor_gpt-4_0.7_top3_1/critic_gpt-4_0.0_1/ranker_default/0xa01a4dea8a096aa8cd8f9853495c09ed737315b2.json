@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "() payable",
+        "vulnerability": "Integer overflow",
+        "criticism": "The reasoning correctly identifies a potential integer overflow in the calculation of 'numberOfTokens'. This could indeed lead to incorrect token allocations, which is a severe issue in a financial context. The vulnerability is critical as it can directly affect the financial integrity of the token sale. The profitability for an attacker exploiting this overflow could be high, depending on the additional tokens they could illegitimately claim.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 8,
+        "reason": "In the computation of 'numberOfTokens', there's potential for an integer overflow when multiplying 'msg.value / presalesTokenPriceInWei' by 1e18. If this overflow occurs, it can lead to incorrect calculations of tokens to be allocated, which can be exploited to obtain more tokens than owed or disrupt the contract's token tracking.",
+        "code": "function () payable public validGasPrice { require(msg.sender != address(0)); require(msg.value != 0); require(msg.value>=0.1 ether); require(isContributionAllowed()); contributors[msg.sender] = contributors[msg.sender].add(msg.value); weiRaised = weiRaised.add(msg.value); uint256 numberOfTokens = 0; if (isPreTokenSaleActive()) { numberOfTokens = msg.value/presalesTokenPriceInWei; numberOfTokens = numberOfTokens * (1e18); require((numberOfTokens + numberOfTokensAllocated) <= presalesCap); tokensAllocated[msg.sender] = tokensAllocated[msg.sender].add(numberOfTokens); numberOfTokensAllocated = numberOfTokensAllocated.add(numberOfTokens); forwardFunds(); emit ContributionReceived(msg.sender, msg.value, numberOfTokens); } else if (isTokenSaleActive()) { numberOfTokens = msg.value/publicsalesTokenPriceInWei; numberOfTokens = numberOfTokens * (1e18); require((numberOfTokens + numberOfTokensAllocated) <= (presalesCap + publicsalesCap)); tokensAllocated[msg.sender] = tokensAllocated[msg.sender].add(numberOfTokens); numberOfTokensAllocated = numberOfTokensAllocated.add(numberOfTokens); forwardFunds(); emit ContributionReceived(msg.sender, msg.value, numberOfTokens); } checkifCapHasReached(); }",
+        "file_name": "0xa01a4dea8a096aa8cd8f9853495c09ed737315b2.sol",
+        "final_score": 8.75
+    },
+    {
+        "function_name": "refundContribution",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in pointing out the reentrancy vulnerability due to the order of operations in the 'refundContribution' function. Sending Ether before resetting the contributor's balance can indeed be exploited by a malicious contract. This is a classic reentrancy attack scenario, which is severe due to the potential financial loss and relatively easy to exploit, making it profitable for attackers.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function 'refundContribution' sends Ether to an address before setting the contributor's balance to 0. This can be exploited by a malicious contract that re-enters 'refundContribution' during the .send() call, potentially allowing the attacker to withdraw more Ether than they contributed initially.",
+        "code": "function refundContribution(address _contributor, uint256 _weiAmount) public onlyOwner returns (bool) { require(_contributor != 0); if (!_contributor.send(_weiAmount)) { return false; } else { contributors[_contributor] = 0; return true; } }",
+        "file_name": "0xa01a4dea8a096aa8cd8f9853495c09ed737315b2.sol",
+        "final_score": 8.25
+    },
+    {
+        "function_name": "transferOwnership",
+        "vulnerability": "Ownership takeover",
+        "criticism": "The reasoning is accurate in identifying the risk of ownership transfer if the owner's account is compromised. However, the function is designed to allow the owner to transfer ownership, which is a common feature in many contracts. The vulnerability is not in the code itself but in the security of the owner's account. Therefore, the correctness is high, but the severity and profitability depend on the security practices of the owner, not the function's inherent design.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "This function allows the current owner to transfer ownership to any other address, including potentially malicious ones, without any checks besides ownership. If a malicious user gains control over the owner's account, they can transfer ownership to themselves and take full control of the contract.",
+        "code": "function transferOwnership(address _newOwner) onlyOwner public { owner = _newOwner; }",
+        "file_name": "0xa01a4dea8a096aa8cd8f9853495c09ed737315b2.sol",
+        "final_score": 6.5
+    }
+]

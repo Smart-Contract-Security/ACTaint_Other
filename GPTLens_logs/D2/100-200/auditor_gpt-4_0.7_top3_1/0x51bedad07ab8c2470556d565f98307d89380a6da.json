@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferERC20",
+        "code": "function transferERC20(address _erc20TokenAddress, address _recipient, uint256 _amount) public onlyVault returns (bool) { TokenERC20 _erc20 = TokenERC20(_erc20TokenAddress); _erc20.transfer(_recipient, _amount); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transferERC20' calls an external contract '_erc20.transfer(_recipient, _amount)' which can potentially lead to reentrancy attacks. An attacker can take advantage of the reentrancy to repeatedly call this function, draining the funds.",
+        "file_name": "0x51bedad07ab8c2470556d565f98307d89380a6da.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(balanceOf[_from] >= _value); require(_value <= allowance[_from][msg.sender]); balanceOf[_from] -= _value; allowance[_from][msg.sender] -= _value; totalSupply -= _value; emit Burn(_from, _value); return true; }",
+        "vulnerability": "Missing zero address check",
+        "reason": "The function 'burnFrom' does not check if the address '_from' is the zero address. It allows burning tokens from the zero address, which can lead to an incorrect total supply calculation and potentially other unexpected behavior.",
+        "file_name": "0x51bedad07ab8c2470556d565f98307d89380a6da.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(_to != address(0)); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value > balanceOf[_to]); uint previousBalances = balanceOf[_from] + balanceOf[_to]; balanceOf[_from] -= _value; balanceOf[_to] += _value; emit Transfer(_from, _to, _value); assert(balanceOf[_from] + balanceOf[_to] == previousBalances); }",
+        "vulnerability": "Arithmetic overflow",
+        "reason": "The function '_transfer' does not properly handle arithmetic overflow/underflow. The check 'balanceOf[_to] + _value > balanceOf[_to]' can be bypassed if an overflow occurs. This can lead to incorrect token balances and potential loss of funds.",
+        "file_name": "0x51bedad07ab8c2470556d565f98307d89380a6da.sol"
+    }
+]

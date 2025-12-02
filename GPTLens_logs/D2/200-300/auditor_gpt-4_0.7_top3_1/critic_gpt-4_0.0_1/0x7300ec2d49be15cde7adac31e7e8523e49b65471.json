@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "BuyBooster",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is incorrect. The function 'BuyBooster' does not make any external calls that could lead to reentrancy before updating the state. The 'UpdateMoney' and 'UpdateMoneyAt' functions are called after the state is updated, which mitigates the risk of reentrancy. Therefore, the vulnerability described does not exist in this context, leading to a low correctness score. The severity and profitability are also low as the described vulnerability does not pose a real threat.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The function updates the state after making external calls to 'UpdateMoney' and 'UpdateMoneyAt', which might allow an attacker to re-enter the function with the same state before it is updated.",
+        "code": "function BuyBooster() external payable { require(msg.value >= nextBoosterPrice); require(miners[msg.sender].lastUpdateTime != 0); for(uint i = 0; i < NUMBER_OF_BOOSTERS; ++i) if(boosterHolders[i] == msg.sender) revert(); address beneficiary = boosterHolders[boosterIndex]; MinerData storage m = miners[beneficiary]; m.unclaimedPot += (msg.value * 9403) / 10000; honeyPotAmount += (msg.value * 597) / 20000; devFund += (msg.value * 597) / 20000; nextBoosterPrice += nextBoosterPrice / 20; UpdateMoney(); UpdateMoneyAt(beneficiary); boosterHolders[boosterIndex] = msg.sender; boosterIndex += 1; if(boosterIndex >= 5) boosterIndex = 0; }",
+        "file_name": "0x7300ec2d49be15cde7adac31e7e8523e49b65471.sol"
+    },
+    {
+        "function_name": "WithdrawPotShare",
+        "vulnerability": "Reentrancy on Ether transfer",
+        "criticism": "The reasoning is partially correct. The function does use 'send' which is known for its gas stipend limitations, potentially allowing fallback functions to execute. However, the function sets 'm.unclaimedPot' to 0 before the 'send' operation, which is a good practice to prevent reentrancy. The issue arises if the 'send' fails, as it does not revert the transaction, which could lead to inconsistencies if not handled correctly. The severity is moderate due to potential loss of funds, but profitability is low as it requires specific conditions to exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function uses 'send' to transfer Ether and sets 'm.unclaimedPot' to 0 after the transfer. If the 'send' call fails, it will not revert the transaction, allowing potential reentrancy or other state inconsistencies.",
+        "code": "function WithdrawPotShare() public { MinerData storage m = miners[msg.sender]; require(m.unclaimedPot > 0); require(m.lastUpdateTime != 0); uint256 amntToSend = m.unclaimedPot; m.unclaimedPot = 0; if(msg.sender.send(amntToSend)) { m.unclaimedPot = 0; } }",
+        "file_name": "0x7300ec2d49be15cde7adac31e7e8523e49b65471.sol"
+    },
+    {
+        "function_name": "BuyUpgrade",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The reasoning is correct in identifying that the function does not check the return values of 'BuyHandler' and 'UpdateMoney'. This could indeed lead to unexpected behavior if these functions fail. However, the severity of this issue depends on the implementation of the called functions. If they are critical and their failure could compromise the system, the severity would be higher. Profitability is low as exploiting such a vulnerability would require specific knowledge about the failures of the external calls.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The function performs a call to 'BuyHandler' and 'UpdateMoney' without checking their return values or potential exceptions, which might lead to unexpected behavior if those functions fail to execute as intended.",
+        "code": "function BuyUpgrade(uint256 idx) external payable { require(idx < NUMBER_OF_UPGRADES); require(msg.value >= boostData[idx].priceInWEI); require(miners[msg.sender].hasUpgrade[idx] == 0); require(miners[msg.sender].lastUpdateTime != 0); BuyHandler(msg.value); UpdateMoney(); miners[msg.sender].hasUpgrade[idx] = 1; miners[msg.sender].premamentMineBonusPct += boostData[idx].percentBonus; }",
+        "file_name": "0x7300ec2d49be15cde7adac31e7e8523e49b65471.sol"
+    }
+]

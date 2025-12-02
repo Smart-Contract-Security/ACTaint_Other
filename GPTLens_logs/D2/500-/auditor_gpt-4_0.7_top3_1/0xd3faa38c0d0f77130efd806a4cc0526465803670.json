@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "giveRightToVote",
+        "code": "function giveRightToVote(address toVoter) public { if (msg.sender != chairperson || voters[toVoter].voted) return; voters[toVoter].weight = 1; }",
+        "vulnerability": "Missing Input Validation",
+        "reason": "This function lacks a check to ensure that 'toVoter' is a valid address before granting voting rights. An attacker could potentially pass in zero addresses (0x0) or addresses that should not have the right to vote, enabling unauthorized control in the voting process.",
+        "file_name": "0xd3faa38c0d0f77130efd806a4cc0526465803670.sol"
+    },
+    {
+        "function_name": "delegate",
+        "code": "function delegate(address to) public { Voter storage sender = voters[msg.sender]; if (sender.voted) return; while (voters[to].delegate != address(0) && voters[to].delegate != msg.sender) to = voters[to].delegate; if (to == msg.sender) return; sender.voted = true; sender.delegate = to; Voter storage delegateTo = voters[to]; if (delegateTo.voted) proposals[delegateTo.vote].voteCount += sender.weight; else delegateTo.weight += sender.weight; }",
+        "vulnerability": "Unbounded Loop",
+        "reason": "The while loop in this function can result in high gas costs potentially leading to denial of service if the delegation chain is long enough. An attacker could create a long chain of delegations that when executed, could consume all the gas provided by a transaction, effectively making the function unable to complete.",
+        "file_name": "0xd3faa38c0d0f77130efd806a4cc0526465803670.sol"
+    },
+    {
+        "function_name": "vote",
+        "code": "function vote(uint8 toProposal) public { Voter storage sender = voters[msg.sender]; if (sender.voted || toProposal >= proposals.length) return; sender.voted = true; sender.vote = toProposal; proposals[toProposal].voteCount += sender.weight; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function does not validate whether 'proposals[toProposal].voteCount + sender.weight' exceeds the maximum allowable uint value. This can lead to an integer overflow, where adding two large uints results in a value that loops back to zero, potentially causing incorrect tallying of votes and disruption in the determination of the winning proposal.",
+        "file_name": "0xd3faa38c0d0f77130efd806a4cc0526465803670.sol"
+    }
+]

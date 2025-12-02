@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setAllowed",
+        "vulnerability": "Privilege escalation",
+        "criticism": "The reasoning provided is somewhat valid, as the function allows the owner to grant permissions to any address, potentially leading to a chain of permissions being granted if not controlled properly. However, the severity and profitability are overstated. The owner has control over whom they allow, and it's assumed that the owner acts in good faith. The risk lies in human error rather than a direct exploit in the code. Therefore, the severity and profitability are lower than suggested.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "The 'setAllowed' function allows the owner to grant permission to any address to register a username. However, there's no check on what permissions the newly allowed address may grant further. This could lead to a situation where a malicious address, once allowed, could further allow other malicious entities, creating a chain that the owner might not be in control of. This could be especially problematic if the owner mistakenly allows a malicious address.",
+        "code": "function setAllowed(address _account, bool _allowed) external onlyOwner { require(_account != msg.sender, 'You can not manage your role'); allowed[_account] = _allowed; emit Allow(msg.sender, _account, _allowed); }",
+        "file_name": "0x894b883905bfee2cc448880f1b59f4a762e67566.sol"
+    },
+    {
+        "function_name": "registerUsername",
+        "vulnerability": "Reentrancy attack",
+        "criticism": "The reasoning is incorrect because the function 'registerUsername' itself does not directly interact with external contracts; it calls an internal function that does. Moreover, the internal function '_registerUsername' does not seem to have reentrant calls as it does not call any unknown external contracts directly within a state-changing context after its own external calls. The vulnerability described does not match the actual risk, leading to low scores in correctness, severity, and profitability.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The 'registerUsername' function calls '_registerUsername', which interacts with an external contract (ERC20Interface) via 'transferFrom' and 'burn'. This interaction with an external contract could be exploited by a reentrancy attack where a malicious contract could call back into 'registerUsername' or another function in 'AvatarNameRegistry' that changes state, leading to unexpected behaviors or state corruption.",
+        "code": "function registerUsername(address _beneficiary, string calldata _username, string calldata _metadata) external onlyAllowed { _registerUsername(_beneficiary, _username, _metadata); }",
+        "file_name": "0x894b883905bfee2cc448880f1b59f4a762e67566.sol"
+    },
+    {
+        "function_name": "_registerUsername",
+        "vulnerability": "State change after external call",
+        "criticism": "The reasoning is correct in identifying the pattern of state changes after external calls, which is a common vulnerability leading to reentrancy attacks. However, the severity might not be as high unless there's a specific reentrant path that can be exploited, which isn't clearly outlined. The profitability depends on the ability of an attacker to exploit this in a way that benefits them, which is not detailed. Therefore, while the correctness is high, the severity and profitability are moderately scored.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "In the '_registerUsername' function, state changes such as updating 'usernames' and user data occur after the external calls 'transferFrom' and 'burn'. This is risky as state changes should always be made before any external calls to prevent reentrancy attacks. An attacker might take advantage of the state being changed after the external call to manipulate the outcome or cause inconsistencies in the contract state.",
+        "code": "function _registerUsername(address _beneficiary, string memory _username, string memory _metadata) internal { _requireBalance(_beneficiary); _requireUsernameValid(_username); require(isUsernameAvailable(_username), 'The username was already taken'); manaToken.transferFrom(_beneficiary, address(this), price); manaToken.burn(price); usernames[_username] = _beneficiary; Data storage data = user[_beneficiary]; delete usernames[data.username]; data.username = _username; bytes memory metadata = bytes(_metadata); if (metadata.length > 0) { data.metadata = _metadata; } emit Register(_beneficiary, _username, data.metadata, msg.sender); }",
+        "file_name": "0x894b883905bfee2cc448880f1b59f4a762e67566.sol"
+    }
+]

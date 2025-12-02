@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the external call to 'distr' before updating 'value' and 'blacklist'. However, the severity and profitability of this vulnerability depend on the implementation of 'distr' which is not provided. If 'distr' does not call any external untrusted contracts or does not handle ETH, the risk might be lower. The criticism lacks depth in exploring these aspects.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'getTokens' allows for reentrancy attacks because it calls 'distr' which makes external state changes before updating the 'value' and 'blacklist'. An attacker can call 'getTokens' again during the execution of 'distr' leading to unexpected behaviors or draining of tokens.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xaecc2d2a3fb1d6b76d10cfa2ebfa7a699a9e9600.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Improper Access Control",
+        "criticism": "The criticism is incorrect as the 'burn' function is protected by the 'onlyOwner' modifier, which is a common design pattern for token management functions controlled by the contract owner. The ability for the owner to burn tokens is typically a feature, not a vulnerability, unless it contradicts the intended tokenomics explicitly stated by the contract. The reasoning does not consider the context of ownership rights within smart contracts.",
+        "correctness": 2,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "The 'burn' function allows the contract owner to reduce the total supply and the total distributed amount of tokens without any consent from the token holders. This could be abused by the contract owner to manipulate token scarcity and value arbitrarily.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "file_name": "0xaecc2d2a3fb1d6b76d10cfa2ebfa7a699a9e9600.sol",
+        "final_score": 1.5
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "criticism": "The reasoning is incorrect as the function is protected by the 'onlyOwner' modifier, meaning only the owner can call this function. This is a typical pattern for administrative functions in smart contracts. The vulnerability described does not exist since the owner, having full control over the contract, is expected to have the ability to withdraw Ether. The severity and profitability are both low as this is intended behavior, not an exploitable vulnerability.",
+        "correctness": 1,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'withdraw' function transfers all Ether from the contract to the owner without any checks or limitations. This could be risky as it allows the owner to drain all funds from the contract at any time, potentially leaving other participants in the contract without their expected Ether or rewards.",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0xaecc2d2a3fb1d6b76d10cfa2ebfa7a699a9e9600.sol",
+        "final_score": 0.75
+    }
+]

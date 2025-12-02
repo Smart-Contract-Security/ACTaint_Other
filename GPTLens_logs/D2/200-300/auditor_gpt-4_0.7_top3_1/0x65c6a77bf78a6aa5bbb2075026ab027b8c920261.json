@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setupTreasury",
+        "code": "function setupTreasury(address _treasury, uint _txGasPriceLimit) checkAccess('admin') returns(bool) { if (_txGasPriceLimit == 0) { return false; } treasury = EtherTreasuryInterface(_treasury); txGasPriceLimit = _txGasPriceLimit; if (msg.value > 0 && !address(treasury).send(msg.value)) { throw; } return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function includes a call to send Ether to an arbitrary address without following the Checks-Effects-Interactions pattern. Specifically, the state variable 'treasury' is updated before sending Ether. An attacker-controlled contract could potentially re-enter the function or another function in the contract that relies on the state of these variables, leading to unexpected behavior or state corruption.",
+        "file_name": "0x65c6a77bf78a6aa5bbb2075026ab027b8c920261.sol"
+    },
+    {
+        "function_name": "remove",
+        "code": "function remove() checkAccess('owner') { suicide(msg.sender); }",
+        "vulnerability": "Unrestricted Self-Destruct",
+        "reason": "The function allows the contract to be self-destructed by anyone with the 'owner' role. This could lead to denial of service or other disruptive impacts if misused or if access control is compromised. Moreover, self-destructing contracts permanently removes the code and storage, which can lead to loss of funds or important state information.",
+        "file_name": "0x65c6a77bf78a6aa5bbb2075026ab027b8c920261.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint _value) returns(bool) { bool success; (success,) = _transfer(_to, _value); return success; }",
+        "vulnerability": "Gas Limit and Loops",
+        "reason": "The transfer function relies on an internal function '_transfer' which does not properly manage gas usage. The 'transferCallGas' can be set by an administrator, potentially allowing it to be set to a value that could lead to out-of-gas errors under certain circumstances, disrupting the ability to transfer tokens.",
+        "file_name": "0x65c6a77bf78a6aa5bbb2075026ab027b8c920261.sol"
+    }
+]

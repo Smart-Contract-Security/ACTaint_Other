@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "remove",
+        "vulnerability": "Unchecked Selfdestruct",
+        "criticism": "The criticism is partially correct in identifying the potential risks associated with the selfdestruct function. However, the reasoning overlooks the fact that there is a check for the 'owner' role and the 'isImmortal' flag, which are significant safeguards. The severity is moderate because if these checks are bypassed or fail, the consequences (loss of contract and ether) are severe. However, the profitability for an external attacker is low, as they would need to gain 'owner' access first, which is a significant barrier.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The 'remove' function allows the contract to be destroyed using selfdestruct if 'isImmortal' is false. Although it checks if the caller has the 'owner' role, there's no safeguard against potential misuse or errors that could lead to selfdestruct being called unintentionally or maliciously, resulting in loss of contract code and stored ether.",
+        "code": "function remove() checkAccess('owner') returns(bool) { if (isImmortal) { return false; } selfdestruct(msg.sender); return true; }",
+        "file_name": "0x96a51938cfb22565e0d40694fe103675c63ae218.sol"
+    },
+    {
+        "function_name": "setAmbiAddress",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is accurate in pointing out the lack of checking the return value of the external call, which is a critical oversight in contract programming. This could indeed lead to inconsistent contract states if the external call fails but the contract state is updated regardless. The severity is moderate because it could lead to functional failures or incorrect configurations. The profitability is low as exploiting this requires specific conditions and does not directly result in financial gain.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "This function makes an external call to 'ambiContract.addNode' without checking the return value for success or failure. This could lead to unexpected behavior if the external call fails, and the contract state (specifically 'name' and 'ambiC') will still be updated as if the operation was successful.",
+        "code": "function setAmbiAddress(address _ambi, bytes32 _name) returns (bool){ if(address(ambiC) != 0x0){ return false; } Ambi ambiContract = Ambi(_ambi); if(ambiContract.getNodeAddress(_name)!=address(this)) { if (!ambiContract.addNode(_name, address(this))){ return false; } } name = _name; ambiC = ambiContract; return true; }",
+        "file_name": "0x96a51938cfb22565e0d40694fe103675c63ae218.sol"
+    },
+    {
+        "function_name": "registerInstitution",
+        "vulnerability": "Improper Authorization Check",
+        "criticism": "The reasoning incorrectly states that the function does not check if the institution name is already registered with a non-zero address. The code does perform this check using 'institutionOwners[sha3(_institution)] != 0'. However, the concern about sha3 collisions is valid but highly unlikely, reducing the practical impact. The severity and profitability are low because exploiting a hash collision is computationally intensive and not directly profitable.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "This function checks if the caller has the 'admin' role, but does not verify if the institution name is already registered with a non-zero address, allowing potential overwriting if there's a mistake in the check or if the hashing function (sha3) has a collision. This could lead to unauthorized control or replacement of institution registration.",
+        "code": "function registerInstitution(string _institution, address _address) noValue() checkAccess('admin') returns(bool) { if (bytes(_institution).length != 4) { return false; } if (institutionOwners[sha3(_institution)] != 0) { return false; } institutionOwners[sha3(_institution)] = _address; return true; }",
+        "file_name": "0x96a51938cfb22565e0d40694fe103675c63ae218.sol"
+    }
+]

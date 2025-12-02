@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address to, uint tokens) public returns (bool success) { balances[msg.sender] = safeSub(balances[msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(msg.sender, to, tokens); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function updates the sender's balance and then the recipient's balance but does not use checks-effects-interactions pattern, where state changes should happen before external calls. In this case, the external call (event Transfer) should ideally happen after all state changes to protect against reentrancy attacks, which can lead to unexpected behavior or exploitation if the Transfer event is used maliciously.",
+        "file_name": "0x829d2e2540ff66c53475d690bd7296bd97685996.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address spender, uint tokens) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); return true; }",
+        "vulnerability": "ERC20 Approve/Allowance Race Condition",
+        "reason": "The 'approve' function allows setting allowances which can lead to a race condition known as the 'ERC20 Approve/Allowance Race Condition'. If a user calls 'approve' to reset an allowance before the previous allowance amount was used by the spender, a malicious spender could potentially exploit this by front-running the transaction to spend the original allowance and then spend the newly approved amount as well.",
+        "file_name": "0x829d2e2540ff66c53475d690bd7296bd97685996.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Missing Return Value Check",
+        "reason": "The 'transferFrom' function does not check the return value of 'safeSub' for 'allowed[from][msg.sender]' which could lead to underflows if the allowance is less than the tokens requested to transfer. Lack of checks on these critical operations can lead to vulnerabilities where more tokens are transferred than allowed.",
+        "file_name": "0x829d2e2540ff66c53475d690bd7296bd97685996.sol"
+    }
+]

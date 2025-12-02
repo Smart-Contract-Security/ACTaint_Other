@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint amount) payable onlyOwner { if (Deposits[msg.sender] > 0 && amount <= Deposits[msg.sender]) { msg.sender.transfer(amount); Withdraw(amount); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'withdraw' is susceptible to a reentrancy attack because it calls 'msg.sender.transfer(amount)' before it updates the state variable 'Deposits[msg.sender]'. An attacker can recursively call the withdraw function to drain the contract's funds if they can call back into the contract in the middle of a withdrawal.",
+        "file_name": "0xa16cdcba1d6cb6874ff9fd8a6c8b82a3f834f512.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { if (this.balance == 0) selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The 'kill' function allows any caller to destroy the contract if the contract balance is 0, since it uses 'msg.sender' instead of the 'onlyOwner' modifier. This could allow an attacker to remove the contract from the blockchain unexpectedly, causing disruption or loss of access to contract methods.",
+        "file_name": "0xa16cdcba1d6cb6874ff9fd8a6c8b82a3f834f512.sol"
+    },
+    {
+        "function_name": "deposit",
+        "code": "function deposit() payable { if (msg.value >= 1 ether) { Deposits[msg.sender] += msg.value; Deposit(msg.value); } }",
+        "vulnerability": "DoS with Unexpected Revert",
+        "reason": "The 'deposit' function only allows deposits of 1 ether or more. If a user sends less than 1 ether, the funds will still be transferred to the contract, but not recorded in the 'Deposits' mapping, effectively getting locked in the contract with no way to retrieve them. This could be used by an attacker to deliberately send small amounts to clog the contract with untracked funds, potentially causing denial of service.",
+        "file_name": "0xa16cdcba1d6cb6874ff9fd8a6c8b82a3f834f512.sol"
+    }
+]

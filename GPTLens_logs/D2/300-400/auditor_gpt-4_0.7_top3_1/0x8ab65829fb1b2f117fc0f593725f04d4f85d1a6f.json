@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "sale",
+        "code": "function sale(uint256 _id, uint256 _price) public returns (bool) { require(started); require(_id > 0 && _id <= cap); require(!lottery.gameOver()); require(!lottery.gameOverByUser()); require(now > stopTime); require(lottery.getHolder(_id) == msg.sender); priceList[_id] = _price; holderList[_id] = msg.sender; assert(lottery.changeHolder(_id, this)); TokenSale(_id, _price); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'sale' changes the state (priceList and holderList) after calling an external contract 'lottery.changeHolder(_id, this)', which can lead to reentrancy attack. An attacker can take advantage of the reentrancy to manipulate the contract's state (e.g., calling 'sale' again before the first call is finished).",
+        "file_name": "0x8ab65829fb1b2f117fc0f593725f04d4f85d1a6f.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy(uint256 _id) public payable returns (bool) { require(started); require(_id > 0 && _id <= cap); require(!lottery.gameOver()); require(!lottery.gameOverByUser()); require(now > stopTime); require(priceList[_id] == msg.value); address oldHolder = holderList[_id]; holderList[_id] = 0x0; priceList[_id] = 0; assert(lottery.changeHolder(_id, msg.sender)); oldHolder.transfer(msg.value); TokenSold(_id, msg.value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the 'buy' function, the contract calls an external contract 'lottery.changeHolder(_id, msg.sender)' and then transfers funds to 'oldHolder'. If 'oldHolder' is a malicious contract, it can re-enter the 'buy' function during the transfer, potentially leading to unexpected behaviors such as draining the contract funds or corrupting the state of the contract.",
+        "file_name": "0x8ab65829fb1b2f117fc0f593725f04d4f85d1a6f.sol"
+    },
+    {
+        "function_name": "getBackToken",
+        "code": "function getBackToken(uint256 _id) public returns (bool) { require(started); require(_id > 0 && _id <= cap); require(!lottery.gameOver()); require(!lottery.gameOverByUser()); require(now > stopTime); require(holderList[_id] == msg.sender); holderList[_id] = 0x0; priceList[_id] = 0; assert(lottery.changeHolder(_id, msg.sender)); TokenBack(_id); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the 'sale' and 'buy' functions, 'getBackToken' also changes the state of the contract (holderList and priceList) after an external call 'lottery.changeHolder(_id, msg.sender)'. This pattern is vulnerable to reentrancy attacks where an attacker might manipulate the state by re-entering the function in the middle of its execution.",
+        "file_name": "0x8ab65829fb1b2f117fc0f593725f04d4f85d1a6f.sol"
+    }
+]

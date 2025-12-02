@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x43e6546d22166e931043c5082777725ff3ebcf00.code
+Start time: 20/08/2022 19:41:41
+Building CFG...
+CFG generation time (secs): 0.03
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function stop()
+	( 1571)  623:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function Hopesend(address)
+
+Violated access control check in function start()
+	( 4286) 10be:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function Hopesend(address)
+
+Violated access control check in function setName(string)
+	( 4406) 1136:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function Hopesend(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 2.04
+End time: 20/08/2022 19:41:43

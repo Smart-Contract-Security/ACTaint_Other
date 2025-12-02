@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "endRound",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate. The 'endRound' function indeed has a reentrancy vulnerability due to the use of 'send' within a loop without updating state variables beforehand. This could allow an attacker to re-enter the contract and manipulate or drain funds, making it a severe and potentially profitable attack vector. The severity is high because it can disrupt the contract's logic and lead to financial loss. The profitability is also high as an attacker could potentially drain funds from the contract.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "This function includes a reentrancy vulnerability because it calls external addresses with the 'send' method during a loop and before updating the state variables. An attacker could exploit this by creating a fallback function that calls back into the contract, interacting with it in a way that could potentially manipulate the contract's logic or drain its funds.",
+        "code": "function endRound() private { delete results; uint256 random_start_contrarian = randomGen(index_player,(index_player_in_round)/2)-1; uint256 payout_total; for (var k = 0; k < (index_player_in_round)/2; k++) { uint256 index_contrarian; if (k+random_start_contrarian<(index_player_in_round)/2){ index_contrarian=k+random_start_contrarian; } else { index_contrarian=(k+random_start_contrarian)-(index_player_in_round/2); } uint256 information_cost_matcher = information_cost * k; uint256 payout_matcher = 2*(gamble_value-information_cost_matcher); uint256 information_cost_contrarian = information_cost * index_contrarian; uint256 payout_contrarian = 2*(gamble_value-information_cost_contrarian); results.push(Result(matchers[k].player,matchers[k].flipped,payout_matcher,contrarians[index_contrarian].player,contrarians[index_contrarian].flipped, payout_contrarian)); if (matchers[k].flipped == contrarians[index_contrarian].flipped) { matchers[k].player.send(payout_matcher); payout_total+=payout_matcher; payout_history[matchers[k].player]+=payout_matcher; } else { contrarians[index_contrarian].player.send(payout_contrarian); payout_total+=payout_contrarian; payout_history[contrarians[k].player]+=payout_contrarian; } } index_round_ended+=1; owner.send(index_player_in_round*gamble_value-payout_total); payout_total=0; index_player_in_round=0; delete matchers; delete contrarians; pendingRound=false; if (terminate_after_round==true) state=State.Deactivated; }",
+        "file_name": "0x213d2b0498d7eef3151aa9af2e5c4eb8674ecce5.sol"
+    },
+    {
+        "function_name": "refundRound",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct and aligns with the identified vulnerability in the 'refundRound' function. The use of 'send' within a loop and prior to updating state variables can indeed lead to reentrancy attacks. This vulnerability is severe as it could allow multiple refunds or other manipulations, leading to financial loss. The profitability is moderate because while an attacker could exploit this, the gains are limited to the amount of refunds manipulable before detection or correction.",
+        "correctness": 9,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "Similar to the 'endRound' function, 'refundRound' suffers from a reentrancy vulnerability because it interacts with external addresses using 'send' within a loop, before updating the contract's critical state. This could allow an attacker to receive multiple refunds or interfere with the logic of the contract in a harmful way.",
+        "code": "function refundRound() onlyActive onlyOwner noEthSent{ uint totalRefund; uint balanceBeforeRefund=this.balance; for (var k = 0; k< matchers.length; k++) { matchers[k].player.send(gamble_value); totalRefund+=gamble_value; } for (var j = 0; j< contrarians.length ; j++) { contrarians[j].player.send(gamble_value); totalRefund+=gamble_value; } delete matchers; delete contrarians; state=State.Deactivated; index_player_in_round=0; uint balanceLeft = balanceBeforeRefund-totalRefund; if (balanceLeft >0) owner.send(balanceLeft); }",
+        "file_name": "0x213d2b0498d7eef3151aa9af2e5c4eb8674ecce5.sol"
+    },
+    {
+        "function_name": "Play",
+        "vulnerability": "DoS by Block Gas Limit",
+        "criticism": "The reasoning is somewhat exaggerated. While the 'Play' function does involve loops and state changes, the risk of hitting the block gas limit is generally mitigated by the inherent limits of transaction costs and gas limits that users are willing to pay. The function's complexity does not necessarily imply it will reach the block gas limit, especially without specific details on the size of 'matchers' and 'contrarians' arrays or the cost of the 'randomEnd' function. The severity and profitability are both low because even if the function fails due to gas limit issues, it does not directly benefit an attacker nor does it typically result in a loss of funds.",
+        "correctness": 3,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "The 'Play' function can potentially lead to a denial of service (DoS) situation by reaching the block gas limit. This can happen because the function includes complex operations and state changes within a loop, including random number generation and array management. As the number of iterations grows, the function's gas usage could exceed the block gas limit, causing transactions to fail.",
+        "code": "function Play(bool flipped) equalGambleValue onlyActive resolvePendingRound{ if ( index_player_in_round%2==0 ) { matchers.push(Gamble(msg.sender, flipped)); } else { contrarians.push(Gamble(msg.sender, flipped)); } index_player+=1; index_player_in_round+=1; times_played_history[msg.sender]+=1; if (index_player_in_round>=round_min_size && index_player_in_round%2==0) { bool end = randomEnd(); if (end) { pendingRound=true; blockEndRound=block.number;} } }",
+        "file_name": "0x213d2b0498d7eef3151aa9af2e5c4eb8674ecce5.sol"
+    }
+]

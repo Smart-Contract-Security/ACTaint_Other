@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setup",
+        "code": "function setup(uint256 AOC_amount, uint256 price_in_wei) public {\n    require(is_empty());\n    require(AOC.allowance(msg.sender, this) >= AOC_amount);\n    require(price_in_wei > 1000);\n    price = price_in_wei;\n    AOC_available = AOC_amount;\n    Amount_of_AOC_for_One_ETH = 1 ether / price_in_wei;\n    seller = msg.sender;\n    require(AOC.transferFrom(msg.sender, this, AOC_amount));\n}",
+        "vulnerability": "Integer Division",
+        "reason": "The function calculates Amount_of_AOC_for_One_ETH using integer division (1 ether / price_in_wei), which can lead to precision loss if the division is not evenly divisible. This can result in the contract not providing the correct amount of AOC tokens per ETH, potentially causing financial discrepancies.",
+        "file_name": "0x96a3b6d2aa6241e1b2d539286958aeb6f1e49d69.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function() public payable{\n    uint256 eth_balance = this.balance;\n    uint256 AOC_balance = AOC.balanceOf(this);\n    if(msg.sender == seller){\n        seller = 0x0;\n        price = 0;\n        AOC_available = 0;\n        Amount_of_AOC_for_One_ETH = 0;\n        cooldown_start_time = now;\n        if(eth_balance > 0) msg.sender.transfer(eth_balance);\n        if(AOC_balance > 0) require(AOC.transfer(msg.sender, AOC_balance));\n    } else{\n        require(msg.value > 0);\n        require(price > 0);\n        uint256 num_AOC = msg.value / price;\n        require(AOC_balance >= num_AOC);\n        AOC_available = AOC_balance - num_AOC;\n        require(AOC.transfer(msg.sender, num_AOC));\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function allows the seller to withdraw ETH and AOC tokens in the same transaction. If the external call to AOC.transfer() can invoke this contract again (for example, if the AOC token contract is malicious or has a bug), it can lead to reentrancy where the state variables might be manipulated before the first execution completes. This could result in unintended transfers or multiple withdrawals.",
+        "file_name": "0x96a3b6d2aa6241e1b2d539286958aeb6f1e49d69.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function() public payable{\n    uint256 eth_balance = this.balance;\n    uint256 AOC_balance = AOC.balanceOf(this);\n    if(msg.sender == seller){\n        seller = 0x0;\n        price = 0;\n        AOC_available = 0;\n        Amount_of_AOC_for_One_ETH = 0;\n        cooldown_start_time = now;\n        if(eth_balance > 0) msg.sender.transfer(eth_balance);\n        if(AOC_balance > 0) require(AOC.transfer(msg.sender, AOC_balance));\n    } else{\n        require(msg.value > 0);\n        require(price > 0);\n        uint256 num_AOC = msg.value / price;\n        require(AOC_balance >= num_AOC);\n        AOC_available = AOC_balance - num_AOC;\n        require(AOC.transfer(msg.sender, num_AOC));\n    }\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function does not check the result of the call to msg.sender.transfer(eth_balance) which is used to transfer Ether. If the call fails (e.g., the sender is a contract that rejects receiving Ether), the Ether remains in the contract but the state variables are reset, potentially leading to locked funds without any ability to retrieve them.",
+        "file_name": "0x96a3b6d2aa6241e1b2d539286958aeb6f1e49d69.sol"
+    }
+]

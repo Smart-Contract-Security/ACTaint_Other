@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Unchecked Distribution Limit",
+        "reason": "The 'distr' function does not check if '_amount' added to 'totalDistributed' exceeds 'totalSupply', which could allow the contract to issue more tokens than the intended total supply. This could lead to hyperinflation and devaluation of the token.",
+        "file_name": "0xf016dbcff77eadbd4670fe74b856384f2da76a63.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function has a known race condition issue where it does not safely update approval amounts. The function checks for non-zero values but does not prevent a front-running attack where an attacker could use the approved amount before the original spender has the chance to spend it, leading to potential loss or duplication in spending allowances.",
+        "file_name": "0xf016dbcff77eadbd4670fe74b856384f2da76a63.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "reason": "The 'withdraw' function allows the contract owner to withdraw all Ether from the contract without any restrictions or notifications to other parties involved with the contract. This could be potentially harmful if the owner decides to withdraw all the funds, leaving other token holders without the backing Ether they might expect.",
+        "file_name": "0xf016dbcff77eadbd4670fe74b856384f2da76a63.sol"
+    }
+]

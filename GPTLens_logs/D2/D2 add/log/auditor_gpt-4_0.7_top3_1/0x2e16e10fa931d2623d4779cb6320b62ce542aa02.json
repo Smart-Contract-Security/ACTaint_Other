@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Ownership takeover",
+        "reason": "This function allows the current owner to set a new owner address without any restrictions or validation beyond the onlyOwner modifier. An attacker who gains control over the owner's account could transfer ownership to an arbitrary address, potentially leading to a loss of control over the contract.",
+        "file_name": "0x2e16e10fa931d2623d4779cb6320b62ce542aa02.sol"
+    },
+    {
+        "function_name": "acceptOwnership",
+        "code": "function acceptOwnership() public { require(msg.sender == newOwner); OwnershipTransferred(owner, newOwner); owner = newOwner; newOwner = address(0); }",
+        "vulnerability": "Unrestricted Ownership Acceptance",
+        "reason": "This function allows the new owner to accept ownership without any restrictions or additional validation. If the newOwner variable is accidentally or maliciously set to an incorrect address, ownership could be transferred to an unintended or malicious party without additional safeguards.",
+        "file_name": "0x2e16e10fa931d2623d4779cb6320b62ce542aa02.sol"
+    },
+    {
+        "function_name": "releaseSupply",
+        "code": "function releaseSupply() public onlyOwner returns(uint256 _actualRelease) { uint256 releaseAmount = getReleaseAmount(); require(releaseAmount > 0); balances[owner] = addSafe(balances[owner], releaseAmount * 10 ** uint256(decimals)); totalSupply = addSafe(totalSupply, releaseAmount); Transfer(address(0), msg.sender, releaseAmount); return releaseAmount; }",
+        "vulnerability": "Arbitrary Supply Increase",
+        "reason": "The function allows the owner to increase the supply based on certain conditions without a hard cap on the total supply that can be released. This could lead to inflationary issues or abuse where the owner repeatedly triggers this function to disproportionately increase their balance and the total supply.",
+        "file_name": "0x2e16e10fa931d2623d4779cb6320b62ce542aa02.sol"
+    }
+]

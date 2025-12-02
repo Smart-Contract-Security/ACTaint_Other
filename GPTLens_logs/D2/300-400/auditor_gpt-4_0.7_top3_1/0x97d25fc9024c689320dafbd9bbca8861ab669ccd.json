@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner(address _owner){ owner = _owner; }",
+        "vulnerability": "Unauthorized Ownership Transfer",
+        "reason": "The 'changeOwner' function does not have any access control mechanism. This allows any external entity to call this function and change the owner of the contract to any address, potentially allowing hostile takeovers and unauthorized control over the contract.",
+        "file_name": "0x97d25fc9024c689320dafbd9bbca8861ab669ccd.sol"
+    },
+    {
+        "function_name": "destroy",
+        "code": "function destroy() onlyOwner{ suicide(owner); }",
+        "vulnerability": "Deprecated Function Usage",
+        "reason": "The 'destroy' function uses 'suicide(owner)', which is deprecated and should be replaced with 'selfdestruct(owner)' for better clarity and to follow the current standards of Solidity. Using deprecated functions can lead to unexpected behavior in newer versions of the Ethereum environment.",
+        "file_name": "0x97d25fc9024c689320dafbd9bbca8861ab669ccd.sol"
+    },
+    {
+        "function_name": "Listen",
+        "code": "function Listen(){ owner = msg.sender; }",
+        "vulnerability": "Constructor Misnaming",
+        "reason": "The constructor is named 'Listen' which matches the contract name but is outdated syntax for constructors as of Solidity 0.4.22+. It should be defined using 'constructor()' for clarity and to ensure compatibility with newer compiler versions. Misnamed constructors can be misinterpreted as regular functions, allowing anyone to call it and potentially re-initialize contract state.",
+        "file_name": "0x97d25fc9024c689320dafbd9bbca8861ab669ccd.sol"
+    }
+]

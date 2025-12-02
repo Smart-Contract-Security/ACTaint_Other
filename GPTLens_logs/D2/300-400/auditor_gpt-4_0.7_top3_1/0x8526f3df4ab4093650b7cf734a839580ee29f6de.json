@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw_privatefund",
+        "code": "function withdraw_privatefund(bool _withdraw_en) afterDeadline onlyCreator{\n    if (_withdraw_en){\n        beneficiary.send(amountRaised);\n        FundTransfer(beneficiary, amountRaised, false);\n    } else {\n        FundTransfer(0, 11, false);\n        for (uint i = 0; i < funders.length; ++i) {\n            funders[i].addr.send(funders[i].amount);\n            FundTransfer(funders[i].addr, funders[i].amount, false);\n        }\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'withdraw_privatefund' is vulnerable to reentrancy attacks because it calls 'send' on untrusted addresses (the addresses of funders), which might execute malicious code in their fallback functions. If any of these addresses is a contract, they might call back into 'withdraw_privatefund' or other functions of this contract and potentially withdraw more funds than they should.",
+        "file_name": "0x8526f3df4ab4093650b7cf734a839580ee29f6de.sol"
+    },
+    {
+        "function_name": "deadline_modify",
+        "code": "function deadline_modify(uint256 _start ,uint256 _duration) onlyCreator {\n    start = _start;\n    deadline = _start + _duration * 1 days;\n}",
+        "vulnerability": "Arbitrary deadline modification",
+        "reason": "The function 'deadline_modify' allows the creator to arbitrarily change the start time and duration of the funding period. This can be exploitable as the creator may prolong the deadline to an unexpected future date after observing poor funding, manipulating the contract's intended behavior and possibly deceiving funders.",
+        "file_name": "0x8526f3df4ab4093650b7cf734a839580ee29f6de.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() {\n    suicide(beneficiary);\n}",
+        "vulnerability": "Unauthorized contract termination",
+        "reason": "The 'kill' function allows the creator to destroy the contract at any time and send all remaining Ethereum to the 'beneficiary'. There are no checks in place to ensure that all obligations (e.g., returning funds to funders if the deadline has passed without the withdrawal condition being met) are fulfilled before the contract is destroyed, potentially leading to loss of funds for contributors.",
+        "file_name": "0x8526f3df4ab4093650b7cf734a839580ee29f6de.sol"
+    }
+]

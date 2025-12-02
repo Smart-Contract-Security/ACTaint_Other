@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "constuctor",
+        "code": "function constuctor() public { owner = msg.sender; }",
+        "vulnerability": "Typo in constructor",
+        "reason": "The function is meant to be a constructor and set the owner of the contract, but due to a typo ('constuctor' instead of 'constructor'), the function does not behave as a constructor. This mistake leaves the 'owner' variable uninitialized, allowing anyone to call functions restricted to the owner.",
+        "file_name": "0x743fcec226fee5b9b02e835193a504c9eb3fdefc.sol"
+    },
+    {
+        "function_name": "addNote",
+        "code": "function addNote(bytes32 _productID, bytes20 _serialNumber, string _text, string _image) onlyOwner public returns (uint) { Note storage note = notes[notesLength]; note.productID = _productID; note.serialNumber = _serialNumber; note.text = _text; note.image = _image; emit noteInfo(_productID, _serialNumber, _text, _image); notesLength++; return notesLength; }",
+        "vulnerability": "Unrestricted growth of mapping",
+        "reason": "The function 'addNote' allows adding an unlimited number of notes to the 'notes' mapping by incrementing 'notesLength'. This can lead to a denial of service (DoS) attack where an attacker, if they become the owner due to the unprotected owner assignment, could fill the blockchain's storage by continuously adding notes, potentially making the contract unusable or increasing transaction costs for legitimate users.",
+        "file_name": "0x743fcec226fee5b9b02e835193a504c9eb3fdefc.sol"
+    },
+    {
+        "function_name": "addComment",
+        "code": "function addComment(bytes3 _rating, string _text) public returns (uint) { Comment storage comment = comments[commentsLength]; comment.rating = _rating; comment.text = _text; emit commentInfo(_rating, _text); commentsLength++; return commentsLength; }",
+        "vulnerability": "Unrestricted public function",
+        "reason": "The function 'addComment' is a public function without any access control, allowing any user to add comments indefinitely. This could also lead to a DoS attack similar to 'addNote', as well as spam in the comments section, degrading the usability of the contract and bloating the blockchain.",
+        "file_name": "0x743fcec226fee5b9b02e835193a504c9eb3fdefc.sol"
+    }
+]

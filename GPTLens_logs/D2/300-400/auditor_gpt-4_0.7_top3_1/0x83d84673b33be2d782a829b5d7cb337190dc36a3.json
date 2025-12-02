@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) public returns (bool success) { require(transfersEnabled); return doTransfer(msg.sender, _to, _amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transfer' indirectly calls 'doTransfer' which then invokes an external contract through 'TokenController(controller).onTransfer(_from, _to, _amount)'. This call to an external contract can potentially lead to reentrancy attacks if the external contract is malicious or compromised, as it allows for execution control to be passed to the external contract which can then re-enter the 'transfer' function or other functions of this contract to manipulate state in unexpected ways.",
+        "file_name": "0x83d84673b33be2d782a829b5d7cb337190dc36a3.sol"
+    },
+    {
+        "function_name": "doTransfer",
+        "code": "function doTransfer( address _from, address _to, uint _amount ) internal returns(bool) { if (_amount == 0) { return true; } require(parentSnapShotBlock < block.number); require((_to != 0) && (_to != address(this))); uint256 previousBalanceFrom = balanceOfAt(_from, block.number); if (previousBalanceFrom < _amount) { return false; } if (isContract(controller)) { require(TokenController(controller).onTransfer(_from, _to, _amount)); } updateValueAtNow(balances[_from], previousBalanceFrom - _amount); uint256 previousBalanceTo = balanceOfAt(_to, block.number); require(previousBalanceTo + _amount >= previousBalanceTo); updateValueAtNow(balances[_to], previousBalanceTo + _amount); emit Transfer(_from, _to, _amount); return true; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "In the function 'doTransfer', the return value of 'TokenController(controller).onTransfer(_from, _to, _amount)' is checked with 'require' for successful execution. However, there are other external calls such as 'balanceOfAt' which involve state retrieval from another contract are not checked if they fail or throw, which can lead to inconsistent state or unexpected behavior if these calls fail.",
+        "file_name": "0x83d84673b33be2d782a829b5d7cb337190dc36a3.sol"
+    },
+    {
+        "function_name": "vote",
+        "code": "function vote(uint _idPoll, uint[] _ballots) public { require(_idPoll < _polls.length, 'Invalid _idPoll'); Poll storage p = _polls[_idPoll]; require(block.number >= p.startBlock && block.number < p.endBlock && !p.canceled, 'Poll is inactive'); require(_ballots.length == p.numBallots, 'Number of ballots is incorrect'); unvote(_idPoll); uint amount = token.balanceOfAt(msg.sender, p.startBlock); require(amount != 0, 'No SNT balance available at start block of poll'); p.voters++; uint totalBallots = 0; for(uint8 i = 0; i < _ballots.length; i++){ totalBallots += _ballots[i]; p.ballots[i][msg.sender] = _ballots[i]; if(_ballots[i] != 0){ p.qvResults[i] += sqrt(_ballots[i] / 1 ether); p.results[i] += _ballots[i]; } } require(totalBallots <= amount, 'Total ballots must be less than the SNT balance at poll start block'); emit Vote(_idPoll, msg.sender, _ballots); }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The 'vote' function sums up the values in _ballots array into 'totalBallots' without checking for integer overflow. Given that _ballots is an array of uint, malicious users can overflow 'totalBallots' by providing large values, which may allow them to bypass the subsequent check 'require(totalBallots <= amount, ...)' leading to potential voting manipulation or unexpected behaviors.",
+        "file_name": "0x83d84673b33be2d782a829b5d7cb337190dc36a3.sol"
+    }
+]

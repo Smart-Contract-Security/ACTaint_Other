@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { require(newOwner != address(0)); emit OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Ownership Takeover",
+        "reason": "This function allows the current owner to transfer ownership of the contract to a new owner. However, there is no validation if the new owner is willing or aware of this change. An attacker who gains control of the owner's account can transfer ownership to an arbitrary address, potentially causing denial of service or unauthorized actions.",
+        "file_name": "0xe901c7b3d178d5eb29b8cc4d137bd9f0bf07f853.sol"
+    },
+    {
+        "function_name": "ownerOf",
+        "code": "function ownerOf(uint _tokenId) external view returns (address) { owner = itemIndexToOwner[_tokenId]; require(owner != address(0)); }",
+        "vulnerability": "State Modification in View Function",
+        "reason": "The function ownerOf is intended as a view function to return the owner of a token. However, it mistakenly modifies the state variable 'owner'. This can lead to unexpected behavior as view functions are expected not to alter the state, potentially leading to security vulnerabilities where the actual ownership of the contract can be manipulated through a supposedly harmless view call.",
+        "file_name": "0xe901c7b3d178d5eb29b8cc4d137bd9f0bf07f853.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _tokenId) internal { ownershipTokenCount[_to] = ownershipTokenCount[_to].add(1); itemIndexToOwner[_tokenId] = _to; if (_from != address(0)) { ownershipTokenCount[_from] = ownershipTokenCount[_from].sub(1); delete itemIndexToApproved[_tokenId]; } emit Transfer(_from, _to, _tokenId); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function _transfer emits an event after modifying state variables. However, it does not check for potential external calls or reentrancy vulnerabilities which could be exploited. For example, if a malicious contract is set as the recipient of a transfer, it could call back into the contract and interfere with the state change, potentially allowing double spending or other malicious activities.",
+        "file_name": "0xe901c7b3d178d5eb29b8cc4d137bd9f0bf07f853.sol"
+    }
+]

@@ -1,0 +1,18 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x99a650192e81772657c7dc047d2e18f67c758e94.code
+Start time: 26/08/2022 15:55:21
+Building CFG...
+CFG generation time (secs): 0.07
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+storage-to-storage taints flow (2)
+(Controlable Address of SELFDESTRUCT) Missing access control check in function newGame(address,string,string,uint256,uint256,uint8,uint8,uint8,uint256)
+Needed to protect following instruction in function terminate()
+( 1724)  6bc:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 7.15
+End time: 26/08/2022 15:55:28

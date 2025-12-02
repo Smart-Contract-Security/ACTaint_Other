@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Missing authorization check",
+        "criticism": "The criticism is incorrect. The function 'transferFrom' does indeed check if 'msg.sender' is authorized by 'from' to spend tokens by decrementing the allowance before transferring the tokens. The allowance check acts as an authorization check. Therefore, the vulnerability described does not exist, and the reasoning is flawed. The severity and profitability are both low because the described vulnerability is not present in the function.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'transferFrom' does not check if 'msg.sender' is authorized by 'from' to spend tokens. The check of decrementing allowance happens after tokens are already subtracted from 'from' and added to 'to'. An attacker can exploit this by calling 'transferFrom' to transfer tokens without proper authorization from the token owner.",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "file_name": "0xbb2f0ac18eb89502dfeb7ac3c4aabef76e75eca7.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition",
+        "criticism": "The reasoning is partially correct. The 'approve' function is indeed susceptible to a race condition known as the 'approve/transferFrom attack'. However, the description of the attack is slightly inaccurate. The vulnerability arises when the allowance is first set to zero and then to a new value, during which a malicious spender could exploit the intermediate state. The severity is moderate because it can lead to unauthorized token transfers, but the profitability is also moderate because it requires specific conditions and timing to exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The 'approve' function is susceptible to a race condition known as the 'approve/transferFrom attack'. If a user decides to change an already set allowance, they must first reduce it to zero and then set the new value. However, between these two operations, a malicious spender can call 'transferFrom' after the allowance is set to zero and before it is set to the new value, effectively exploiting the race condition.",
+        "code": "function approve(address spender, uint tokens) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); return true; }",
+        "file_name": "0xbb2f0ac18eb89502dfeb7ac3c4aabef76e75eca7.sol"
+    },
+    {
+        "function_name": "CBD",
+        "vulnerability": "Centralization of token supply",
+        "criticism": "The reasoning is correct. Centralizing the entire token supply in a single address at the creation of the token does pose significant risks of manipulation and is contrary to the principles of decentralization in blockchain systems. This could lead to severe issues such as price manipulation or unfair control over the token. The severity is high due to potential manipulation, but the profitability for an external attacker is low unless they gain control of the centralized address.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 2,
+        "reason": "In the constructor function 'CBD', all the initial supply is assigned to a single address. This poses a risk of centralization, where the owner of that address has complete control over all of the tokens. This could lead to manipulation of the token value and is against the principle of decentralized systems.",
+        "code": "function CBD() public { symbol = 'CBD'; name = 'Cannabis Dollar'; decimals = 8; _totalSupply = 10000000000000000; balances[0x15711555d91797bF75f26Fe84367aDD7E92C1a0f] = _totalSupply; Transfer(address(0), 0x15711555d91797bF75f26Fe84367aDD7E92C1a0f, _totalSupply); }",
+        "file_name": "0xbb2f0ac18eb89502dfeb7ac3c4aabef76e75eca7.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withrawDev",
+        "code": "function withrawDev () public { owner = msg.sender; uint256 devTokens = 100000000e8; distr(owner, devTokens); }",
+        "vulnerability": "Unauthorized ownership transfer",
+        "reason": "This function allows any caller to change the 'owner' state variable to their address. This is because it sets 'owner = msg.sender' without any checks on who 'msg.sender' is. This can lead to unauthorized control over the contract as the 'owner' has special permissions in other functions.",
+        "file_name": "0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.sol"
+    },
+    {
+        "function_name": "transferTokenTo",
+        "code": "function transferTokenTo(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "vulnerability": "Potential integer overflow",
+        "reason": "The function 'doAirdrop' called within 'transferTokenTo' adds '_amount' to 'balances[_participant]' and 'totalDistributed' without validating that '_amount' plus the current balance does not exceed the maximum value for a uint256. This might lead to integer overflow vulnerabilities where the balance could wrap around and become less than expected, which can be exploited.",
+        "file_name": "0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.sol"
+    },
+    {
+        "function_name": "sendToken",
+        "code": "function sendToken() payable canDistr public { uint256 tokens = 0; require( msg.value >= minPurchase ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'sendToken' executes external calls to 'distr' which interacts with state variables and emits events. This pattern can be vulnerable to reentrancy attacks where a malicious contract could call back into 'sendToken' before the first execution completes, attempting to withdraw or manipulate balances or state in unauthorized ways.",
+        "file_name": "0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the external call to 'distr' before state updates. However, the severity and profitability are overstated. The function does not show how 'distr' interacts with external contracts or the exact mechanism of reentrancy. Without explicit recursive calls or further external interactions shown in 'distr', the actual risk might be lower. Moreover, the function updates the 'blacklist' and checks 'totalDistributed' which could mitigate reentrancy to some extent.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 3,
+        "reason": "The 'getTokens' function calls 'distr' which makes state changes and emits events before updating the `blacklist` and `distributionFinished`. This interleaving of external calls and state changes without proper checks can lead to reentrancy attacks where an attacker could potentially call 'getTokens' again before the initial transaction is finished, exploiting the state change lag to extract more tokens.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x8960eb9d4a2d153fd7b175c0f3eef8026eb95dfc.sol"
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Burning Untracked Tokens",
+        "criticism": "The reasoning is incorrect. The 'burn' function does check the balance of the burner before burning tokens, which is a crucial check. The reduction of 'totalSupply' and 'totalDistributed' is consistent with the burning of tokens. There is no indication of how tokens could be untracked or lead to underflow since the subtraction is guarded by the balance check. The severity and profitability of this supposed vulnerability are very low as the function behaves as expected in reducing supply and distributed count safely.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'burn' function reduces the 'totalSupply' and 'totalDistributed' by '_value', but it does not check whether these tokens were part of the 'totalDistributed'. This could lead to inconsistencies in tracking of distributed tokens, where burned tokens are subtracted from total distributed, potentially causing underflow or logical errors in distribution logic.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "file_name": "0x8960eb9d4a2d153fd7b175c0f3eef8026eb95dfc.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unchecked Send",
+        "criticism": "The criticism is incorrect. The 'withdraw' function uses the 'transfer' method which inherently reverts on failure (e.g., if the contract's balance is insufficient). This means that if the transfer fails, the entire transaction is reverted, not leading to the issues described. Therefore, the reasoning about unchecked send and potential loss of funds is fundamentally flawed. The function is safe from the described vulnerability, making the severity and profitability scores very low.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'withdraw' function transfers Ether to the owner without checking the result of the 'transfer()' operation. If the transfer fails (for instance, if the contract's balance is insufficient), the contract will not revert, potentially leading to financial discrepancies and loss of funds without any indication of failure.",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0x8960eb9d4a2d153fd7b175c0f3eef8026eb95dfc.sol"
+    }
+]

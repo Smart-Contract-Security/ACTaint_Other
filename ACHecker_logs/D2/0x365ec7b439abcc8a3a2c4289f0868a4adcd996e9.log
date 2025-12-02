@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x365ec7b439abcc8a3a2c4289f0868a4adcd996e9.code
+Start time: 20/08/2022 09:36:14
+Building CFG...
+CFG generation time (secs): 0.15
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function cancelAuction(uint32)
+	( 2434)  982:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyCar(uint32)
+
+Violated access control check in function _transfer(uint32,address)
+	( 4165) 1045:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyCar(uint32)
+
+Violated access control check in function _transferAction(uint32,address,uint8)
+	( 5999) 176f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyCar(uint32)
+
+Violated access control check in function cashOutCar(uint32)
+	( 6365) 18dd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyCar(uint32)
+
+Violated access control check in function addAuction(uint32,uint256,uint256,uint256)
+	( 8092) 1f9c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyCar(uint32)
+
+Violated access control check in function upgradeCar(uint32,uint8)
+	( 9660) 25bc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyCar(uint32)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 41.75
+End time: 20/08/2022 09:36:56

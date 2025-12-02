@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdrawForeignTokens",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is correct in identifying the lack of a check on the return value of 'token.transfer(owner, amount)'. This oversight can lead to unhandled failures in token transfers, which could result in loss of tokens or inconsistent states. The severity is significant because it directly affects asset control, and the profitability could be moderate if an attacker can exploit this to cause token loss repeatedly. The correctness is rated high as the vulnerability is clearly present and impactful.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function 'withdrawForeignTokens' transfers tokens based on the 'ForeignToken' contract without checking the return value of 'token.transfer(owner, amount)'. If the transfer fails for any reason (e.g., due to a failed assertion in the external token contract), the failure will not be detected and handled, potentially leading to inconsistent token accounting or loss of funds.",
+        "code": "function withdrawForeignTokens(address _tokenContract) onlyOwner public returns (bool) {\n    ForeignToken token = ForeignToken(_tokenContract);\n    uint256 amount = token.balanceOf(address(this));\n    return token.transfer(owner, amount);\n}",
+        "file_name": "0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning identifies a potential reentrancy issue due to the external call to 'distr' before updating the 'blacklist' state. However, the severity and profitability of this vulnerability depend on the implementation of the 'distr' function and whether it indeed allows for reentrant calls. If 'distr' does not call back into 'getTokens' or manipulate balances in a way that would benefit from reentrancy, the actual risk might be lower. The correctness is moderately rated because the potential for reentrancy exists but is contingent on external factors not detailed here.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'getTokens' function performs a state modification after calling an external contract ('distr' function which in turn triggers 'Transfer' event). This could allow an attacker to re-enter into the contract before the state (e.g., 'blacklist[investor]') is set to true, potentially allowing for manipulation or unintended behavior.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Integer Underflow",
+        "criticism": "The reasoning about the potential for an integer underflow in 'totalDistributed' is valid if '_value' exceeds 'totalDistributed'. However, the function checks that '_value' is less than or equal to 'balances[msg.sender]', not directly against 'totalDistributed'. The actual risk of underflow would depend on the relationship between 'balances[msg.sender]' and 'totalDistributed', which isn't specified. Therefore, while the vulnerability is correctly identified, its impact might be overstated without additional context. The severity is rated lower due to this uncertainty.",
+        "correctness": 6,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The 'burn' function reduces 'totalDistributed' which can lead to underflow if '_value' is greater than 'totalDistributed'. This can cause 'totalDistributed' to become a very large value, potentially disrupting the token distribution logic and leading to unpredictable state changes in the contract.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    Burn(burner, _value);\n}",
+        "file_name": "0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.sol",
+        "final_score": 4.25
+    }
+]

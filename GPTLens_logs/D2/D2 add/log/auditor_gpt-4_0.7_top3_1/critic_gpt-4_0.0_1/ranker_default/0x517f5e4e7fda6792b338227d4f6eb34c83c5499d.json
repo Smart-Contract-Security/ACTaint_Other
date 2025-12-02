@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "redeem",
+        "vulnerability": "Front-running",
+        "criticism": "The reasoning for the 'redeem' function being susceptible to front-running is valid. The function exposes the secret key in a transaction, which can indeed be observed by malicious actors in the transaction pool. This could allow them to use the secret key in their transactions before the original transaction is processed, potentially leading to unauthorized interactions with the contract. The correctness of this vulnerability claim is high. The severity is also significant due to the potential for unauthorized access or actions. The profitability for an attacker is moderate, depending on what they can achieve with the early access to the secret key.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'redeem' function is susceptible to front-running because it publicly reveals the secret key in a transaction. Malicious users can watch the transaction pool and use the secret key in their own transactions, potentially redeeming or otherwise interacting with the contract before the original transaction is processed.",
+        "code": "function redeem(bytes32 _swapID, address payable _receiver, bytes32 _secretKey) public onlyOpenSwaps(_swapID) onlyWithSecretKey(_swapID, _secretKey) onlySpender(_swapID, msg.sender) { require(_receiver != address(0x0), \"invalid receiver\"); swaps[_swapID].secretKey = _secretKey; _swapStates[_swapID] = States.CLOSED; _redeemedAt[_swapID] = now; _brokerFees[swaps[_swapID].broker] += swaps[_swapID].brokerFee; emit LogClose(_swapID, _secretKey); }",
+        "file_name": "0x517f5e4e7fda6792b338227d4f6eb34c83c5499d.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "withdrawBrokerFees",
+        "vulnerability": "Denial of Service",
+        "criticism": "The criticism of the 'withdrawBrokerFees' function for potentially leading to a denial of service is misplaced. The function does indeed only update the internal state and does not perform an actual transfer of funds. However, this is a common pattern where the actual transfer might be handled elsewhere or at a different stage, not necessarily within the same function. The reasoning assumes a misunderstanding of how contract functions might be designed to interact. Therefore, the correctness of this vulnerability claim is low, and the severity and profitability are also minimal as it does not directly lead to a denial of service.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function 'withdrawBrokerFees' does not perform an actual transfer of funds but only updates internal state. This might lead to a situation where brokers believe they have withdrawn their fees while the actual assets remain within the contract, potentially leading to a denial of service as brokers might refuse further participation believing they are not being paid.",
+        "code": "function withdrawBrokerFees(uint256 _amount) public { require(_amount <= _brokerFees[msg.sender], \"insufficient withdrawable fees\"); _brokerFees[msg.sender] -= _amount; }",
+        "file_name": "0x517f5e4e7fda6792b338227d4f6eb34c83c5499d.sol",
+        "final_score": 1.25
+    },
+    {
+        "function_name": "initiateWithFees",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'initiateWithFees' function for reentrancy is incorrect. The function does not make any external calls that could lead to reentrancy. The mention of a broker is misleading as there is no external call to a broker or any other contract within the function. The state changes are local and do not interact with external contracts in a way that reentrancy could be exploited. Therefore, the correctness of this vulnerability claim is very low, and the severity and profitability are also minimal.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'initiateWithFees' is vulnerable to reentrancy attacks because it modifies the state after calling an external contract (Broker). The state change `_swapStates[_swapID] = States.OPEN;` should occur before the external call to minimize the risk of reentrancy.",
+        "code": "function initiateWithFees( bytes32 _swapID, address payable _spender, address payable _broker, uint256 _brokerFee, bytes32 _secretLock, uint256 _timelock, uint256 _value ) public onlyInvalidSwaps(_swapID) payable { require(_value >= _brokerFee, \"fee must be less than value\"); Swap memory swap = Swap({ timelock: _timelock, brokerFee: _brokerFee, value: _value - _brokerFee, funder: msg.sender, spender: _spender, broker: _broker, secretLock: _secretLock, secretKey: 0x0 }); swaps[_swapID] = swap; _swapStates[_swapID] = States.OPEN; emit LogOpen(_swapID, _spender, _secretLock); }",
+        "file_name": "0x517f5e4e7fda6792b338227d4f6eb34c83c5499d.sol",
+        "final_score": 0.5
+    }
+]

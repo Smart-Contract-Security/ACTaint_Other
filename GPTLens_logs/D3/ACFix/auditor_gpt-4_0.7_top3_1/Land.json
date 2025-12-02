@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "tokenURI",
+        "code": "function tokenURI(uint256 id) public view returns (string memory) { require(_ownerOf(id) != address(0), \"Id does not exist\"); return string( abi.encodePacked( \"https://api.sandbox.game/lands/\", uint2str(id), \"/metadata.json\" ) ); }",
+        "vulnerability": "Exposed sensitive endpoint",
+        "reason": "The function tokenURI exposes the URL structure for accessing metadata about tokens. This information could be potentially exploited by an attacker to scrape or manipulate metadata by predicting or generating token IDs that haven\u2019t been assigned yet, especially since the format of the URL is predictable. Moreover, the URL is hard-coded, which makes it less flexible and more susceptible to being targeted.",
+        "file_name": "Land.sol"
+    },
+    {
+        "function_name": "uint2str",
+        "code": "function uint2str(uint _i) internal pure returns (string memory) { if (_i == 0) { return \"0\"; } uint j = _i; uint len; while (j != 0) { len++; j /= 10; } bytes memory bstr = new bytes(len); uint k = len - 1; while (_i != 0) { bstr[k--] = byte(uint8(48 + _i % 10)); _i /= 10; } return string(bstr); }",
+        "vulnerability": "Integer underflow",
+        "reason": "This function contains a potential integer underflow issue where the variable 'k' is decremented in a loop. If 'len' is 0, which could occur if the input is manipulated or in an unexpected state, 'k' will underflow from 0 to a large positive number, leading to out-of-bounds access of the 'bstr' byte array. This could lead to unexpected behavior and potentially allow an attacker to manipulate memory, leading to further vulnerabilities.",
+        "file_name": "Land.sol"
+    },
+    {
+        "function_name": "supportsInterface",
+        "code": "function supportsInterface(bytes4 id) external pure returns (bool) { return id == 0x01ffc9a7 || id == 0x80ac58cd || id == 0x5b5e139f; }",
+        "vulnerability": "Limited interface support",
+        "reason": "The supportsInterface function indicates support for a limited number of interfaces. This could be a design limitation if future extensions or compatibility are considered, as it may not support newer or custom interfaces which might be necessary for extended functionality or integration with other contracts or services in the ecosystem. This design decision might limit the contract's future capabilities and interoperability.",
+        "file_name": "Land.sol"
+    }
+]

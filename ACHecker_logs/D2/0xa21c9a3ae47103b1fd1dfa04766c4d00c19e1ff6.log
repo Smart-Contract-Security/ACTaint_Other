@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xa21c9a3ae47103b1fd1dfa04766c4d00c19e1ff6.code
+Start time: 26/08/2022 23:00:01
+Building CFG...
+CFG generation time (secs): 1.55
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function payout(address)
+	( 3117)  c2d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function CryptoMoviesToken()
+
+Violated access control check in function payout(address)
+	( 3206)  c86:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function CryptoMoviesToken()
+
+Violated access control check in function setCEO(address)
+	( 3745)  ea1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function CryptoMoviesToken()
+
+Violated access control check in function setCOO(address)
+	( 3965)  f7d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function CryptoMoviesToken()
+
+Violated access control check in function createPromoMovie(address,string,uint256)
+	( 4187) 105b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function CryptoMoviesToken()
+
+Violated access control check in function createContractMovie(string)
+	( 5197) 144d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function CryptoMoviesToken()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 32.01
+End time: 26/08/2022 23:00:34

@@ -1,0 +1,16 @@
+Checking contract for Violated-AC-Check 
+------------------
+
+Violated access control check in function withdraw(uint256)
+	( 8939) 22eb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withdraw(uint256)
++--Attacker can make changes to AC item {1} in function deposit(uint256)
+
+Violated access control check in function deposit(uint256)
+	(13368) 3438:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function withdraw(uint256)
++--Attacker can make changes to AC item {1} in function deposit(uint256)
+
+
+Checking contract for Missing-AC-Check 
+------------------

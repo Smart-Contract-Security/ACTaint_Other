@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "updateRoundImplementation",
+        "code": "function updateRoundImplementation(address payable newRoundImplementation) external onlyOwner {\n    require(newRoundImplementation != address(0), \"roundImplementation is 0x\");\n    roundImplementation = newRoundImplementation;\n    emit RoundImplementationUpdated(roundImplementation);\n}",
+        "vulnerability": "Centralized control risk",
+        "reason": "The function `updateRoundImplementation` allows the contract owner to change the implementation address of the round at any point. This poses a centralized control risk as the owner can unilaterally alter the logic of future rounds by pointing to a new implementation, potentially introducing malicious behavior.",
+        "file_name": "RoundFactory.sol"
+    },
+    {
+        "function_name": "create",
+        "code": "function create( bytes calldata encodedParameters, address ownedBy ) external returns (address) {\n    require(roundImplementation != address(0), \"roundImplementation is 0x\");\n    require(alloSettings != address(0), \"alloSettings is 0x\");\n    address clone = ClonesUpgradeable.clone(roundImplementation);\n    emit RoundCreated(clone, ownedBy, payable(roundImplementation));\n    IRoundImplementation(payable(clone)).initialize( encodedParameters, alloSettings );\n    return clone;\n}",
+        "vulnerability": "Improper input validation",
+        "reason": "The function 'create' does not validate the 'ownedBy' parameter for being a non-zero address. This could lead to the creation of rounds without a valid owner, potentially causing issues in round management or misuse in the case of functions depending on a valid owner address.",
+        "file_name": "RoundFactory.sol"
+    },
+    {
+        "function_name": "create",
+        "code": "function create( bytes calldata encodedParameters, address ownedBy ) external returns (address) {\n    require(roundImplementation != address(0), \"roundImplementation is 0x\");\n    require(alloSettings != address(0), \"alloSettings is 0x\");\n    address clone = ClonesUpgradeable.clone(roundImplementation);\n    emit RoundCreated(clone, ownedBy, payable(roundImplementation));\n    IRoundImplementation(payable(clone)).initialize( encodedParameters, alloSettings );\n    return clone;\n}",
+        "vulnerability": "Unchecked call to external contract",
+        "reason": "In the 'create' function, after cloning the `roundImplementation`, it directly calls `initialize` on the clone without checking if the clone was successfully created or if the call to `initialize` succeeded. This could lead to failed initializations going unnoticed and causing issues in the operational integrity of the newly created round.",
+        "file_name": "RoundFactory.sol"
+    }
+]

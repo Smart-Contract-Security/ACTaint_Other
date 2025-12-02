@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "bid",
+        "code": "function bid() public payable auctionNotEnded isMinimumBid isHighestBid { if (highestBidder != address(0)) { uint lastBid = bids[highestBidder]; bids[highestBidder] = 0; if(!highestBidder.send(lastBid)) { emit CheaterBidder(highestBidder, lastBid); } } highestBidder = msg.sender; bids[msg.sender] = msg.value; auctionState = AuctionStates.Ongoing; emit HighestBidIncreased(msg.sender, msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'bid' function sends Ether back to the previous highest bidder using highestBidder.send(lastBid) without first updating the state of the bids mapping for the new highest bidder. This could allow the previous highest bidder to re-enter the bid function and potentially manipulate the state or drain funds if they call the bid function again within the same transaction.",
+        "file_name": "0x3a6984181f49c9ef64ada32373e736db0c9f1078.sol"
+    },
+    {
+        "function_name": "endAuction",
+        "code": "function endAuction() public onlyHighestBidderOrEscrow { require(now >= auctionEnd, \"Auction not yet ended.\"); require(auctionState != AuctionStates.Ended, \"Auction has already ended.\"); auctionState = AuctionStates.Ended; emit AuctionEnded(highestBidder, bids[highestBidder]); if(!beneficiary.send(bids[highestBidder])) { } }",
+        "vulnerability": "Missing check after external call",
+        "reason": "The 'endAuction' function attempts to transfer funds to the beneficiary using beneficiary.send(bids[highestBidder]) without handling the case where the send function fails (e.g., due to a gas limitation or a fallback function error). If the send fails, the function silently ignores the failure, potentially leading to a loss of funds without any notification or recovery mechanism.",
+        "file_name": "0x3a6984181f49c9ef64ada32373e736db0c9f1078.sol"
+    },
+    {
+        "function_name": "cleanUpAfterYourself",
+        "code": "function cleanUpAfterYourself() public { require(auctionState == AuctionStates.Ended, \"Auction is not ended.\"); if (escrowModerator != address(0)) { selfdestruct(escrowModerator); } else { selfdestruct(beneficiary); } }",
+        "vulnerability": "Unauthorized Selfdestruct",
+        "reason": "The 'cleanUpAfterYourself' function can be called by any user as long as the auctionState is Ended. This allows any external attacker to destroy the contract arbitrarily once the auction has ended, potentially causing denial of service or loss of contract state data, which should instead be restricted to authorized users such as the contract owner or designated moderators.",
+        "file_name": "0x3a6984181f49c9ef64ada32373e736db0c9f1078.sol"
+    }
+]

@@ -1,0 +1,33 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xa2ce821f2a990dbd5de5a9e221c6bfba261a3807.code
+Start time: 26/08/2022 23:43:46
+Building CFG...
+CFG generation time (secs): 0.34
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function emitTransfer(address,address,uint256)
+	( 5972) 1754:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function init(address,string,string)
+
+Violated access control check in function emitApprove(address,address,uint256)
+	( 5834) 16ca:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function init(address,string,string)
+
+Violated access control check in function _forwardApprove(address,uint256,address)
+	( 7703) 1e17:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function proposeUpgrade(address)
+
+Violated access control check in function _forwardTransferFromWithReference(address,address,uint256,string,address)
+	( 5345) 14e1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function proposeUpgrade(address)
+
+Violated access control check in function _forwardTransferFromToICAPWithReference(address,bytes32,uint256,string,address)
+	( 8120) 1fb8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function proposeUpgrade(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 17.46
+End time: 26/08/2022 23:44:04

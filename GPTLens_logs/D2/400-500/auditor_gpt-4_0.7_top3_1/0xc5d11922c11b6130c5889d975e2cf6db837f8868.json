@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createOrder",
+        "code": "function createOrder( address contractAddress, uint256 tokenId ) external onlySenderIsOriginalOwner( contractAddress, tokenId ) { bytes32 orderHash = keccak256(abi.encodePacked(contractAddress, tokenId, msg.sender)); require(OrderToOwner[orderHash] != msg.sender, \"Order already exist\"); _addOrder(msg.sender, orderHash); emit CreateOrder(msg.sender, orderHash, contractAddress, tokenId); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'createOrder' function is vulnerable to reentrancy attacks. It emits an event after calling a non-view, non-pure internal function '_addOrder', which modifies the state. An attacker can potentially exploit this by creating a fallback function in a malicious contract that calls 'createOrder' again when it receives Ether during the emission of the event. This can lead to unexpected behaviors or drain the contract's funds or assets.",
+        "file_name": "0xc5d11922c11b6130c5889d975e2cf6db837f8868.sol"
+    },
+    {
+        "function_name": "deleteOrder",
+        "code": "function deleteOrder( bytes32 orderHash ) external { require(OrderToOwner[orderHash] == msg.sender, \"this order hash not belongs to this address\"); _removeOrder(msg.sender, orderHash); emit DeleteOrder(msg.sender, orderHash); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'deleteOrder' function also suffers from a reentrancy vulnerability similar to 'createOrder'. The function changes the state by calling '_removeOrder' and subsequently emits an event, which can be exploited by a callback to re-enter the 'deleteOrder' function, potentially leading to effects such as multiple deletions or other unintended actions.",
+        "file_name": "0xc5d11922c11b6130c5889d975e2cf6db837f8868.sol"
+    },
+    {
+        "function_name": "exchangeToken",
+        "code": "function exchangeToken( bytes32 order, bytes32 matchOrder ) external { require(OrderToOwner[order] == msg.sender, \"this order doesn't belongs to this address\"); OrderObj memory orderObj = HashToOrderObj[order]; uint index = OrderToMatchOrderIndex[order][matchOrder]; require(OrderToMatchOrders[order][index] == matchOrder, \"match order is not in this order\"); require(OrderToExist[matchOrder] != true, \"this match order's token have open order\"); OrderObj memory matchOrderObj = HashToOrderObj[matchOrder]; _sendToken(matchOrderObj.owner, orderObj.contractAddress, orderObj.tokenId); _sendToken(orderObj.owner, matchOrderObj.contractAddress, matchOrderObj.tokenId); _removeMatchOrder(order, matchOrder); _removeOrder(msg.sender, order); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'exchangeToken' function is vulnerable to reentrancy where it calls '_sendToken', which might call external contracts that could re-enter the function. This function does multiple state changes before external calls, which could be exploited to alter the intended logic of token exchanges, leading to loss or duplication of tokens.",
+        "file_name": "0xc5d11922c11b6130c5889d975e2cf6db837f8868.sol"
+    }
+]

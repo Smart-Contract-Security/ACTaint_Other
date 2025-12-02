@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public virtual { require(newOwner != address(0), \"Ownable: new owner is the zero address\"); emit OwnershipTransferred(_owner, newOwner); _owner = newOwner; }",
+        "vulnerability": "Missing ownership authentication",
+        "reason": "The function does not check if the caller (msg.sender) is the current owner before assigning a new owner. This allows any external caller to take over the contract by setting themselves or another address as the new owner.",
+        "file_name": "Ragnarok.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public virtual { require(newOwner != address(0), \"Ownable: new owner is the zero address\"); emit OwnershipTransferred(_owner, newOwner); _owner = newOwner; }",
+        "vulnerability": "Event emitted before state change",
+        "reason": "The OwnershipTransferred event is emitted before the actual change of ownership is recorded in the state variable _owner. This order could be exploited by a reentrancy attack where the emitted event could be used to trigger actions based on the new ownership before the ownership state is updated.",
+        "file_name": "Ragnarok.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public virtual { require(newOwner != address(0), \"Ownable: new owner is the zero address\"); emit OwnershipTransferred(_owner, newOwner); _owner = newOwner; }",
+        "vulnerability": "Single point of failure",
+        "reason": "The function allows changing ownership to a new, arbitrary address without any checks beyond the zero address. If the new owner address is compromised or mistakenly entered, the control of the contract can be irreversibly lost or misused.",
+        "file_name": "Ragnarok.sol"
+    }
+]

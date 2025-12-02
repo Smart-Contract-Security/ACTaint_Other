@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "refund",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a reentrancy vulnerability due to the recursive call to 'refund()' without updating the state. This could indeed lead to multiple withdrawals and drain the contract's balance if not properly managed. The severity is high because it can result in significant financial loss, and the profitability for an attacker exploiting this is also high.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The function 'refund' recursively calls itself without updating the state (weiValue) beforehand, which can lead to unintended multiple withdrawals, potentially draining the contract's balance.",
+        "code": "function refund() private { uint256 weiValue = this.balance; if (weiValue == 0) throw; uint256 weiRefunded; weiRefunded = safeAdd(weiRefunded, weiValue); refund(); if (!msg.sender.send(weiValue)) throw; }",
+        "file_name": "0xbb1972a4eb98de90c150ba209e60238a74ac774b.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "claim_bounty",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning correctly identifies the risk associated with not checking the return value of an external call in 'claim_bounty'. This could lead to a loss of funds or inconsistencies in the contract state if the external call fails. The severity is moderate because it depends on the external call's criticality, and profitability is low as it does not directly result in an exploitable condition for an attacker unless combined with other vulnerabilities.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "In the 'claim_bounty' function, there is a call to 'token.proxyPayment.value(this.balance - bounty)(address(this))' without checking the return value. This can be risky, especially if the call fails silently, which could lead to inconsistencies in the contract state or loss of funds.",
+        "code": "function claim_bounty(){ if (bought_tokens) return; if (kill_switch) throw; bought_tokens = true; time_bought = now + 1 days; token.proxyPayment.value(this.balance - bounty)(address(this)); if(this.balance > ETH_to_end) { msg.sender.transfer(bounty); } else { time_bought = now + 1 days * 9; if(this.balance > ETH_to_end) { msg.sender.transfer(bounty); } } }",
+        "file_name": "0xbb1972a4eb98de90c150ba209e60238a74ac774b.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The reasoning is partially incorrect. The function 'transfer' does include a check for integer overflow ('if (balanceOf[_to] + _value < balanceOf[_to]) throw;'), which is intended to prevent the overflow issue. However, the criticism that it might not prevent an overflow if '_value' is very large is unfounded because the condition explicitly checks for this scenario. Therefore, the severity and profitability are overestimated.",
+        "correctness": 3,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The function 'transfer' lacks checks for integer overflow on the line 'if (balanceOf[_to] + _value < balanceOf[_to]) throw;', which in some cases might not prevent an overflow if '_value' is very large. This could allow an attacker to artificially increase the token balance.",
+        "code": "function transfer(address _to, uint256 _value) { if (balanceOf[msg.sender] < _value) throw; if (balanceOf[_to] + _value < balanceOf[_to]) throw; balanceOf[msg.sender] -= _value; balanceOf[_to] += _value; Transfer(msg.sender, _to, _value); }",
+        "file_name": "0xbb1972a4eb98de90c150ba209e60238a74ac774b.sol",
+        "final_score": 2.0
+    }
+]

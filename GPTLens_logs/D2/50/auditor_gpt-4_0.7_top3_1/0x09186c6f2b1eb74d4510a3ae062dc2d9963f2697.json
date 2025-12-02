@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address to, uint tokens) public returns (bool success) { balances[msg.sender] = safeSub(balances[msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(msg.sender, to, tokens); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function first updates the balances and then emits an event. If the recipient is a contract, it could potentially call back into the contract and perform actions like transferring the same tokens again before the first transaction finishes, leading to reentrancy attack.",
+        "file_name": "0x09186c6f2b1eb74d4510a3ae062dc2d9963f2697.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' also first updates the balances and the allowances, and then emits an event. If the 'to' address is a contract, it could reenter the contract and manipulate balances or allowances during the execution of 'transferFrom', leading to inconsistencies or exploitation.",
+        "file_name": "0x09186c6f2b1eb74d4510a3ae062dc2d9963f2697.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address spender, uint tokens, bytes data) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, this, data); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function is vulnerable to reentrancy because it calls an external contract ('receiveApproval') after approving tokens. The external contract might reenter the current contract and call functions like transfer or transferFrom to move more tokens than intended.",
+        "file_name": "0x09186c6f2b1eb74d4510a3ae062dc2d9963f2697.sol"
+    }
+]

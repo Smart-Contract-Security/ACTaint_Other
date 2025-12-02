@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "finalize",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy attack due to the use of 'prospectors_team.send(this.balance)'. This could indeed allow the called contract to execute code that could re-enter the 'finalize' function, leading to unexpected behavior or state changes. The severity is high because reentrancy can lead to significant loss of funds or corruption of contract state. The profitability is also high as an attacker could potentially drain funds or manipulate contract states to their advantage.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The finalize function sends ether to an external address (prospectors_team) via 'prospectors_team.send(this.balance)'. If the prospectors_team address is a contract, it could execute a fallback function when receiving ether, potentially leading to reentrancy attacks. This can be exploited by the called contract making calls back into this contract and altering state in unexpected ways before the initial execution completes.",
+        "code": "function finalize() external { if (!funding) throw; if ((block.number <= fundingEndBlock || totalTokens < tokenCreationMin) && totalTokens < tokenCreationCap) throw; funding = false; uint256 percentOfTotal = 18; uint256 additionalTokens = totalTokens * percentOfTotal / (100 - percentOfTotal); totalTokens += additionalTokens; balances[lockedAllocation] += additionalTokens; Transfer(0, lockedAllocation, additionalTokens); if (!prospectors_team.send(this.balance)) throw; }",
+        "file_name": "0x74e5f1a34a651c052d86dbd25042d6f710187f0a.sol",
+        "final_score": 8.0
+    },
+    {
+        "function_name": "unlock",
+        "vulnerability": "Arithmetic Overflow",
+        "criticism": "The reasoning is correct in pointing out the risk of arithmetic overflow in the calculation of 'toTransfer'. This could indeed lead to incorrect token transfers, potentially allowing an attacker to withdraw more tokens than they should be able to. The severity is moderate because it depends on the values of 'tokensCreated' and 'allocation', and the profitability is moderate as well, depending on the attacker's ability to manipulate these values or exploit the overflow condition.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The calculation of 'toTransfer' in 'unlock' does not have safe checks for overflows. The multiplication 'tokensCreated * allocation' can overflow if the values are large enough, leading to incorrect calculations of how many tokens to transfer. This could be exploited to withdraw more tokens than intended.",
+        "code": "function unlock() external { if (now < unlockedAt) throw; if (tokensCreated == 0) tokensCreated = obg.balanceOf(this); var allocation = allocations[msg.sender]; allocations[msg.sender] = 0; var toTransfer = tokensCreated * allocation / totalAllocations; if (!obg.transfer(msg.sender, toTransfer)) throw; }",
+        "file_name": "0x74e5f1a34a651c052d86dbd25042d6f710187f0a.sol",
+        "final_score": 6.0
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The criticism of not checking the return value of the 'Transfer' event is somewhat misplaced, as the 'Transfer' event in Ethereum does not have a return value; it is used for logging purposes only. Therefore, the reasoning does not apply to the actual mechanics of Ethereum and smart contracts. The severity and profitability are both low because this issue does not pose a real threat or avenue for exploitation.",
+        "correctness": 1,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The function does not check the return value of the 'Transfer' event. Although the event itself cannot fail, the lack of checks might obscure potential issues in logging or event handling mechanisms, particularly in different client implementations or in future updates that might change event behaviors.",
+        "code": "function transfer(address _to, uint256 _value) returns (bool) { if (funding) throw; var senderBalance = balances[msg.sender]; if (senderBalance >= _value && _value > 0) { senderBalance -= _value; balances[msg.sender] = senderBalance; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "file_name": "0x74e5f1a34a651c052d86dbd25042d6f710187f0a.sol",
+        "final_score": 1.0
+    }
+]

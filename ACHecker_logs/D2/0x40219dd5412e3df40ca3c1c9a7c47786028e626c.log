@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x40219dd5412e3df40ca3c1c9a7c47786028e626c.code
+Start time: 20/08/2022 17:12:58
+Building CFG...
+CFG generation time (secs): 0.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setFundsCreditBondContract(address)
+	( 1507)  5e3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function setMandateInBlocks(uint256)
+	( 1810)  712:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function withdrawBondReward(address)
+	( 2495)  9bf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function setCreditDaoFund(address)
+	( 2798)  aee:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function claimBondReward()
+	( 3125)  c35:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function lockTokens(uint256)
+	( 4158) 103e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function setblocksPerMonth(uint256)
+	( 4803) 12c3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function setFundsCreditDaoAddress(address)
+	( 4905) 1329:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function setCreditBitContract(address)
+	( 5214) 145e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+Violated access control check in function setFundsCreditBitContract(address)
+	( 5374) 14fe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function createNewElections()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 6.42
+End time: 20/08/2022 17:13:04

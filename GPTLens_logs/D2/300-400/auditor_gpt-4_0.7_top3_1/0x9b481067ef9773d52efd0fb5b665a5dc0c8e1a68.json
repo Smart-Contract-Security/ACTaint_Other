@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public{ balanceOf[target] += mintedAmount; totalSupply += mintedAmount; }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The mintToken function allows the contract owner to arbitrarily increase the balance of any account and the total supply of tokens without any constraints or checks. This can lead to inflation of token supply and devaluation of tokens, as well as potential abuse by the contract owner.",
+        "file_name": "0x9b481067ef9773d52efd0fb5b665a5dc0c8e1a68.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require (_to != 0x0); require (balanceOf[_from] >= _value); require (balanceOf[_to] + _value >= balanceOf[_to]); require(!frozenAccount[_from]); require(!frozenAccount[_to]); balanceOf[_from] -= _value; balanceOf[_to] += _value; emit Transfer(_from, _to, _value); }",
+        "vulnerability": "Arithmetic Overflow",
+        "reason": "The function does not properly handle arithmetic overflow on 'balanceOf[_to] + _value'. Although there is a check to ensure that this addition does not wrap around, a sophisticated attacker could manipulate balances such that the addition results in an overflow, allowing for unintended token transfers.",
+        "file_name": "0x9b481067ef9773d52efd0fb5b665a5dc0c8e1a68.sol"
+    },
+    {
+        "function_name": "freezeAccount",
+        "code": "function freezeAccount(address target, bool freeze) onlyOwner public { frozenAccount[target] = freeze; emit FrozenFunds(target, freeze); }",
+        "vulnerability": "Centralized Control Risk",
+        "reason": "The ability for the contract owner to freeze any account can lead to a centralized point of control and potential abuse. This function provides the owner with the power to deny access to the tokens held in any account, which can be misused in a malicious or negligent way.",
+        "file_name": "0x9b481067ef9773d52efd0fb5b665a5dc0c8e1a68.sol"
+    }
+]

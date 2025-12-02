@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner {\n    _transferOwnership(_newOwner);\n}",
+        "vulnerability": "Missing input validation",
+        "reason": "The function does not validate if the _newOwner address is a non-zero address before transferring ownership. This might result in the contract having no valid owner, which can lead to a loss of administrative control.",
+        "file_name": "0x6ac07b7c4601b5ce11de8dfe6335b871c7c4dd4d.sol"
+    },
+    {
+        "function_name": "setTransferProxy",
+        "code": "function setTransferProxy(uint32 _point, address _transferProxy) public {\n    address owner = azimuth.getOwner(_point);\n    require((owner == msg.sender) || azimuth.isOperator(owner, msg.sender));\n    azimuth.setTransferProxy(_point, _transferProxy);\n    emit Approval(owner, _transferProxy, uint256(_point));\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "This function updates the transfer proxy for a point, but does not prevent reentrancy. An attacker could potentially exploit this by recursively calling the function from the _transferProxy address if it is a contract, leading to unexpected behavior or denial of service.",
+        "file_name": "0x6ac07b7c4601b5ce11de8dfe6335b871c7c4dd4d.sol"
+    },
+    {
+        "function_name": "setOwner",
+        "code": "function setOwner(uint32 _point, address _owner) onlyOwner external {\n    require(0x0 != _owner);\n    address prev = rights[_point].owner;\n    if (prev == _owner) {\n        return;\n    }\n    if (0x0 != prev) {\n        uint256 i = pointOwnerIndexes[prev][_point];\n        assert(i > 0);\n        i--;\n        uint32[] storage owner = pointsOwnedBy[prev];\n        uint256 last = owner.length - 1;\n        uint32 moved = owner[last];\n        owner[i] = moved;\n        pointOwnerIndexes[prev][moved] = i + 1;\n        delete(owner[last]);\n        owner.length = last;\n        pointOwnerIndexes[prev][_point] = 0;\n    }\n    rights[_point].owner = _owner;\n    pointsOwnedBy[_owner].push(_point);\n    pointOwnerIndexes[_owner][_point] = pointsOwnedBy[_owner].length;\n    emit OwnerChanged(_point, _owner);\n}",
+        "vulnerability": "Unchecked return values",
+        "reason": "The function fails to check the return values of external calls to 'pointsOwnedBy[_owner].push(_point)' or manipulations on storage arrays. This could lead to state inconsistency if these operations fail, especially on low-level operations or under certain conditions like out-of-gas errors.",
+        "file_name": "0x6ac07b7c4601b5ce11de8dfe6335b871c7c4dd4d.sol"
+    }
+]

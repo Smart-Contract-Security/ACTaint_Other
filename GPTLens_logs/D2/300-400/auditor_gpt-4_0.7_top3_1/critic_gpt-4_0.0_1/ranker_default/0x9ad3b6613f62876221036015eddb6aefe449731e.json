@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'withdraw' function for reentrancy is partially correct. The function does indeed update the balances after the transfer call, which is a classic reentrancy vulnerability pattern. However, the severity is high because reentrancy can lead to significant loss of funds if exploited. The profitability is also high as an attacker can drain tokens repeatedly. The correctness is slightly reduced because the reasoning did not consider the checks for 'signatureValidUntilBlock' and 'depositLock[msg.sender]' which add some security layers, though not sufficient to prevent reentrancy.",
+        "correctness": 7,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'withdraw' function sends tokens before updating the 'totalSupply_' and 'balances[msg.sender]' states. This allows for potential reentrancy attacks where an attacker could recursively call the withdraw function from within a fallback function in a malicious contract to drain tokens.",
+        "code": "function withdraw(uint8 v, bytes32 r, bytes32 s, uint _value, uint signatureValidUntilBlock) public returns (bool success) { require(balanceOf(msg.sender) >= _value); if (now <= depositLock[msg.sender]) { require(block.number < signatureValidUntilBlock); require(isValidSignature(keccak256(msg.sender, address(this), signatureValidUntilBlock), v, r, s)); } balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply_ = totalSupply_.sub(_value); if (erc20old) { ERC20Old(originalToken).transfer(msg.sender, _value); } else { require(ERC20(originalToken).transfer(msg.sender, _value)); } return true; }",
+        "file_name": "0x9ad3b6613f62876221036015eddb6aefe449731e.sol",
+        "final_score": 7.5
+    },
+    {
+        "function_name": "addSigner",
+        "vulnerability": "Unauthorized Access",
+        "criticism": "The reasoning is correct in identifying a potential vulnerability in the 'addSigner' function. Allowing any current signer to add another without further checks does pose a risk if a signer's account is compromised. However, the severity is moderate because the attack surface is limited to those already having signer status. Profitability is also moderate as exploiting this requires initial unauthorized access to a signer's account. The correctness is high as the reasoning aligns well with the potential impact of the vulnerability.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The 'addSigner' function allows any signer to add another signer without any checks beyond the initial requirement of being a signer. This can lead to an unchecked expansion of signers who can approve withdrawals, potentially leading to unauthorized fund access if a single signer's account is compromised.",
+        "code": "function addSigner(address _newSigner) public { require(isSigner[msg.sender]); isSigner[_newSigner] = true; }",
+        "file_name": "0x9ad3b6613f62876221036015eddb6aefe449731e.sol",
+        "final_score": 6.5
+    },
+    {
+        "function_name": "isValidSignature",
+        "vulnerability": "Faulty Signature Verification",
+        "criticism": "The reasoning about the faulty signature verification is incorrect. The prefix used in 'isValidSignature' is actually a standard practice in Ethereum for signed messages to prevent certain types of attacks. The prefix includes the message length to ensure the integrity of the data being signed. Therefore, the vulnerability described does not exist, leading to a low correctness score. The severity and profitability are also low as the function behaves as expected under standard conditions.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The 'isValidSignature' function uses a prefix '\\x19Ethereum Signed Message:\\n32' which is not the standard prefix (it typically includes the length of the message). This might lead to vulnerabilities where messages could be manipulated to produce the same hash with different original data, leading to potential misuse in signature verification.",
+        "code": "function isValidSignature(bytes32 hash, uint8 v, bytes32 r, bytes32 s) public constant returns (bool) { return isSigner[ecrecover(keccak256(\"\\x19Ethereum Signed Message:\\n32\", hash), v, r, s)]; }",
+        "file_name": "0x9ad3b6613f62876221036015eddb6aefe449731e.sol",
+        "final_score": 1.5
+    }
+]

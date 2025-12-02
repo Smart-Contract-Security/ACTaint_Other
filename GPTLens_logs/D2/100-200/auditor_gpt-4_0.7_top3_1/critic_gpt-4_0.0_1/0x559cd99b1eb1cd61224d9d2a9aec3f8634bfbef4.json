@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "ActiveAdmin",
+        "vulnerability": "Arbitrary Ownership Takeover",
+        "criticism": "The reasoning provided is incorrect. The function ActiveAdmin is a constructor (indicated by the same name as the contract and the 'public' visibility), which sets the owner to a hardcoded address. This function is called only once when the contract is deployed and cannot be called again by anyone. Therefore, there is no vulnerability of arbitrary ownership takeover as it is not callable post-deployment. The severity and profitability are both zero because this is not a vulnerability but a feature of the constructor.",
+        "correctness": 0,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function ActiveAdmin allows a hardcoded address to take over the ownership of the contract without any checks or restrictions. This can be called by anyone, not just the current owner, leading to a situation where the contract's control could be seized by an unintended party.",
+        "code": "function ActiveAdmin () public { owner = 0x3653A2205971AD524Ea31746D917430469D3ca23; }",
+        "file_name": "0x559cd99b1eb1cd61224d9d2a9aec3f8634bfbef4.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "vulnerability": "Predictable Randomness",
+        "criticism": "The reasoning is correct. Using block.blockhash for randomness is vulnerable to manipulation by miners and can be predicted by observers, which compromises the fairness of the lottery. This is a significant vulnerability as it can be exploited to win the lottery unfairly. The severity is high due to the potential impact on the lottery's integrity and profitability is also high as the attacker can gain the lottery rewards.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The executeLottery function uses block.blockhash of the previous block as a source of randomness. This can be manipulated by miners (since they have control over blockhash), or predicted by observing the blockchain, leading to potential exploitation where an attacker could increase their chances of winning.",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "file_name": "0x559cd99b1eb1cd61224d9d2a9aec3f8634bfbef4.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "vulnerability": "DoS with Throw",
+        "criticism": "The reasoning is partially correct. The use of 'throw' is indeed outdated and should be replaced with 'revert()' for better gas handling and clearer error messages. However, the severity of this issue is not as high as suggested because the function's main purpose (lottery execution) might still complete if the conditions are met before the throw. The profitability of exploiting this for an attacker is low, as it primarily results in denial of service rather than a direct benefit.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The use of 'throw' in the executeLottery function for handling failed transfers is outdated and consumes all gas available to the transaction. This can lead to a denial of service attack if an attacker can cause the transfer to fail (e.g., by making the recipient a contract that always reverts), thus blocking the lottery execution.",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "file_name": "0x559cd99b1eb1cd61224d9d2a9aec3f8634bfbef4.sol"
+    }
+]

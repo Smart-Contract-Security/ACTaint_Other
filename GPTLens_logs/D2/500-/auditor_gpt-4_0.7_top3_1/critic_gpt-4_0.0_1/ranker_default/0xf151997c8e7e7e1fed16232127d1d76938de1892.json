@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the state changes occurring after the external call to 'distr'. However, the severity is not as high as it might seem because the function includes a check that could prevent multiple distributions if properly implemented (not fully visible in the provided code). The profitability is moderate because if an exploit is possible, it could allow draining more tokens than intended, but this depends on the specific implementation of 'distr' and other state checks.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'getTokens' allows a reentrancy attack since it calls 'distr' which transfers tokens, and then modifies the state afterwards (blacklist[investor] = true;). An attacker could recursively call 'getTokens' before their initial invocation completes, potentially allowing them to drain more tokens than intended.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xf151997c8e7e7e1fed16232127d1d76938de1892.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "withdrawForeignTokens",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is correct in pointing out the lack of a check on the return value of the 'transfer' call, which is a common best practice to ensure transaction integrity. The severity is moderate because failing to revert on a failed transfer could lead to discrepancies in the perceived token balance. Profitability is low as this vulnerability does not directly result in an economic advantage for an attacker, but rather in potential loss or confusion for the contract owner.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "In the 'withdrawForeignTokens' function, the return value of 'token.transfer(owner, amount)' is not checked. If the 'transfer' function fails for any reason (e.g., the contract does not have enough tokens), the transaction will not be reverted, potentially leading to incorrect assumptions about the state of the contract.",
+        "code": "function withdrawForeignTokens(address _tokenContract) onlyOwner public returns (bool) {\n    ForeignToken token = ForeignToken(_tokenContract);\n    uint256 amount = token.balanceOf(address(this));\n    return token.transfer(owner, amount);\n}",
+        "file_name": "0xf151997c8e7e7e1fed16232127d1d76938de1892.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning is partially correct about the race condition vulnerability due to not resetting the allowance to zero. However, the provided code does check if the current allowance is non-zero and blocks setting a new non-zero value, which mitigates the typical race condition issue. Therefore, the severity and profitability are overestimated as the actual risk of exploitation is lower due to this safeguard.",
+        "correctness": 4,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "The 'approve' function is vulnerable to a known race condition where calling 'approve' to set a new allowance before the old one has been used can allow an attacker to approve a larger amount. This happens because it doesn't reset the allowance to zero before setting a new value, which can be exploited by front-running.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xf151997c8e7e7e1fed16232127d1d76938de1892.sol",
+        "final_score": 2.75
+    }
+]

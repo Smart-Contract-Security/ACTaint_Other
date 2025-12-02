@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool success) { require(_to != address(0)); require(balanceOf[msg.sender] >= _value); require(balanceOf[ _to] + _value >= balanceOf[ _to]); balanceOf[msg.sender] =SafeMath.safeSub(balanceOf[msg.sender],_value) ; balanceOf[_to] =SafeMath.safeAdd(balanceOf[_to] ,_value); emit Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function updates the sender's balance after the transfer has occurred, which can lead to reentrancy issues if the recipient is a contract that calls back into this contract.",
+        "file_name": "0xe92ab09b19e847ee34127ab0c470d86326d218dc.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value)public returns (bool success) { require(_to != address(0)); require(allowed[_from][msg.sender] >= _value); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); balanceOf[_from] =SafeMath.safeSub(balanceOf[_from],_value) ; balanceOf[_to] = SafeMath.safeAdd(balanceOf[_to],_value); allowed[_from][msg.sender] =SafeMath.safeSub(allowed[_from][msg.sender], _value); emit Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transferFrom' function updates the sender's allowed amount and balances after the transfer has occurred, which can lead to reentrancy issues if the recipient is a contract that calls back into this contract.",
+        "file_name": "0xe92ab09b19e847ee34127ab0c470d86326d218dc.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) public returns (bool success) { require(owner == msg.sender); require(balanceOf[msg.sender] >= _value); totalSupply =SafeMath.safeSub(totalSupply,_value) ; balanceOf[msg.sender] =SafeMath.safeSub(balanceOf[msg.sender],_value) ; emit Burn(msg.sender, _value); return true; }",
+        "vulnerability": "Privilege Escalation",
+        "reason": "The 'burn' function allows only the owner to reduce the total supply by burning tokens from their balance, which can be misused by the owner to manipulate token value or availability, potentially harming other token holders.",
+        "file_name": "0xe92ab09b19e847ee34127ab0c470d86326d218dc.sol"
+    }
+]

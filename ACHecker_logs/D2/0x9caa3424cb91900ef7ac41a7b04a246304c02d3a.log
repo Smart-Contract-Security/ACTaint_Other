@@ -1,0 +1,27 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x9caa3424cb91900ef7ac41a7b04a246304c02d3a.code
+Start time: 26/08/2022 18:48:47
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function transferDelegation(address)
+	(  414)  19e:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {3} in function initialize(address,uint256)
++--Attacker can make changes to AC item {3} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	(  743)  2e7:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {3} in function initialize(address,uint256)
++--Attacker can make changes to AC item {3} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Target of DELEGATECALL) Missing access control check in function initialize(address,uint256)
+Needed to protect following instruction in function initialize(address,uint256)
+(  368)  170:	f4	-6 +1 = -5	DELEGATECALL
+
+Analysis time (secs): 1.14
+End time: 26/08/2022 18:48:49

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "voteFoul",
+        "code": "function voteFoul(uint _number) public{ require(signedByPromisor); require(msg.sender == judges[_number]); require(votedFoul[_number] != 1); require(votedShy[_number] != 1); require(votedSuccess[_number] != 1); foulVotes = foulVotes + 1; votedFoul[_number] = 1; if((foulVotes >= 2) && !sentMoney){ beneficiary.transfer(deposit); sentMoney = true; } }",
+        "vulnerability": "Reentrancy on fund transfer",
+        "reason": "The function 'voteFoul' transfers funds to the beneficiary if certain conditions are met. However, it updates the 'sentMoney' state variable after performing the transfer. If the beneficiary is a contract, it could potentially execute the fallback function to re-enter and call 'voteFoul' again before 'sentMoney' is set to true, leading to multiple unintended transfers.",
+        "file_name": "0x61796d1ac7e5d1965e444eefe53371de2e55533d.sol"
+    },
+    {
+        "function_name": "promisorSigns",
+        "code": "function promisorSigns() payable public{ require(msg.sender == promisor); require(signedByJudge[0] == 1); require(signedByJudge[1] == 1); require(signedByJudge[2] == 1); require(!signedByPromisor); require(msg.value == deposit); signedByPromisor = true; }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The 'promisorSigns' function requires all three judges to have signed by checking 'signedByJudge' array indices. An attacker could potentially prevent the contract from progressing by refusing to sign as one of the judges (if they control one of the judge's addresses or collude with them), making it impossible for the promisor to fulfill their part of the contract and thus locking the funds indefinitely.",
+        "file_name": "0x61796d1ac7e5d1965e444eefe53371de2e55533d.sol"
+    },
+    {
+        "function_name": "selfDestruct",
+        "code": "function selfDestruct() public{ require(sentMoney); require(now >= (endDate+432000)); selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized self-destruction",
+        "reason": "The 'selfDestruct' function allows any caller to destroy the contract provided 'sentMoney' is true and the time condition is met. This function does not check if the caller is authorized (e.g., the contract owner or a designated administrator), allowing any user to trigger destruction and potentially remove the contract from the blockchain unexpectedly, leading to loss of access to the contract by legitimate parties.",
+        "file_name": "0x61796d1ac7e5d1965e444eefe53371de2e55533d.sol"
+    }
+]

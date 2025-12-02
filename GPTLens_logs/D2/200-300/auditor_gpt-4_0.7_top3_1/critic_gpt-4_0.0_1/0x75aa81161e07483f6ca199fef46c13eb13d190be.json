@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "Matthew",
+        "vulnerability": "Constructor Misnaming",
+        "criticism": "The criticism is valid as the function 'Matthew' is indeed misnamed and should use the 'constructor()' syntax to properly initialize the contract. This misnaming can lead to severe security risks as it allows any user to reinitialize the contract state, potentially taking over control or disrupting the intended logic. The correctness of the vulnerability identification is high, the severity is also high due to potential control loss, but profitability is moderate as exploiting this would require specific conditions and knowledge.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The function name 'Matthew' is intended to be a constructor but does not match the contract name 'contract Matthew'. Since Solidity 0.4.22, constructors should be defined using 'constructor()' syntax. Misnaming the constructor means it is treated as a regular function that can be called by anyone, allowing unauthorized users to reset contract state arbitrarily.",
+        "code": "function Matthew(){\n    owner = msg.sender;\n    setFacts();\n}",
+        "file_name": "0x75aa81161e07483f6ca199fef46c13eb13d190be.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "vulnerability": "Unchecked Send",
+        "criticism": "The reasoning is accurate in identifying the unchecked send operation, which is a common mistake leading to potential loss of funds if the send fails. The severity is moderate because while funds could be lost, it depends on the external call failing which is not always under attacker control. Profitability is low as exploiting this directly for profit is not straightforward without additional vulnerabilities. The correctness is high as the issue is clearly present in the code.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The send method used here is not checked for success before proceeding, e.g., 'isSuccess = whale.send(stake - nextStake);'. If this send fails, the contract does not handle the failure, potentially leading to loss of funds or unintended behavior.",
+        "code": "function () payable{\n    if (block.number - period >= blockheight){\n        bool isSuccess=false;\n        var nextStake = stake * WINNERTAX_PRECENT/100;\n        if (isSuccess == false) isSuccess = whale.send(stake - nextStake);\n        MatthewWon(\"Matthew won\", whale, stake - nextStake, block.number);\n        setFacts();\n        if (mustBeDestroyed) selfdestruct(whale);\n        return;\n    }else{\n        if (msg.value < stake + DELTA) throw;\n        bool isOtherSuccess = msg.sender.send(stake);\n        setFacts();\n        StakeIncreased(\"stake increased\", whale, stake, blockheight);\n    }\n}",
+        "file_name": "0x75aa81161e07483f6ca199fef46c13eb13d190be.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "vulnerability": "Re-entrancy",
+        "criticism": "The identification of a re-entrancy vulnerability is correct. The function does indeed make an external call to 'whale.send' and then continues to execute further logic which could be manipulated if the external call is to a malicious contract. This can lead to severe issues such as double withdrawals or state corruption. The severity is high due to the potential impact. Profitability is also high as attackers can exploit this to drain funds or disrupt contract operations. The correctness is well justified with the given code.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The fallback function allows re-entrancy attack because it calls an external address (whale.send) and continues to execute further state updates post this call. An attacker-controlled whale address can call back into the contract within the same transaction, potentially leading to unexpected behaviors like double withdrawals.",
+        "code": "function () payable{\n    if (block.number - period >= blockheight){\n        bool isSuccess=false;\n        var nextStake = stake * WINNERTAX_PRECENT/100;\n        if (isSuccess == false) isSuccess = whale.send(stake - nextStake);\n        MatthewWon(\"Matthew won\", whale, stake - nextStake, block.number);\n        setFacts();\n        if (mustBeDestroyed) selfdestruct(whale);\n        return;\n    }else{\n        if (msg.value < stake + DELTA) throw;\n        bool isOtherSuccess = msg.sender.send(stake);\n        setFacts();\n        StakeIncreased(\"stake increased\", whale, stake, blockheight);\n    }\n}",
+        "file_name": "0x75aa81161e07483f6ca199fef46c13eb13d190be.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "swapAndLiquify",
+        "code": "function swapAndLiquify() public { uint256 allAmount = balanceOf(address(this)); uint256 canswap = allAmount.div(6).mul(5); uint256 otherAmount = allAmount.sub(canswap); swapTokensForOther(canswap); uint256 ethBalance = ETH.balanceOf(address(this)); if(ethBalance.mul(otherAmount) > 10**34){ addLiquidityUsdt(ethBalance, otherAmount); } }",
+        "vulnerability": "Unrestricted Access",
+        "reason": "The 'swapAndLiquify' function is public and not restricted to onlyOwner or similar modifiers, allowing any external caller to potentially disrupt the contract's economic mechanisms by triggering token swaps and liquidity provision at arbitrary times.",
+        "file_name": "SpaceGodzilla.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer( address from, address to, uint256 amount ) internal override { require(from != address(0), \"ERC20: transfer from the zero address\"); require(to != address(0), \"ERC20: transfer to the zero address\"); require(amount>0); if(_isExcludedFromVipFees[from] || _isExcludedFromVipFees[to]){ super._transfer(from, to, amount); return; } bool isAddLdx; if(to == uniswapV2Pair){ isAddLdx = _isAddLiquidityV1(); } if(balanceOf(address(this)) > swapTokensAtAmount){ if ( !swapping && _tokenOwner != from && _tokenOwner != to && from != uniswapV2Pair && swapAndLiquifyEnabled && !isAddLdx ) { swapping = true; swapAndLiquify(); swapping = false; } } bool takeFee = !swapping; if (_isExcludedFromFees[from] || _isExcludedFromFees[to] || isAddLdx) { takeFee = false; }else{ if(from == uniswapV2Pair){amount = warp.warpToken(amount);}else if(to == uniswapV2Pair){warp.addTokenldx(amount);}else{ takeFee = false; } } if (takeFee) { super._transfer(from, address(this), amount.div(100).mul(3)); _takeInviterFeeKt(amount.div(100000)); amount = amount.div(100).mul(97); } super._transfer(from, to, amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The '_transfer' function potentially allows for a reentrancy attack because it calls external contracts (such as 'swapAndLiquify') without the necessary reentrancy guard. This could lead to unintended effects if the external call leads to further invocations of '_transfer'.",
+        "file_name": "SpaceGodzilla.sol"
+    },
+    {
+        "function_name": "swapTokensForOther",
+        "code": "function swapTokensForOther(uint256 tokenAmount) public { address[] memory path = new address[](2); path[0] = address(this); path[1] = address(_baseToken); uniswapV2Router.swapExactTokensForTokensSupportingFeeOnTransferTokens( tokenAmount, 0, path, address(warp), block.timestamp ); warp.withdraw(); }",
+        "vulnerability": "Unrestricted Access",
+        "reason": "The function 'swapTokensForOther' is publicly accessible without any access control, allowing any external entity to trigger token swaps at will. This can be exploited to manipulate market conditions or drain liquidity by repeatedly swapping tokens.",
+        "file_name": "SpaceGodzilla.sol"
+    }
+]

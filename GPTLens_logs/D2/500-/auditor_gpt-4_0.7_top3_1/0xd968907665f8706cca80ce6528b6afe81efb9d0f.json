@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) {\n    require(_to != address(0));\n    require(_value <= balances[msg.sender]);\n    balances[msg.sender] = subSafe(balances[msg.sender], _value);\n    balances[_to] = addSafe(balances[_to], _value);\n    Transfer(msg.sender, _to, _value);\n    return true;\n}",
+        "vulnerability": "Missing return value check for ERC223 transfer",
+        "reason": "The function transfer does not check if the recipient address is a contract that can handle incoming ERC223 tokens, potentially leading to tokens being locked in contracts that cannot handle them.",
+        "file_name": "0xd968907665f8706cca80ce6528b6afe81efb9d0f.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {\n    require(_to != address(0));\n    require(_value <= balances[_from]);\n    require(_value <= allowed[_from][msg.sender]);\n    balances[_from] = subSafe(balances[_from], _value);\n    balances[_to] = addSafe(balances[_to], _value);\n    allowed[_from][msg.sender] = subSafe(allowed[_from][msg.sender], _value);\n    Transfer(_from, _to, _value);\n    return true;\n}",
+        "vulnerability": "Potential Reentrancy",
+        "reason": "The function allows for reentrancy because it does not update the allowance (decrease the allowed amount) before transferring the tokens. If the callee is a malicious contract, it could call transferFrom again, allowing double spending.",
+        "file_name": "0xd968907665f8706cca80ce6528b6afe81efb9d0f.sol"
+    },
+    {
+        "function_name": "Constructor",
+        "code": "function Constructor() public {\n    owner = msg.sender;\n}",
+        "vulnerability": "Incorrect constructor name",
+        "reason": "The constructor is named 'Constructor' instead of using the contract name 'Owned', which means it will not be treated as a constructor by the Solidity compiler. This can lead to the owner not being set properly, potentially leaving the contract without an owner.",
+        "file_name": "0xd968907665f8706cca80ce6528b6afe81efb9d0f.sol"
+    }
+]

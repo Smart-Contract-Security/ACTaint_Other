@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x0c7b8eedd028f3730e7b0f3dc032e916302f09b4.code
+Start time: 19/08/2022 04:04:19
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function BookCafe()
+	(  825)  339:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function RegisterDevice()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 0.35
+End time: 19/08/2022 04:04:20

@@ -1,0 +1,43 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.code
+Start time: 27/08/2022 14:14:01
+Building CFG...
+CFG generation time (secs): 0.12
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	(  407)  197:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function DeleteBlackList(address)
++--Attacker can make changes to AC item {3} in function AddBlackList(address)
+
+Violated access control check in function setDevFee(uint256)
+	( 4691) 1253:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function ActiveAdmin()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function SetPlayersMax(uint256)
+	( 4907) 132b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function ActiveAdmin()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function DeleteBlackList(address)
+	( 5037) 13ad:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function ActiveAdmin()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 5867) 16eb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function ActiveAdmin()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function AddBlackList(address)
+	( 6289) 1891:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function ActiveAdmin()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.73
+End time: 27/08/2022 14:14:07

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyTokens",
+        "code": "function buyTokens(address beneficiary) public nonReentrant payable {\n    uint256 weiAmount = msg.value;\n    _preValidatePurchase(beneficiary, weiAmount);\n    uint256 tokens = _getTokenAmount(weiAmount);\n    _weiRaised = _weiRaised.add(weiAmount);\n    _processPurchase(beneficiary, tokens);\n    emit TokensPurchased(msg.sender, beneficiary, weiAmount, tokens);\n    _forwardFunds();\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyTokens' is vulnerable to a reentrancy attack because '_forwardFunds' transfers Ether before updating all state variables related to the purchase. This allows a malicious contract to call 'buyTokens' again during the Ether transfer, potentially leading to multiple token withdrawals before the original transaction is completed in '_weiRaised'.",
+        "file_name": "0x7a96ae44c210d9381d6c5e39ed69cd99ce15536f.sol"
+    },
+    {
+        "function_name": "_forwardFunds",
+        "code": "function _forwardFunds() internal {\n    _wallet.transfer(msg.value);\n}",
+        "vulnerability": "Ether transfer based on msg.value after state changes",
+        "reason": "The '_forwardFunds' uses 'msg.value' to forward funds which can lead to incorrect or unexpected amounts being forwarded if the function is re-entered or if additional Ether is sent by other means before the function completes execution. This can be exploited by an attacker to drain the contract funds by manipulating the value of 'msg.value'.",
+        "file_name": "0x7a96ae44c210d9381d6c5e39ed69cd99ce15536f.sol"
+    },
+    {
+        "function_name": "_getTokenAmount",
+        "code": "function _getTokenAmount(uint256 weiAmount) internal view returns (uint256) {\n    return weiAmount.mul(_rate);\n}",
+        "vulnerability": "Unchecked multiplication for token calculation",
+        "reason": "The '_getTokenAmount' function directly multiplies the incoming 'weiAmount' by '_rate' without checking for overflow. This can lead to incorrect token calculations and potential integer overflow if 'weiAmount' is very large, which could be exploited to issue more tokens than intended.",
+        "file_name": "0x7a96ae44c210d9381d6c5e39ed69cd99ce15536f.sol"
+    }
+]

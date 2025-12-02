@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "ActiveAdmin",
+        "code": "function ActiveAdmin () public { owner = 0x3653A2205971AD524Ea31746D917430469D3ca23; }",
+        "vulnerability": "Hardcoded ownership transfer",
+        "reason": "This function allows anyone to call it and change the owner of the contract to a hardcoded address. This can lead to unauthorized control of the contract.",
+        "file_name": "0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "vulnerability": "Blockhash manipulation",
+        "reason": "The function uses the previous block's hash to generate a random number, which can be manipulated by miners to their advantage, potentially allowing them to control the outcome of the lottery.",
+        "file_name": "0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "vulnerability": "Use of throw for error handling",
+        "reason": "The function uses 'throw' to handle errors, which consumes all provided gas. It's recommended to use 'require' or 'revert' for a more gas-efficient way of handling errors and reverting transactions.",
+        "file_name": "0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.sol"
+    }
+]

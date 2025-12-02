@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "transferAdminship",
+        "vulnerability": "Improper Access Control",
+        "criticism": "The reasoning correctly identifies a potential risk in transferring adminship to a contract address, which could be malicious. However, the severity of this vulnerability depends on the broader context of the contract's use and the checks in place elsewhere in the contract or in the administrative procedures. The profitability is low as it requires current admin access, making it an insider threat rather than an external exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'transferAdminship' allows the current admin to transfer the admin role to any other address. While it checks if the new admin address is not zero, it does not validate whether the new admin address is a contract or an externally owned account. This might lead to transferring control to a malicious contract, which can take over the contract management.",
+        "code": "function transferAdminship(address _newAdmin) onlyAdmin public { require(_newAdmin != 0); admin = _newAdmin; TransferAdminship(admin); }",
+        "file_name": "0xbe99b09709fc753b09bcf557a992f6605d5997b0.sol",
+        "final_score": 4.75
+    },
+    {
+        "function_name": "setFrozen",
+        "vulnerability": "Centralized Control Over Accounts",
+        "criticism": "The criticism is valid in highlighting the centralized control, which could be seen as a vulnerability in a decentralized context. However, the ability to freeze accounts might be a necessary administrative feature depending on the application's requirements. The severity is moderate if misused, but the profitability for an attacker is low unless used in a very specific and targeted manner.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The 'setFrozen' function allows the admin to freeze any account unilaterally. This means the admin has the power to stop all transfers from and to the account, which could be abused or used arbitrarily. This centralized control goes against the decentralized nature expected in blockchain applications and can lead to trust issues and potential censorship or freezing of funds.",
+        "code": "function setFrozen(address _target,bool _flag) onlyAdmin public { frozen[_target]=_flag; FrozenStatus(_target,_flag); }",
+        "file_name": "0xbe99b09709fc753b09bcf557a992f6605d5997b0.sol",
+        "final_score": 4.75
+    },
+    {
+        "function_name": "burnToken",
+        "vulnerability": "Arbitrary Burning",
+        "criticism": "The reasoning is somewhat misleading. The function does indeed allow the admin to burn tokens, but only from their own balance, which is a typical feature in many token contracts for managing token supply. The severity is low because it affects only the admin's tokens, not other users' tokens directly. The profitability is also low as it does not provide a direct way for an attacker to gain financially but could potentially manipulate market conditions.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The 'burnToken' function allows the admin to burn tokens from their own balance without restrictions or checks on the amount. This could lead to mishandling where the admin might unintentionally or maliciously reduce the total supply drastically, affecting the token's market and the holders' value unexpectedly.",
+        "code": "function burnToken(uint256 _burnedAmount) onlyAdmin public { balances[msg.sender] = SafeMath.sub(balances[msg.sender], _burnedAmount); totalSupply = SafeMath.sub(totalSupply, _burnedAmount); Burned(msg.sender, _burnedAmount); }",
+        "file_name": "0xbe99b09709fc753b09bcf557a992f6605d5997b0.sol",
+        "final_score": 3.5
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function allows for funds to be transferred to a provided address before reducing the sender's balance. An attacker can exploit this by recursively calling the 'withdraw' function in a fallback function, draining the contract's funds before the state (user's deposit) is updated.",
+        "file_name": "0xed29ff5874fa64dcf47ed7dacb770857a5d164fb.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Unprotected SELFDESTRUCT",
+        "reason": "The 'kill' function uses selfdestruct which will destroy the contract and send remaining Ether to the owner. However, this function doesn't check who can execute it, meaning any user can trigger it if the contract balance is zero. This can lead to denial of service as no further interactions with the contract would be possible.",
+        "file_name": "0xed29ff5874fa64dcf47ed7dacb770857a5d164fb.sol"
+    },
+    {
+        "function_name": "setRelease",
+        "code": "function setRelease(uint newDate) public { Date = newDate; OpenDate(Date); }",
+        "vulnerability": "Timestamp Dependency",
+        "reason": "The 'setRelease' function allows setting a new release date based on the input 'newDate' which is vulnerable to timestamp manipulation and miner control. This could potentially allow an attacker to set a release date favorable to their needs, bypassing intended time locks or releases.",
+        "file_name": "0xed29ff5874fa64dcf47ed7dacb770857a5d164fb.sol"
+    }
+]

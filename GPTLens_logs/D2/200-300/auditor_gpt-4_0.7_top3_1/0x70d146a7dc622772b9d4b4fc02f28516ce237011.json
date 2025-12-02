@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "testhash",
+        "code": "function testhash (uint256 _value, uint256 _minReq) public { owner = msg.sender; value = _value; minReq = _minReq; balances[msg.sender] = totalDistributed; }",
+        "vulnerability": "Owner Privilege Overwrite",
+        "reason": "This function allows any user to change the owner of the contract by simply invoking the function. Changing the owner of the contract can lead to unauthorized control over the contract's critical functionalities which were restricted to the owner only.",
+        "file_name": "0x70d146a7dc622772b9d4b4fc02f28516ce237011.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { uint256 etherBalance = this.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "reason": "The withdraw function transfers all Ether in the contract to the owner address. Combined with the vulnerability in the testhash function that allows changing the owner, an attacker can first set themselves as the owner and then extract all Ether from the contract.",
+        "file_name": "0x70d146a7dc622772b9d4b4fc02f28516ce237011.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply = totalSupply.sub(_value); totalDistributed = totalDistributed.sub(_value); Burn(burner, _value); }",
+        "vulnerability": "Token Burning Exploit",
+        "reason": "An attacker can misuse the burn function after gaining ownership via testhash, to arbitrarily reduce the totalSupply and totalDistributed of the tokens, potentially manipulating the token economics or rendering the token useless.",
+        "file_name": "0x70d146a7dc622772b9d4b4fc02f28516ce237011.sol"
+    }
+]

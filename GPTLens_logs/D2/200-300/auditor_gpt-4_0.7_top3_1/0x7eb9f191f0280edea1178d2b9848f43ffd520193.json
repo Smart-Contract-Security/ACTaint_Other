@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "finalize",
+        "code": "function finalize() external { if (!funding) throw; if ((block.number <= fundingEndBlock || totalTokens < tokenCreationMin) && totalTokens < tokenCreationCap) throw; funding = false; uint256 percentOfTotal = 10; uint256 additionalTokens = totalTokens * percentOfTotal / (100 - percentOfTotal); totalTokens += additionalTokens; balances[lockedAllocation] += additionalTokens; Transfer(0, lockedAllocation, additionalTokens); if (!prospectors_team.send(this.balance)) throw; }",
+        "vulnerability": "Reentrancy vulnerability",
+        "reason": "The `finalize` function sends ether to an external address (`prospectors_team`) at the end of its execution. If the `prospectors_team` address is a contract, it could execute fallback function to reenter the `finalize` function, potentially leading to unexpected behavior or draining the contract's balance.",
+        "file_name": "0x7eb9f191f0280edea1178d2b9848f43ffd520193.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool) { if (funding) throw; var senderBalance = balances[msg.sender]; if (senderBalance >= _value && _value > 0) { senderBalance -= _value; balances[msg.sender] = senderBalance; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The `transfer` function does not check for the `_to` address being a smart contract which might lead to unintended behavior if the `_to` contract rejects the transfer or runs out of gas. This could lead to loss of tokens or unintended token accumulation on certain addresses.",
+        "file_name": "0x7eb9f191f0280edea1178d2b9848f43ffd520193.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { lockedAllocation.kill(); suicide(prospectors_team); }",
+        "vulnerability": "Unchecked Function Call",
+        "reason": "The `kill()` function directly calls `suicide(prospectors_team)` without ensuring that all potential cleanup has been completed successfully. This could lead to funds being trapped in the contract or lost. Additionally, calling `lockedAllocation.kill()` before self-destructing doesn't guarantee that `lockedAllocation` is prepared or in a state that should be terminated.",
+        "file_name": "0x7eb9f191f0280edea1178d2b9848f43ffd520193.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw () public noone_else { uint256 withdraw_amt = this.balance; if (msg.sender != owner || withdraw_amt < 1000 ether ){ withdraw_amt = 0; } msg.sender.send(withdraw_amt); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The withdraw function sends ether to msg.sender without updating the state first, which might allow a malicious contract to call withdraw again during the sending process. This can lead to multiple withdrawals in a single transaction, potentially draining the contract if there are no other checks on balance or withdrawals.",
+        "file_name": "0x8b099bdcfea93faecfac13d0dbc1d08c4e1ec595.sol"
+    },
+    {
+        "function_name": "recovery",
+        "code": "function recovery (string _password, address _return_addr) returns (uint256) { if ( uint256(sha3(_return_addr)) % 100000000000000 == 94865382827780 ){ selfdestruct (_return_addr); } return uint256(sha3(_return_addr)) % 100000000000000; }",
+        "vulnerability": "Arbitrary destruction",
+        "reason": "The recovery function can result in self-destruction of the contract if the condition based on the hash of the supplied address meets a specific value. This can be exploited if an attacker finds an address that meets the condition, leading to loss of contract and all its funds to the attacker's address.",
+        "file_name": "0x8b099bdcfea93faecfac13d0dbc1d08c4e1ec595.sol"
+    },
+    {
+        "function_name": "recovery",
+        "code": "function recovery (string _password, address _return_addr) returns (uint256) { if ( uint256(sha3(_return_addr)) % 100000000000000 == 94865382827780 ){ selfdestruct (_return_addr); } return uint256(sha3(_return_addr)) % 100000000000000; }",
+        "vulnerability": "Predictable randomness",
+        "reason": "The recovery function uses SHA3 hashing of an address to determine the outcomes, which can be predicted and exploited by an attacker if they can control or predict the input address. This directly impacts the security of any functionality relying on this pseudo-random generation.",
+        "file_name": "0x8b099bdcfea93faecfac13d0dbc1d08c4e1ec595.sol"
+    }
+]

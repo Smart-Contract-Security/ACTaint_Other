@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "reveal",
+        "vulnerability": "Missing validation of signature length",
+        "criticism": "The criticism is valid as the function only checks if the signature length is not zero but does not ensure it is exactly 65 bytes, which is required for a valid Ethereum signature. This could potentially allow malformed signatures to be processed, leading to unexpected behavior or vulnerabilities in signature handling. The severity is moderate because it could affect the integrity of the function, but the profitability is low as exploiting this would require specific conditions and might not directly result in financial gain.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function only checks if the signature length is not zero but does not validate the length to be exactly what is required (65 bytes for a valid Ethereum signature). This can allow signatures of incorrect lengths to potentially cause unexpected behavior or manipulation of the signature extraction and ecrecover operation.",
+        "code": "function reveal() public inState(State.Reveal) { bytes memory signature = commitment[msg.sender].signature; require(signature.length != 0); bytes32 r; bytes32 s; uint8 v; assembly { r := mload(add(signature,0x20)) s := mload(add(signature,0x40)) v := byte(0, mload(add(signature, 96))) } if (v < 27) v += 27; if(ecrecover(isSolved.msgHash, v, r, s) == msg.sender) { if(winner.timestamp == 0 || commitment[msg.sender].timestamp < winner.timestamp) { winner.winner = msg.sender; winner.timestamp = commitment[msg.sender].timestamp; } } delete commitment[msg.sender]; }",
+        "file_name": "0x05dab93a76f33fdb225e0a05cafbdd41612b88b6.sol"
+    },
+    {
+        "function_name": "reward",
+        "vulnerability": "Use of selfdestruct",
+        "criticism": "The reasoning is correct in highlighting the risks associated with the use of selfdestruct, particularly in how it can be exploited to redirect funds or cause denial of service by removing the contract. The severity is high because it directly affects the availability and integrity of the contract and its funds. Profitability is also high if an attacker can manipulate the state to become the winner, as they could potentially redirect substantial funds.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The use of selfdestruct can lead to loss of funds or denial of service as it removes the contract from the blockchain. An attacker could potentially manipulate the state (e.g., becoming the winner by exploiting other vulnerabilities) and trigger selfdestruct, making any contract balance sent to an attacker-controlled address.",
+        "code": "function reward() public inState(State.Payout) { if(winner.winner != 0) selfdestruct(winner.winner); else selfdestruct(bipedaljoe); }",
+        "file_name": "0x05dab93a76f33fdb225e0a05cafbdd41612b88b6.sol"
+    },
+    {
+        "function_name": "authenticate",
+        "vulnerability": "Weak cryptographic scheme",
+        "criticism": "The reasoning is accurate in pointing out the vulnerability due to the use of a simple XOR operation for cryptographic calculations. This method is indeed weak and predictable, potentially allowing attackers to forge or predict public keys that pass authentication checks. The severity is high as it compromises the authentication mechanism, and profitability could be moderate depending on what privileges authenticated users gain.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function uses a simple XOR operation to compute the values of r and s from hashes of the public key and fixed proofs (proof_of_public_key1 and proof_of_public_key2). Predictable or weak cryptographic operations could potentially allow an attacker to reverse-engineer or predict valid public keys that pass authentication checks, leading to unauthorized solving of the challenge.",
+        "code": "function authenticate(bytes _publicKey) public inState(State.Commit) { require(commitment[msg.sender].timestamp != 0); bytes memory keyHash = getHash(_publicKey); bytes32 hash1; bytes32 hash2; assembly { hash1 := mload(add(keyHash,0x20)) hash2 := mload(add(keyHash,0x40)) } bytes32 r = proof_of_public_key1 ^ hash1; bytes32 s = proof_of_public_key2 ^ hash2; bytes32 msgHash = keccak256(\"\\x19Ethereum Signed Message:\\n64\", _publicKey); address signer = address(keccak256(_publicKey)); if(ecrecover(msgHash, 27, r, s) == signer || ecrecover(msgHash, 28, r, s) == signer ) { isSolved.timestamp = now; isSolved.publicKey = _publicKey; isSolved.msgHash = msgHash; } }",
+        "file_name": "0x05dab93a76f33fdb225e0a05cafbdd41612b88b6.sol"
+    }
+]

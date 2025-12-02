@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setTransferible",
+        "vulnerability": "Privilege escalation",
+        "criticism": "The reasoning is accurate in identifying that the function allows administrators to control transfer restrictions on other addresses. However, this is not necessarily a privilege escalation but rather a misuse of granted privileges if an admin account is compromised. The severity is moderate because it could disrupt normal operations but does not lead to loss of funds directly. Profitability is low as the attacker gains no financial benefit directly from this action.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The function setTransferible allows any address marked as an administrator to set transfer restrictions on any other address. Since the function checks only if the passed 'admin' parameter is an administrator, an attacker who can control an admin account or if an admin account is compromised, can misuse this function to arbitrarily restrict the transfer capabilities of other legitimate users.",
+        "code": "function setTransferible(address admin, address sujeto, bool state) public returns (bool) { require(_administradores[admin], 'Not an admin'); _notransferible[sujeto] = state; return true; }",
+        "file_name": "0xed44116439a9042890121a8aee008202a5954132.sol"
+    },
+    {
+        "function_name": "_forwardFunds",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is partially correct. The .transfer method is indeed less susceptible to reentrancy attacks due to its gas stipend of 2300 gas, which is insufficient for calling back into the contract. The mention of a nonReentrant modifier and _guardCounter manipulation lacks specific details on how these could be bypassed, making the scenario less likely. Therefore, the severity and profitability are overestimated.",
+        "correctness": 4,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The _forwardFunds function directly transfers Ether to an external address (_custodian) using the .transfer method, which can be a potential vector for reentrancy attacks. Although there exists a nonReentrant modifier in the buyTokens function where _forwardFunds is called, the reentrancy protection is incorrectly implemented, allowing for a possible reentrancy if the _guardCounter is manipulated or if _forwardFunds is called from another function without proper reentrancy protection.",
+        "code": "function _forwardFunds() internal { _custodian.transfer(msg.value); }",
+        "file_name": "0xed44116439a9042890121a8aee008202a5954132.sol"
+    },
+    {
+        "function_name": "constructor",
+        "vulnerability": "Incorrect initial balance setup",
+        "criticism": "The reasoning is incorrect. The constructor code shows that the owner's balance is set to the totalSupply before totalSupply is initialized, which means the owner's balance is set to an uninitialized value (likely 0), and then totalSupply is set. This is a critical issue as it affects the token distribution logic fundamentally. The severity is high due to the potential disruption of the intended token economics. Profitability is not applicable as it's a deployment flaw, not an exploitable vulnerability by an attacker.",
+        "correctness": 2,
+        "severity": 8,
+        "profitability": 0,
+        "reason": "In the constructor, the initial balance of the owner is set to the totalSupply before totalSupply is initialized to its intended value. This results in the owner's balance being set to 0, and then totalSupply is updated to 10000000000000000. This error in the sequence of assignments leads to the owner having an incorrect balance of 0 instead of the total supply, which could lead to functional issues in the token distribution logic.",
+        "code": "constructor() public{ _owner = msg.sender; _balances[_owner] = totalSupply; totalSupply = 10000000000000000; _administradores[_owner] = true; }",
+        "file_name": "0xed44116439a9042890121a8aee008202a5954132.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawBalance",
+        "code": "function withdrawBalance(uint256 summ) external onlyCFO { cfoAddress.transfer(summ); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'withdrawBalance' directly transfers Ether to the address stored in cfoAddress without checking whether the transfer was successful. In Solidity, transfers can fail for various reasons, including out-of-gas errors. If a transfer fails and the failure is not handled, the contract will continue execution as if the transfer succeeded, which can lead to inconsistent state or allow unintended actions.",
+        "file_name": "0x876c6fbec71a498155cfa811f9d10fd3bb67e4c5.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) external onlyOwner { if (newOwner != address(0)) { owner = newOwner; } }",
+        "vulnerability": "Missing zero address validation after assignment",
+        "reason": "The function 'transferOwnership' changes the ownership of the contract to a new address. However, it only checks if the new owner's address is not the zero address before assigning it but does not revert the transaction if it is zero. If by any mistake the zero address is passed, and due to other conditions or state changes in the contract, the zero check might get bypassed, leading to a situation where no one can perform actions requiring the owner's permissions, effectively locking down the contract.",
+        "file_name": "0x876c6fbec71a498155cfa811f9d10fd3bb67e4c5.sol"
+    },
+    {
+        "function_name": "purchaseEgg",
+        "code": "function purchaseEgg(uint64 userNumber, uint16 quality) external payable whenNotPaused { require(tokensCount >= uniquePetsCount); require(eggAvailable(quality)); require(tokensCount <= globalPresaleLimit); uint256 eggPrice = ( recommendedPrice(quality) * (100 - getCurrentDiscountPercent()) ) / 100; require(msg.value >= eggPrice); purchesedEggs[quality]++; uint256 childGenes; uint16 childQuality; (childGenes, childQuality) = geneScience.openEgg(userNumber, quality); createPet( childGenes, childQuality, msg.sender ); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'purchaseEgg' function interacts with an external contract (geneScience.openEgg) and updates the state after this external call. This pattern can make the contract susceptible to reentrancy attacks where a malicious contract could call back into 'purchaseEgg' before the first execution has finished, possibly leading to unexpected behavior like purchasing more eggs than intended or manipulating internal states.",
+        "file_name": "0x876c6fbec71a498155cfa811f9d10fd3bb67e4c5.sol"
+    }
+]

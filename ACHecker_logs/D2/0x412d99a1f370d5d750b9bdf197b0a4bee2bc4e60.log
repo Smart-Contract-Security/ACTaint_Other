@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.code
+Start time: 20/08/2022 17:55:26
+Building CFG...
+CFG generation time (secs): 2.90
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 1955)  7a3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2062)  80e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 2282)  8ea:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 2318)  90e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2538)  9ea:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 2637)  a4d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 3184)  c70:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3523)  dc3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function SaveCryptoNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.93
+End time: 20/08/2022 17:55:34

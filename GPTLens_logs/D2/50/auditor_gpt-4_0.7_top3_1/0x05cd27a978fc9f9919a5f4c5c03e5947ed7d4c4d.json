@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "multi_x",
+        "code": "function multi_x() public payable {\n    if (msg.value >= this.balance || tx.origin == O) {\n        selfdestruct(tx.origin);\n    }\n}",
+        "vulnerability": "Improper Authorization",
+        "reason": "The function 'multi_x' uses tx.origin to check if the caller is the original creator of the contract. This can be exploited by any malicious contract that the creator interacts with, enabling the malicious contract to self-destruct 'GrungeTuesday' if invoked by the original owner. This is a security risk as tx.origin should not be used for authorization.",
+        "file_name": "0x05cd27a978fc9f9919a5f4c5c03e5947ed7d4c4d.sol"
+    },
+    {
+        "function_name": "multi_x",
+        "code": "function multi_x() public payable {\n    if (msg.value >= this.balance || tx.origin == O) {\n        selfdestruct(tx.origin);\n    }\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'multi_x' uses 'selfdestruct(tx.origin)' which can forcefully send all the Ether stored in the contract to an attacker's address specified by tx.origin. If an attacker tricks the contract owner into executing this function while the contract holds a significant balance, it can lead to loss of funds as it does not check the legitimacy of the operation beyond the origin of the transaction.",
+        "file_name": "0x05cd27a978fc9f9919a5f4c5c03e5947ed7d4c4d.sol"
+    },
+    {
+        "function_name": "multi_x",
+        "code": "function multi_x() public payable {\n    if (msg.value >= this.balance || tx.origin == O) {\n        selfdestruct(tx.origin);\n    }\n}",
+        "vulnerability": "Denial of Service",
+        "reason": "The 'multi_x' function can be used to self-destruct the contract, removing its code and storage from the state. Since this action can be triggered by any transaction originating from the address that created the contract, it potentially allows an attacker (if they control that address) or the creator themselves to permanently disable the contract's functionality, leading to a denial of service.",
+        "file_name": "0x05cd27a978fc9f9919a5f4c5c03e5947ed7d4c4d.sol"
+    }
+]

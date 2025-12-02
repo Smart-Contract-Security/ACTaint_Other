@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Improper Access Control",
+        "criticism": "The reasoning is correct in identifying a potential issue with the 'distr' function being marked as private yet accessible through other public functions. This could indeed lead to unauthorized token distribution if the public functions are not properly secured. The severity is high due to the potential impact on token supply and distribution. Profitability is moderate, depending on the attacker's ability to exploit the public functions to trigger 'distr'.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'distr' function is marked as private but is called from public functions like 'getTokens', making it accessible indirectly. This could potentially allow an attacker to distribute tokens arbitrarily under certain conditions, leading to an unexpected increase in 'totalDistributed'.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "file_name": "0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race Condition / Front-Running",
+        "criticism": "The reasoning provided is partially correct. The approve function does indeed have a potential race condition vulnerability due to the lack of a requirement to reset the allowance to zero before setting a new one. However, the function does include a check that prevents setting a new non-zero allowance if the current allowance is non-zero, which mitigates the risk somewhat. The severity is moderate because it could lead to unauthorized spending if exploited, but the profitability is low as it requires specific conditions and timing to exploit effectively.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The approve function does not safely handle the resetting of allowance. If the function is called twice in quick succession, it can lead to a condition where the spender can exceed the amount the owner intended to allow due to a race condition.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.sol",
+        "final_score": 5.0
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The criticism of the transfer function for potential integer overflow is incorrect. The function uses SafeMath's 'sub' and 'add' methods for arithmetic operations, which inherently check for overflows and underflows. Therefore, the function is protected against overflow issues, making the vulnerability claim invalid. The correctness of the reasoning is low, and both severity and profitability are zero as there is no actual vulnerability present.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "This function lacks validation to ensure '_amount' does not cause an overflow condition when added to 'balances[_to]'. Although SafeMath is used, there is no explicit check for overflow when updating 'balances[_to]', which can lead to an incorrect balance update.",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); Transfer(msg.sender, _to, _amount); return true; }",
+        "file_name": "0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.sol",
+        "final_score": 0.5
+    }
+]

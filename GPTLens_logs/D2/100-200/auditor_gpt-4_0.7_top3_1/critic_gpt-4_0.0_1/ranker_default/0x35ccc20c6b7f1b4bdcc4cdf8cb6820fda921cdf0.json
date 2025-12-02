@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "newOracle",
+        "vulnerability": "Improper authorization",
+        "criticism": "The reasoning provided for the 'newOracle' function vulnerability is partially correct. The function is internal and can only be called by the contract or its derivatives, which does limit exposure. However, the criticism that it does not check if the '_oracle' address is already authorized or has an ID is valid. This could lead to logical errors or unintended overwriting of oracle data. The severity is moderate due to potential data integrity issues, but profitability is low as it requires control over the contract or its derivatives to exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'newOracle' is marked as 'internal' and can only be called from within the contract or derived contracts. However, it does not properly check if the '_oracle' address being added is already an authorized oracle or if it already has an ID. This could lead to potential overwriting of existing oracles if called improperly by the contract owner or through another function that does not validate the input sufficiently.",
+        "code": "function newOracle(address _oracle) internal onlyOwner returns (uint256 id) { id = ++lastId; oracleData[_oracle].oracleId = id; oracleData[_oracle].oracleAuth = false; oracleData[_oracle].oracleAddress = _oracle; oracleAddressById[id] = _oracle; emit NewOracle(_oracle, id, timestamp()); }",
+        "file_name": "0x35ccc20c6b7f1b4bdcc4cdf8cb6820fda921cdf0.sol",
+        "final_score": 4.75
+    },
+    {
+        "function_name": "sendVote",
+        "vulnerability": "Denial of Service",
+        "criticism": "The reasoning about the 'sendVote' function being vulnerable to a denial of service attack due to not limiting the size of the '_vote' string is correct. An attacker could indeed send a very large string to exhaust gas limits, potentially causing the transaction to fail. This could disrupt the normal operation of the voting process. However, the severity is moderate as it would require significant resources to continuously send large transactions, and profitability is low since there is no direct gain from merely causing a denial of service.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The function 'sendVote' does not limit the size of the '_vote' string input. An attacker could potentially send an extremely large string to exhaust gas and cause the transaction to fail. This could be used to deny service to legitimate users trying to cast their votes, especially if combined with other gas-intensive operations.",
+        "code": "function sendVote(string _vote) votingActive public returns (bool) { if (!canIVote()) { error('sendVote: sender cannot vote because it has previously casted another vote'); return false; } if (bytes(_vote).length < 1) { error('sendVote: vote is empty'); return false; } votes[msg.sender] = _vote; numVotes ++; emit SendVote(msg.sender, _vote); return true; }",
+        "file_name": "0x35ccc20c6b7f1b4bdcc4cdf8cb6820fda921cdf0.sol",
+        "final_score": 4.75
+    },
+    {
+        "function_name": "halt",
+        "vulnerability": "Reentrancy attack",
+        "criticism": "The criticism of the 'halt' function for a reentrancy attack is misplaced. The function sets a state variable 'halted' to true and emits an event. The concern about the event listener or logging mechanism being maliciously crafted to re-enter the contract is unfounded as emitting an event is a logging action and does not involve external calls to other contracts or addresses that could execute further code. Therefore, the function does not expose itself to reentrancy attacks through this mechanism. The reasoning is incorrect, and the severity and profitability are both minimal as the described attack vector is not feasible.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'halt' function in the 'Haltable' contract changes the state of the contract by setting 'halted' to true, and then emits an event which can include external calls. If the event listener or the logging mechanism is maliciously crafted, it could potentially re-enter the contract and modify its state or call other functions relying on the halted state. This could lead to unexpected behaviors or denial of service.",
+        "code": "function halt() external onlyOwner { halted = true; emit Halt(true, msg.sender, timestamp()); }",
+        "file_name": "0x35ccc20c6b7f1b4bdcc4cdf8cb6820fda921cdf0.sol",
+        "final_score": 0.5
+    }
+]

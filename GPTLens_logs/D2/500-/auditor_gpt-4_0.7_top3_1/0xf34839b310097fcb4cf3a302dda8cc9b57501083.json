@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function `getTokens` can potentially lead to a reentrancy attack because it calls `distr`, which emits a Transfer event, before setting the `blacklist[investor]` and possibly updating `distributionFinished`. An attacker could use the Transfer event as an entry point to re-enter before these state changes are set.",
+        "file_name": "0xf34839b310097fcb4cf3a302dda8cc9b57501083.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Race Condition (front running)",
+        "reason": "The function `approve` has a condition that checks if the `_value` is not zero and `allowed[msg.sender][_spender]` is not zero, it returns false without changing the allowance. An attacker can front-run a transaction that is trying to change an approval amount to zero and then to a new value, exploiting the period in which the allowance is zero to withdraw tokens.",
+        "file_name": "0xf34839b310097fcb4cf3a302dda8cc9b57501083.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "Denial of Service (DoS) via unexpected revert",
+        "reason": "The `withdraw` function transfers all the ether in the contract to the `owner`. If the `owner` address is a contract and it fails to receive ether (e.g., by reverting in its fallback function), this function will also revert, potentially locking all funds in the contract indefinitely, denying service to legitimate users.",
+        "file_name": "0xf34839b310097fcb4cf3a302dda8cc9b57501083.sol"
+    }
+]

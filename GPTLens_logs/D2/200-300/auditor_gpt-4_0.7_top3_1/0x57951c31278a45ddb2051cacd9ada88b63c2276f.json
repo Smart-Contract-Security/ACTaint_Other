@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public { uint amount = msg.value.mul(tokensPerEther); _transfer(this, msg.sender, amount); require(owner.send(msg.value)); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buy()' sends Ether with 'owner.send(msg.value)' after calling '_transfer()'. This interaction pattern allows the caller to interrupt the function execution potentially allowing reentrancy attack if the owner is a contract that has a fallback function.",
+        "file_name": "0x57951c31278a45ddb2051cacd9ada88b63c2276f.sol"
+    },
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] = balanceOf[target].add(mintedAmount); totalSupply = totalSupply.add(mintedAmount); Transfer(0, this, mintedAmount); Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Arbitrary Minting",
+        "reason": "The 'mintToken' function allows the contract owner to arbitrarily mint new tokens to any account, which can lead to inflation and devalue the token by increasing the supply without bounds.",
+        "file_name": "0x57951c31278a45ddb2051cacd9ada88b63c2276f.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { balanceOf[_from] = balanceOf[_from].sub(_value); allowance[_from][msg.sender] = allowance[_from][msg.sender].sub(_value); totalSupply = totalSupply.sub(_value); Burn(_from, _value); return true; }",
+        "vulnerability": "Insufficient Balance Check",
+        "reason": "The 'burnFrom' function does not check if the '_from' account has enough tokens to burn, relying on the 'sub' function of SafeMath for underflow protection. However, this can result in unexpected behavior or locked funds if not handled correctly at a higher level.",
+        "file_name": "0x57951c31278a45ddb2051cacd9ada88b63c2276f.sol"
+    }
+]

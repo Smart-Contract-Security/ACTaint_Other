@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address spender, uint tokens) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); return true; }",
+        "vulnerability": "Race Condition Vulnerability",
+        "reason": "The approve function is susceptible to a race condition, known as the 'approval double-spend' issue. If a user calls approve to change the approved amount for a spender, the spender can still use the old approved amount before the transaction is confirmed because there's no check to ensure the previous allowance was zero before setting a new value. This can lead to unauthorized transfer of additional tokens.",
+        "file_name": "0xf25957c81fd208b01ce2f4696210d7d141a6c972.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Missing Return Value Check",
+        "reason": "The function transferFrom uses the SafeMath operations (safeSub and safeAdd) to prevent overflow and underflow. However, it does not check the return values of these operations to ensure they have executed correctly. Although SafeMath operations are designed to revert on failure, explicit checks could prevent potential silent failures or misinterpretations in future modifications of the contract or the SafeMath library.",
+        "file_name": "0xf25957c81fd208b01ce2f4696210d7d141a6c972.sol"
+    },
+    {
+        "function_name": "acceptOwnership",
+        "code": "function acceptOwnership() public { require(msg.sender == newOwner); OwnershipTransferred(owner, newOwner); owner = newOwner; newOwner = address(0); }",
+        "vulnerability": "Improper Authentication",
+        "reason": "The function acceptOwnership allows the transfer of contract ownership based solely on the newOwner address calling the function. If the newOwner address is compromised, the control of the contract can be immediately taken over without any additional checks or balances such as multi-factor authentication or delay-periods that could help prevent misuse.",
+        "file_name": "0xf25957c81fd208b01ce2f4696210d7d141a6c972.sol"
+    }
+]

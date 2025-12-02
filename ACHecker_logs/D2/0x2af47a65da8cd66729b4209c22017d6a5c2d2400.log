@@ -1,0 +1,72 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x2af47a65da8cd66729b4209c22017d6a5c2d2400.code
+Start time: 20/08/2022 01:16:23
+Building CFG...
+CFG generation time (secs): 1.94
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function killBounty(uint256)
+	( 2937)  b79:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function extendDeadline(uint256,uint256)
+	( 4666) 123a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function increasePayout(uint256,uint256,uint256)
+	( 5405) 151d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function updateFulfillment(uint256,uint256,string)
+	( 5034) 13aa:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1, 2} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
+
+Violated access control check in function changeBountyFulfillmentAmount(uint256,uint256)
+	( 6715) 1a3b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function transferIssuer(uint256,address)
+	( 7042) 1b82:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function fulfillBounty(uint256,string)
+	( 4043)  fcb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function activateBounty(uint256,uint256)
+	( 7411) 1cf3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function changeBountyArbiter(uint256,address)
+	(12749) 31cd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function changeBountyDeadline(uint256,uint256)
+	(13134) 334e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function acceptFulfillment(uint256,uint256)
+	(13514) 34ca:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+Violated access control check in function changeBountyData(uint256,string)
+	(15524) 3ca4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function issueAndActivateBounty(address,uint256,string,uint256,address,bool,address,uint256)
++--Attacker can make changes to AC item {1} in function contribute(uint256,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 120.05
+End time: 20/08/2022 01:18:25

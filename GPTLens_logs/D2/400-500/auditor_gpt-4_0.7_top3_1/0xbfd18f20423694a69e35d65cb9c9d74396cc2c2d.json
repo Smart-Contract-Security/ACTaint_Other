@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "unlockAllTokens",
+        "code": "function unlockAllTokens(bool _unlock) public onlyOwner { unlockAllTokens = _unlock; emit UnLockAllTokens(_unlock); }",
+        "vulnerability": "Arbitrary Unlocking of Tokens",
+        "reason": "This function allows the owner to unlock all tokens regardless of individual account freezes. This can be misused by an owner to transfer frozen tokens, undermining the security mechanism intended by `freezeAccount`. An attacker with ownership access could unlock and transfer all tokens, including those meant to be restricted, potentially leading to unauthorized asset movement.",
+        "file_name": "0xbfd18f20423694a69e35d65cb9c9d74396cc2c2d.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { require(newOwner != address(0)); emit OwnershipTransferred(owner[0], newOwner); owner[0] = newOwner; }",
+        "vulnerability": "Single Point of Ownership Transfer",
+        "reason": "This function allows the primary owner (owner[0]) to be changed without any checks or validations from other owners. This could be harmful if the primary owner account is compromised, as the attacker can then easily transfer ownership to a malicious address, gaining full control of the contract. This could lead to a total takeover and possible misuse or diversion of funds or assets managed by the contract.",
+        "file_name": "0xbfd18f20423694a69e35d65cb9c9d74396cc2c2d.sol"
+    },
+    {
+        "function_name": "freezeAccount",
+        "code": "function freezeAccount(address target, bool freeze) public onlyOwner { frozenAccount[target] = freeze; emit FrozenFunds(target, freeze); }",
+        "vulnerability": "Arbitrary Account Freezing",
+        "reason": "This function allows owners to freeze any account's token transfer capability without any constraints or due process. It could be used by a malicious owner to freeze accounts arbitrarily, which could be utilized to censor specific users or hold their funds hostage, potentially leading to loss or forced compliance.",
+        "file_name": "0xbfd18f20423694a69e35d65cb9c9d74396cc2c2d.sol"
+    }
+]

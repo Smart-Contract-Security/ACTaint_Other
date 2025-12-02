@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "finalizeLottery",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying the reentrancy risk due to the external calls made within the function. The use of direct calls to transfer funds and potentially failing over to an escrow mechanism increases the risk of reentrancy, where the called contract could make recursive calls back to the function, potentially leading to unexpected behavior or draining of funds. The severity is high due to the potential impact on the contract's state and funds. The profitability is also high as an attacker could exploit this to drain the contract's funds.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function uses a direct call to an external address (winner.call) to transfer funds and then proceeds to call another external contract (Escrow) if the initial transfer fails. These calls can lead to reentrancy attacks where the external contract being called can re-enter the current contract and execute state changes or drain funds.",
+        "code": "function finalizeLottery(uint _steps) afterInitialization {\n    require(needsLotteryFinalization());\n    if (lotteries[id].nearestKnownBlock != lotteries[id].decidingBlock) {\n        walkTowardsBlock(_steps);\n    } else {\n        int winningTicket = lotteries[id].nearestKnownBlockHash % int(lotteries[id].numTickets);\n        address winner = lotteries[id].tickets[uint(winningTicket)];\n        lotteries[id].winningTicket = winningTicket;\n        lotteries[id].winner = winner;\n        lotteries[id].finalizationBlock = block.number;\n        lotteries[id].finalizer = tx.origin;\n        if (winner != 0) {\n            uint value = lotteries[id].jackpot;\n            bool successful = winner.call.gas(GAS_LIMIT_DEPOSIT).value(value)();\n            if (!successful) {\n                Escrow(escrow).deposit.value(value)(winner);\n            }\n        }\n        var _ = admin.call.gas(GAS_LIMIT_DEPOSIT).value(this.balance)();\n    }\n}",
+        "file_name": "0x40658db197bddea6a51cb576fe975ca488ab3693.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "vulnerability": "External call after state change",
+        "criticism": "The reasoning correctly identifies the risk associated with making an external call after state changes. This could potentially allow reentrancy attacks or other forms of state manipulation if the external contract interacts back with the original contract. However, the severity and profitability are not as high as suggested because the function seems to handle potential reentrancy by updating crucial state variables before making the external call. Nonetheless, it's a valid concern that needs attention to prevent possible exploits.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "This function updates the state (e.g., recentActivity, numTicketsSold) before making a call to an external contract (AffiliateNetwork). This can lead to inconsistencies and vulnerabilities where the external call could potentially interact back with the contract in a way that relies on the modified state.",
+        "code": "function buyTickets(uint[] _tickets, uint _mark, uint _affiliate) payable afterInitialization {\n    if (lotteries[id].numTicketsSold == lotteries[id].numTickets) {\n        PurchaseFailed(msg.sender, _mark, Reason.TicketSaleClosed);\n        msg.sender.transfer(msg.value);\n        return;\n    }\n    require(_tickets.length > 0);\n    require(msg.value == _tickets.length * lotteries[id].ticketPrice);\n    for (uint i = 0; i < _tickets.length; i++) {\n        uint ticket = _tickets[i];\n        require(ticket >= 0);\n        require(ticket < lotteries[id].numTickets);\n        if (lotteries[id].tickets[ticket] != 0) {\n            PurchaseFailed(msg.sender, _mark, Reason.TicketAlreadySold);\n            msg.sender.transfer(msg.value);\n            return;\n        }\n    }\n    for (i = 0; i < _tickets.length; i++) {\n        ticket = _tickets[i];\n        lotteries[id].tickets[ticket] = msg.sender;\n        recentActivity[recentActivityIdx] = ticket;\n        recentActivityIdx += 1;\n        if (recentActivityIdx >= recentActivity.length) {\n            recentActivityIdx = 0;\n        }\n    }\n    lotteries[id].numTicketsSold += _tickets.length;\n    lastSaleTimestamp = block.timestamp;\n    address affiliateAddress = AffiliateNetwork(affiliateNetwork).affiliateAddresses(_affiliate);\n    if (affiliateAddress != 0) {\n        uint cut = lotteries[id].affiliateCut * _tickets.length;\n        var _ = affiliateAddress.call.gas(GAS_LIMIT_AFFILIATE).value(cut)();\n    }\n    PurchaseSuccessful(msg.sender, _mark);\n}",
+        "file_name": "0x40658db197bddea6a51cb576fe975ca488ab3693.sol"
+    },
+    {
+        "function_name": "finalizeBlock",
+        "vulnerability": "Unexpected external dependency",
+        "criticism": "The reasoning is somewhat correct in pointing out the dependency on an external contract, which could indeed influence the lottery outcome if compromised or malfunctioning. However, the severity and profitability are overstated as the function merely sets a future block number based on the external data, and does not directly manipulate or finalize lottery outcomes based on this data. The actual impact and profitability would depend on further details of how this 'decidingBlock' is used within the broader contract context.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The function relies on an external contract (BTCRelay) to determine a crucial lottery parameter (decidingBlock). If the external contract behaves unexpectedly or maliciously, it could influence the outcome of the lottery, potentially benefiting certain participants unfairly.",
+        "code": "function finalizeBlock() afterInitialization {\n    require(needsBlockFinalization());\n    int blockHeight = BTCRelay(btcRelay).getLastBlockHeight();\n    lotteries[id].decidingBlock = blockHeight + 54;\n}",
+        "file_name": "0x40658db197bddea6a51cb576fe975ca488ab3693.sol"
+    }
+]

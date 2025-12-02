@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _theAO) public { require (msg.sender == theAO); require (_theAO != address(0)); theAO = _theAO; }",
+        "vulnerability": "Phishing with malicious contract",
+        "reason": "This function allows the current owner to transfer ownership to another address. However, if a malicious user tricks the owner into calling this function with a malicious contract address, they can hijack the contract by deploying a contract that mimics the expected interface but behaves maliciously (e.g., redirecting funds).",
+        "file_name": "0x00b113a5570a046c60ac8cfa4983b1dc1c780629.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address _spender, uint256 _value, bytes memory _extraData) public returns (bool success) { tokenRecipient spender = tokenRecipient(_spender); if (approve(_spender, _value)) { spender.receiveApproval(msg.sender, _value, address(this), _extraData); return true; } }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The function approves a spender and then calls an external contract, which could potentially be malicious. If the external contract calls back into this contract (e.g., to the approve or transfer functions), it could lead to unexpected behavior such as draining funds. It's vulnerable to reentrancy attacks because it interacts with an unknown contract and state changes happen after this external call.",
+        "file_name": "0x00b113a5570a046c60ac8cfa4983b1dc1c780629.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(balanceOf[_from] >= _value); require(_value <= allowance[_from][msg.sender]); balanceOf[_from] -= _value; allowance[_from][msg.sender] -= _value; totalSupply -= _value; emit Burn(_from, _value); return true; }",
+        "vulnerability": "Integer underflow",
+        "reason": "The function decreases the balance and the allowance without properly checking that the subtraction will not result in an underflow. If `_value` is larger than `balanceOf[_from]` or `allowance[_from][msg.sender]`, it could lead to an underflow, setting these values to extremely high numbers and potentially allowing unintended transfers of tokens.",
+        "file_name": "0x00b113a5570a046c60ac8cfa4983b1dc1c780629.sol"
+    }
+]

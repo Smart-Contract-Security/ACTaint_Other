@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setAmbiAddress",
+        "code": "function setAmbiAddress(address _ambi, bytes32 _name) returns (bool){ if(address(ambiC) != 0x0){ return false; } Ambi ambiContract = Ambi(_ambi); if(ambiContract.getNodeAddress(_name)!=address(this)) { if (!ambiContract.addNode(_name, address(this))){ return false; } } name = _name; ambiC = ambiContract; return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows setting a new Ambi contract address. The function checks if the current Ambi contract address is set (not zero), then proceeds to interact with the provided Ambi contract. If the provided Ambi contract's getNodeAddress does not match the address of the current contract, it attempts to add a new node with addNode. However, since these are external calls to another contract, they are vulnerable to reentrancy attacks where the called contract could call back into any function of this contract before the first call finishes execution.",
+        "file_name": "0x60bf91ac87fee5a78c28f7b67701fbcfa79c18ec.sol"
+    },
+    {
+        "function_name": "remove",
+        "code": "function remove() checkAccess('owner') returns(bool) { if (isImmortal) { return false; } selfdestruct(msg.sender); return true; }",
+        "vulnerability": "Unauthorized Selfdestruct",
+        "reason": "This function destructs the contract and sends remaining Ether to the caller if the contract is not immortal. The function is protected by a checkAccess modifier ensuring only users with 'owner' role can execute it. However, if there is a mistake in the Ambi contract's hasRelation function or malicious alteration of access control, an unauthorized user could potentially trigger selfdestruct. This would lead to loss of contract's code and Ether balance.",
+        "file_name": "0x60bf91ac87fee5a78c28f7b67701fbcfa79c18ec.sol"
+    },
+    {
+        "function_name": "addVersion",
+        "code": "function addVersion(address _caller, string _name, string _changelog) noValue() checkAccess('admin') returns(bool) { if (versions[_caller] != 0) { return false; } if (bytes(_name).length == 0) { return false; } if (bytes(_changelog).length == 0) { return false; } uint version = ++latestVersion; versions[_caller] = version; versionInfo[version] = VersionInfo(block.number, msg.sender, _caller, _name, _changelog); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In this function, the external call to checkAccess could be manipulated or fail, especially if there is an error or unexpected behavior in the Ambi contract's hasRelation function. This can allow unauthorized modifications or additions to versioning data, potentially leading to misleading or harmful version control of the contract's state or logic.",
+        "file_name": "0x60bf91ac87fee5a78c28f7b67701fbcfa79c18ec.sol"
+    }
+]

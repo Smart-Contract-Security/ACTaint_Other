@@ -1,0 +1,9 @@
+[
+    {
+        "function_name": "destroy",
+        "code": "function destroy() public{ selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized SelfDestruct",
+        "reason": "The destroy function allows any caller to trigger the selfdestruct operation. This operation is used to remove the contract from the blockchain, and it sends all remaining Ether stored in the contract to the caller's address. Since there are no access controls or checks on the caller's identity, this means that anyone who calls this function can terminate the contract and withdraw any Ether contained within it. This poses a severe security risk as it allows any external actor to destruct the contract and potentially benefit from the Ether without any restrictions or permissions.",
+        "file_name": "0xa2562cd0d8620dc2bec07872ecaadd4b6fbdc02f.sol"
+    }
+]

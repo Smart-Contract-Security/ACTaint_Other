@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Unreachable code",
+        "reason": "In the 'distr' function, the code to check if 'totalDistributed' is greater than or equal to 'totalSupply' and potentially setting 'distributionFinished' to true is unreachable because it comes after a 'return' statement. This means the distribution process might never be marked as finished even if the total distributed amount equals or exceeds the total supply.",
+        "file_name": "0x2be511409c976bdcd141642969ece04cd1171403.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function sends tokens using the 'distr' function and then modifies the 'blacklist' status of the sender. If an attacker can make a reentrant call to 'getTokens' within the same transaction, they might be able to receive more tokens than intended because the 'blacklist' update happens after the tokens are distributed. This could lead to unexpected distribution and depletion of tokens.",
+        "file_name": "0x2be511409c976bdcd141642969ece04cd1171403.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval race condition",
+        "reason": "The 'approve' function allows changing the allowance only if the current allowance for a spender is zero or the new value to set is zero. This condition can lead to a race condition where the spender could potentially use the old allowance and the new one in quick succession, possibly leading to double spending issues if the spender's transactions are crafted cleverly.",
+        "file_name": "0x2be511409c976bdcd141642969ece04cd1171403.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "allocateTokens",
+        "code": "function allocateTokens(address[] _owners, uint256[] _values) public onlyOwner { require (_owners.length == _values.length); for(uint256 i = 0; i < _owners.length ; i++){ address owner = _owners[i]; uint256 value = _values[i]; ICOSupply = ICOSupply.add(value); require(totalSupply < ICOtotalSupply); mintTokens(owner, value); } }",
+        "vulnerability": "Arbitrary Minting",
+        "reason": "The function 'allocateTokens' allows the owner to mint an arbitrary number of tokens to any address. This could be exploited by the owner to create new tokens at will without any limitation other than the 'ICOtotalSupply'. However, since the owner can repeatedly call this function before reaching the 'ICOtotalSupply', it poses a risk of unfair token distribution and manipulation of token supply.",
+        "file_name": "0x9ad748cc73fa6bf6f48ec4af64cfe1181f6127a6.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public TokenUnFreeze teamAccountNeedFreezeOneYear(msg.sender) returns (bool success) { require (balances[msg.sender] > _value); require (balances[_to] + _value > balances[_to]); balances[msg.sender] -= _value; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function 'transfer' lacks safe math operations for balance updates. The expression 'balances[_to] + _value > balances[_to]' is intended to prevent overflows, but it does not adequately protect against it because it occurs after the overflow might have already happened. An attacker could exploit this by sending a value that causes an overflow in the recipient's balance, effectively allowing them to gain a large number of tokens.",
+        "file_name": "0x9ad748cc73fa6bf6f48ec4af64cfe1181f6127a6.sol"
+    },
+    {
+        "function_name": "forwardFunds",
+        "code": "function forwardFunds() internal { require(walletAddress != address(0)); walletAddress.transfer(msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'forwardFunds' function transfers Ether to an external address ('walletAddress') without setting the state before making the transfer. This could allow reentrancy attacks if the 'walletAddress' is a contract that calls back into any functions of this contract that modify state. The reentrancy can lead to unexpected behavior and potentially allow draining of Ether or other critical state changes.",
+        "file_name": "0x9ad748cc73fa6bf6f48ec4af64cfe1181f6127a6.sol"
+    }
+]

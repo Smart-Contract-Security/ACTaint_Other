@@ -1,0 +1,102 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x24a7de87b3bd7298bbf8966fdf170c558d69ecc4.code
+Start time: 19/08/2022 21:26:17
+Building CFG...
+CFG generation time (secs): 0.27
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	(  655)  28f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {17} in function freezeAccount(address,bool)
+
+Violated access control check in function approve(address,uint256)
+	( 3984)  f90:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {17} in function freezeAccount(address,bool)
+
+Violated access control check in function stopThisIco(bool)
+	( 4286) 10be:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setCommissionRate(uint256)
+	( 4851) 12f3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setICOPrice(uint256)
+	( 6460) 193c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function withdraw(uint256)
+	( 6681) 1a19:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 5210) 145a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {17} in function freezeAccount(address,bool)
+
+Violated access control check in function setDolRate(uint256)
+	( 7713) 1e21:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setEthRate(uint256)
+	( 7945) 1f09:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function destroyToken(uint256)
+	( 8212) 2014:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setSellRate(uint256)
+	( 9319) 2467:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function buy()
+	( 9563) 255b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {17} in function freezeAccount(address,bool)
+
+Violated access control check in function transfer(address,uint256)
+	( 9878) 2696:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {17} in function freezeAccount(address,bool)
+
+Violated access control check in function mintToken(uint256)
+	(11102) 2b5e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function deposit()
+	(12237) 2fcd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function sell(uint256)
+	(12856) 3238:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {17} in function freezeAccount(address,bool)
+
+Violated access control check in function collect()
+	(13273) 33d9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function freezeAccount(address,bool)
+	(13507) 34c3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	(14361) 3819:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 38.75
+End time: 19/08/2022 21:26:56

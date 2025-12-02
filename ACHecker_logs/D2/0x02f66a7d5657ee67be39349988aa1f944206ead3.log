@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x02f66a7d5657ee67be39349988aa1f944206ead3.code
+Start time: 18/08/2022 20:19:23
+Building CFG...
+CFG generation time (secs): 0.06
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Target of DELEGATECALL) Missing access control check in function dtrade(address,uint8,uint8,uint256[],address[],bytes32[])
+Needed to protect following instruction in function dtrade(address,uint8,uint8,uint256[],address[],bytes32[])
+( 1691)  69b:	f4	-6 +1 = -5	DELEGATECALL
+
+(Controlable Target of DELEGATECALL) Missing access control check in function dtrade(address,uint8,uint8,uint256[],address[],bytes32[])
+Needed to protect following instruction in function dtrade(address,uint8,uint8,uint256[],address[],bytes32[])
+( 2217)  8a9:	f4	-6 +1 = -5	DELEGATECALL
+
+Analysis time (secs): 5.48
+End time: 18/08/2022 20:19:29

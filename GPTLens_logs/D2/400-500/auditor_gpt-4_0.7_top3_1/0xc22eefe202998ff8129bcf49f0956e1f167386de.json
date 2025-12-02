@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attack. After distributing tokens to the sender, the 'blacklist' is updated and the 'value' is decremented, which are intended as security measures. However, because the actual transfer of tokens ('distr' function call) occurs before these security controls and there is no reentrancy guard, an attacker could potentially re-enter the function and exploit it to get more tokens than intended.",
+        "file_name": "0xc22eefe202998ff8129bcf49f0956e1f167386de.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Logical error",
+        "reason": "The function 'distr' contains a logical error where the condition to check if 'totalDistributed' has reached or exceeded 'totalSupply' is placed after the 'return true;' statement, which means this condition will never be executed. This could lead to over-distribution of tokens beyond the intended total supply.",
+        "file_name": "0xc22eefe202998ff8129bcf49f0956e1f167386de.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply = totalSupply.sub(_value); totalDistributed = totalDistributed.sub(_value); Burn(burner, _value); }",
+        "vulnerability": "Inappropriate burning mechanism",
+        "reason": "The 'burn' function is intended to reduce both 'totalSupply' and 'totalDistributed' by a specified '_value'. However, reducing 'totalDistributed' could lead to inconsistencies where the total distributed surpasses the intended limit if tokens continue to be distributed after burning. This can cause confusion and potential errors in tracking the actual distribution of tokens.",
+        "file_name": "0xc22eefe202998ff8129bcf49f0956e1f167386de.sol"
+    }
+]

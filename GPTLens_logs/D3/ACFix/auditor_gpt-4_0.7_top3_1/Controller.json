@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setDao",
+        "code": "function setDao(address _dao) external onlyDao { dao = _dao; }",
+        "vulnerability": "Single DAO Address Change Vulnerability",
+        "reason": "The 'setDao' function allows the current DAO to change the DAO address to a new one. If the current DAO address is compromised, the attacker can redirect control of the contract to a new address, gaining full control over the smart contract's functionalities that are guarded by the 'onlyDao' modifier. This could lead to unauthorized changes in protocol configurations, unauthorized access to funds, or malicious modifications to the smart contract logic.",
+        "file_name": "Controller.sol"
+    },
+    {
+        "function_name": "claim",
+        "code": "function claim(uint256 _vaultNumber, uint256 _protocolNumber) external override onlyVault returns (bool) { if (claimable[protocolInfo[_vaultNumber][_protocolNumber].LPToken]) { return IProvider(protocolInfo[_vaultNumber][_protocolNumber].provider).claim(protocolInfo[_vaultNumber][_protocolNumber].LPToken, msg.sender); } else { return false; } }",
+        "vulnerability": "Delegate Call to Arbitrary Contract",
+        "reason": "This function delegates a call to an external provider contract with 'IProvider(protocolInfo[_vaultNumber][_protocolNumber].provider).claim()'. Since the provider address can be set by the DAO, if the DAO is compromised or a malicious DAO address is set, it can point to a malicious provider which can execute arbitrary code when 'claim' is called. The attack surface is further increased as the external call uses untrusted input from 'protocolInfo', which could potentially be manipulated.",
+        "file_name": "Controller.sol"
+    },
+    {
+        "function_name": "addVault",
+        "code": "function addVault(address _vault) external onlyDao { vaultWhitelist[_vault] = true; }",
+        "vulnerability": "Arbitrary Vault Whitelisting",
+        "reason": "The 'addVault' function allows the DAO to whitelist any address as a vault. If the DAO is compromised, an attacker could whitelist arbitrary addresses, allowing potentially malicious contracts or addresses to interact with the system as a recognized vault. This could expose the system to reentrancy attacks, funds theft, or other malicious activities using these whitelisted addresses.",
+        "file_name": "Controller.sol"
+    }
+]

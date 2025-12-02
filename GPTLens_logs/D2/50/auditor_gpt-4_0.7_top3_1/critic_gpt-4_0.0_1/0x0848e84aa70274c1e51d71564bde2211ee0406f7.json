@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "buyTicketsFor",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is partially correct. The function does indeed transfer ether back to msg.sender before fully updating the state, which is a classic reentrancy vulnerability pattern. However, the severity and profitability are not as high as might be suggested because the function does not have multiple state-dependent external calls that could be exploited in a single transaction. The main risk is the reentrancy on the transfer of 'change', which might not always be significant.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'buyTicketsFor' transfers ether to msg.sender before updating the state. This can lead to reentrancy attacks where a malicious contract can call 'buyTicketsFor' again during its execution, potentially leading to unexpected behavior or draining of ether.",
+        "code": "function buyTicketsFor(address _beneficiary) public payable { require(_beneficiary != 0x0); require(msg.value >= PRICE); uint256 change = msg.value%PRICE; uint256 numberOfTickets = msg.value.sub(change).div(PRICE); ticket.mint(_beneficiary, numberOfTickets); addParticipant(_beneficiary, numberOfTickets); msg.sender.transfer(change); }",
+        "file_name": "0x0848e84aa70274c1e51d71564bde2211ee0406f7.sol"
+    },
+    {
+        "function_name": "awardPrizes",
+        "vulnerability": "Predictable RNG",
+        "criticism": "The reasoning is correct and highlights a significant vulnerability. Using 'block.blockhash(block.number-1)' as a source of randomness is predictable, especially by miners, and can be exploited to manipulate the outcome of the prize distribution. This vulnerability is severe because it directly affects the fairness and integrity of the game, potentially allowing miners to always win. The profitability is also high, as the attacker can gain substantial rewards.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function 'awardPrizes' uses 'block.blockhash(block.number-1)' to determine the winner, which can be predicted by miners since they have control over the block hash. This could lead to a miner manipulating the result to ensure they win the prize.",
+        "code": "function awardPrizes() private { uint256 winnerIndex = uint256(block.blockhash(block.number-1))%SIZE; uint256 jackpotNumber = uint256(block.blockhash(block.number-1))%JACKPOT_CHANCE; if (winnerIndex == jackpotNumber) { distributeJackpot(winnerIndex); } for (uint8 i = 0; i < prizes.length; i++) { participants[gameNumber][winnerIndex%SIZE].transfer(prizes[i]); PrizeAwarded(gameNumber, participants[gameNumber][winnerIndex%SIZE], prizes[i]); winnerIndex++; } }",
+        "file_name": "0x0848e84aa70274c1e51d71564bde2211ee0406f7.sol"
+    },
+    {
+        "function_name": "distributeRemaining",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in identifying a potential reentrancy attack due to the order of transfers. However, the severity and profitability depend on the implementation details of the 'fund' contract and the state changes that occur before the transfer. If 'fund' is a well-known, non-malicious contract, the risk might be lower. Nonetheless, the pattern is risky and should be addressed to prevent possible exploits.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The function 'distributeRemaining' performs a transfer to an external address 'fund' and afterwards to msg.sender. This could potentially allow reentrancy attacks where the external called contract can re-enter and call into any functions of this contract, leading to unexpected behavior or ether being siphoned.",
+        "code": "function distributeRemaining() private { jackpotAmount = jackpotAmount.add(JACK_DIST); fund.transfer(DIV_DIST); msg.sender.transfer(GAS_REFUND); }",
+        "file_name": "0x0848e84aa70274c1e51d71564bde2211ee0406f7.sol"
+    }
+]

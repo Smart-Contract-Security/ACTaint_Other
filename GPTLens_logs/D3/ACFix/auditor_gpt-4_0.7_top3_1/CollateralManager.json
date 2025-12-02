@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "commitCollateral",
+        "code": "function commitCollateral(uint256 _bidId, Collateral[] calldata _collateralInfo) public returns (bool validation_) { address borrower = tellerV2.getLoanBorrower(_bidId); (validation_, ) = checkBalances(borrower, _collateralInfo); if (validation_) { for (uint256 i; i < _collateralInfo.length; i++) { Collateral memory info = _collateralInfo[i]; _commitCollateral(_bidId, info); } } }",
+        "vulnerability": "Reentrancy Vulnerability",
+        "reason": "This function allows for reentrancy attacks because it modifies state after calling an external contract function (`checkBalances`) that could potentially be influenced by an attacker. There's no `reentrancy guard` to prevent this attack. This could lead to unexpected behaviors like committing the same collateral multiple times.",
+        "file_name": "CollateralManager.sol"
+    },
+    {
+        "function_name": "_deployEscrow",
+        "code": "function _deployEscrow(uint256 _bidId) internal virtual returns (address proxyAddress_, address borrower_) { proxyAddress_ = _escrows[_bidId]; borrower_ = tellerV2.getLoanBorrower(_bidId); if (proxyAddress_ == address(0)) { require(borrower_ != address(0), \"Bid does not exist\"); BeaconProxy proxy = new BeaconProxy( collateralEscrowBeacon, abi.encodeWithSelector( ICollateralEscrowV1.initialize.selector, _bidId ) ); proxyAddress_ = address(proxy); } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function '_deployEscrow' creates a new BeaconProxy instance without checking the result of the external call to 'new BeaconProxy(...)'. If the proxy creation fails (e.g., out of gas, revert in constructor), the function will continue execution with an uninitialized or incorrect proxy address, leading to subsequent failures or vulnerabilities in functions relying on this address.",
+        "file_name": "CollateralManager.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint256 _bidId) external { BidState bidState = tellerV2.getBidState(_bidId); if (bidState == BidState.PAID) { _withdraw(_bidId, tellerV2.getLoanBorrower(_bidId)); } else if (tellerV2.isLoanDefaulted(_bidId)) { _withdraw(_bidId, tellerV2.getLoanLender(_bidId)); emit CollateralClaimed(_bidId); } else { revert(\"collateral cannot be withdrawn\"); } }",
+        "vulnerability": "Missing Access Control",
+        "reason": "The function 'withdraw' can be called by any external caller without any checks on their authorization or relationship to the bid. This can lead to unauthorized withdrawals or manipulation of bid states, especially since the function checks for different states and performs state-changing operations accordingly.",
+        "file_name": "CollateralManager.sol"
+    }
+]

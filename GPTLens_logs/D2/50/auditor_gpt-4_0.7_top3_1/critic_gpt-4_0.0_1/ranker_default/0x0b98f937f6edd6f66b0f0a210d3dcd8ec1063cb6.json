@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "mintForwarder",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The criticism is valid as the function indeed does not check the return values of 'proxyMint' and 'mintForwarder' calls. This could potentially allow a malicious or faulty proxyMinter to disrupt the intended flow. However, the severity is moderate because it depends on the trustworthiness of the proxyMinter contracts, and profitability is low as it mainly allows disruption rather than a direct benefit to an attacker.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function calls 'proxyMinterInterface(proxyMinter).proxyMint(nonce, challenge_digest)' and 'mintForwarderInterface(proxyMinter).mintForwarder(nonce, challenge_digest, remainingProxyMintArray)' but does not check the return value. This could allow a malicious proxyMinter contract to always return false, preventing minting from being successfully forwarded.",
+        "code": "function mintForwarder(uint256 nonce, bytes32 challenge_digest, address[] proxyMintArray) public returns (bool) { require(proxyMintArray.length > 0); uint previousEpochCount = ERC918Interface(minedToken).epochCount(); address proxyMinter = proxyMintArray[0]; if(proxyMintArray.length == 1) { require(proxyMinterInterface(proxyMinter).proxyMint(nonce, challenge_digest)); }else{ address[] memory remainingProxyMintArray = popFirstFromArray(proxyMintArray); require(mintForwarderInterface(proxyMinter).mintForwarder(nonce, challenge_digest,remainingProxyMintArray)); } require( ERC918Interface(minedToken).epochCount() == previousEpochCount.add(1) ); bytes memory nonceBytes = uintToBytesForAddress(nonce); address newKing = bytesToAddress(nonceBytes); miningKing = newKing; return true; }",
+        "file_name": "0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "mintForwarder",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is somewhat correct in identifying the potential for reentrancy due to external calls before state updates. However, the specific impact and feasibility of such an attack depend on the implementation of the called contracts. If those contracts are not malicious and do not allow for unexpected external interactions, the risk might be lower. The severity is moderate, assuming worst-case scenarios, but profitability is uncertain without knowing the behavior of external contracts.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The function 'mintForwarder' invokes external contracts via 'proxyMint' and 'mintForwarder' functions of potentially untrusted contracts, which could perform reentrancy attacks. This is especially concerning because the 'miningKing' variable is set after these external calls, allowing a reentrant call to change the king again or conduct other state changes before the original call completes.",
+        "code": "function mintForwarder(uint256 nonce, bytes32 challenge_digest, address[] proxyMintArray) public returns (bool) { require(proxyMintArray.length > 0); uint previousEpochCount = ERC918Interface(minedToken).epochCount(); address proxyMinter = proxyMintArray[0]; if(proxyMintArray.length == 1) { require(proxyMinterInterface(proxyMinter).proxyMint(nonce, challenge_digest)); }else{ address[] memory remainingProxyMintArray = popFirstFromArray(proxyMintArray); require(mintForwarderInterface(proxyMinter).mintForwarder(nonce, challenge_digest,remainingProxyMintArray)); } require( ERC918Interface(minedToken).epochCount() == previousEpochCount.add(1) ); bytes memory nonceBytes = uintToBytesForAddress(nonce); address newKing = bytesToAddress(nonceBytes); miningKing = newKing; return true; }",
+        "file_name": "0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.sol",
+        "final_score": 5.0
+    },
+    {
+        "function_name": "transferKing",
+        "vulnerability": "Authorization through tx.origin",
+        "criticism": "The reasoning is incorrect as it confuses 'msg.sender' with 'tx.origin'. The function checks 'msg.sender' against 'miningKing', which is the correct approach to ensure that only the current king can transfer kingship. The vulnerability described would be valid if 'tx.origin' were used, but since it's not, the reasoning is flawed. Therefore, the correctness is low, and the severity and profitability are non-existent.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'transferKing' checks that 'msg.sender' is equal to 'miningKing' before allowing the transfer of kingship. However, if 'miningKing' is a contract, any transactions originating from the contract (even if initiated by an unauthorized user) would pass this check, allowing unauthorized users to gain control.",
+        "code": "function transferKing(address newKing) public { require(msg.sender == miningKing); miningKing = newKing; emit TransferKing(msg.sender, newKing); }",
+        "file_name": "0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.sol",
+        "final_score": 0.5
+    }
+]

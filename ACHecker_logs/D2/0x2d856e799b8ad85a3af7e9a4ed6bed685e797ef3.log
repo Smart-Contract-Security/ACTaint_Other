@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x2d856e799b8ad85a3af7e9a4ed6bed685e797ef3.code
+Start time: 20/08/2022 02:52:15
+Building CFG...
+CFG generation time (secs): 0.02
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function distributeBTR(address[])
+	( 2605)  a2d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BitcoinPro()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 1.10
+End time: 20/08/2022 02:52:16

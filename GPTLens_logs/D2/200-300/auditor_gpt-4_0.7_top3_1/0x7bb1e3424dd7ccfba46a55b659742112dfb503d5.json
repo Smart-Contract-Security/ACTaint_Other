@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] = balanceOf[target].add(mintedAmount); totalSupply = totalSupply.add(mintedAmount); emit Transfer(0, this, mintedAmount); emit Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Unlimited Minting",
+        "reason": "The 'mintToken' function allows the contract owner to mint an arbitrary amount of tokens to any account. This can lead to inflation and devaluation of the token, as there is no limit on the total amount of tokens that can be minted. This could be exploited by the owner to gain an unfair advantage or manipulate the token economy.",
+        "file_name": "0x7bb1e3424dd7ccfba46a55b659742112dfb503d5.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) public { require(address(this).balance >= amount.mul(sellPrice)); _transfer(msg.sender, this, amount); msg.sender.transfer(amount * sellPrice); }",
+        "vulnerability": "Denial of Service (DoS) by Underpricing",
+        "reason": "The 'sell' function checks if the contract has enough ETH balance to buy 'amount' of tokens at the current 'sellPrice'. However, if the 'sellPrice' is set very low, it could cause the contract to never have sufficient balance to buy back tokens, effectively enabling a denial of service as users cannot sell their tokens back to the contract.",
+        "file_name": "0x7bb1e3424dd7ccfba46a55b659742112dfb503d5.sol"
+    },
+    {
+        "function_name": "freezeAccount",
+        "code": "function freezeAccount(address target, bool freeze) onlyOwner public { frozenAccount[target] = freeze; emit FrozenFunds(target, freeze); }",
+        "vulnerability": "Arbitrary Account Freezing",
+        "reason": "The 'freezeAccount' function allows the owner to freeze any account arbitrarily. This can lead to censorship issues and centralization of control, as the contract owner can deny service to specific users by freezing their accounts without any checks or balances.",
+        "file_name": "0x7bb1e3424dd7ccfba46a55b659742112dfb503d5.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "OwnedResolver",
+        "vulnerability": "Incorrect constructor name",
+        "criticism": "The reasoning is accurate in identifying that the constructor name should match the contract name or use the 'constructor' keyword in Solidity versions ^0.4.24 and above. The incorrect naming of the constructor as a regular function indeed allows anyone to call it and potentially change the owner, which is a severe security flaw. The severity is high because it compromises the access control mechanism, and the profitability is also high as an attacker can gain control over the contract.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The function 'OwnedResolver' is intended to be a constructor for the 'DNSResolver' contract but is incorrectly named. Constructors in Solidity version ^0.4.24 should have the same name as the contract or use the 'constructor' keyword. As a result, 'OwnedResolver' is treated as a regular function that can be called by anyone post-deployment, allowing an arbitrary user to change the owner of the contract at any time. This compromises the entire access control mechanism.",
+        "code": "function OwnedResolver() { owner = msg.sender; }",
+        "file_name": "0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.sol",
+        "final_score": 9.0
+    },
+    {
+        "function_name": "owner_only",
+        "vulnerability": "Use of throw for error handling",
+        "criticism": "The reasoning correctly identifies the inefficiency of using 'throw' for error handling in Solidity due to the complete consumption of gas. However, the severity of this issue is moderate because it primarily affects the user experience by potentially causing loss of gas without transaction completion, rather than directly leading to a security breach. The profitability for an attacker is low, as this does not directly result in a gain for them but could be used in a denial of service attack scenario.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The 'owner_only' modifier uses 'throw' for error handling. In Solidity, using 'throw' consumes all gas provided to the transaction. It is recommended to use 'revert()' or 'require()' instead, which provides the same functionality but with more gas-efficient error handling. This can prevent denial of service attacks where the aim is to deplete the contract's or caller's gas.",
+        "code": "modifier owner_only { if(msg.sender != owner) throw; _; }",
+        "file_name": "0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.sol",
+        "final_score": 5.75
+    },
+    {
+        "function_name": "supportsInterface",
+        "vulnerability": "Hardcoded interface check",
+        "criticism": "The reasoning is correct in pointing out the lack of flexibility due to the hardcoded interface ID. This design choice limits the contract's ability to evolve and support additional interfaces, which could be a significant drawback in a system designed to be interoperable. However, the severity is moderate as it does not pose an immediate security risk but rather a limitation in functionality and future compatibility. The profitability is low as there is no direct way for an attacker to exploit this for financial gain.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The function 'supportsInterface' returns true for a single hardcoded interface ID '0x126a710e'. This implementation is not flexible and does not follow the typical pattern of checking against multiple possible supported interfaces, which might be necessary if the contract evolves or needs to support additional interfaces in the future. It restricts the contract's upgradeability and compatibility with other contracts or interfaces.",
+        "code": "function supportsInterface(bytes4 interfaceID) constant returns (bool) { return interfaceID == 0x126a710e; }",
+        "file_name": "0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.sol",
+        "final_score": 4.75
+    }
+]

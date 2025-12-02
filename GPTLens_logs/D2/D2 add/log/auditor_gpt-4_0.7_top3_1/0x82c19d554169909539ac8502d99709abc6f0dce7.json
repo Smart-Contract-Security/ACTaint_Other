@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setProvider",
+        "code": "function setProvider(uint8 _id, address _providerAddress) public onlyOwner returns (bool success) { require(_providerAddress != address(0)); subContracts[_id] = _providerAddress; emit ProviderUpdated(_id, _providerAddress); return true; }",
+        "vulnerability": "Incorrect modifier",
+        "reason": "The modifier 'onlyOwner' in the Manageable contract is intentionally set to always fail by having 'require(true == false);'. This makes it impossible for the 'setProvider' function in the Manageable contract to ever execute successfully, as it is guarded by this faulty modifier. This prevents any update or management of provider addresses, effectively freezing the functionality related to provider management.",
+        "file_name": "0x82c19d554169909539ac8502d99709abc6f0dce7.sol"
+    },
+    {
+        "function_name": "updateIndexOrderToken",
+        "code": "function updateIndexOrderToken( uint _orderId, uint _tokenIndex, uint _actualPrice, uint _totalTokenAmount, uint _completedQuantity, ExchangeAdapterBase.OrderStatus _status) external onlyCore { orders[_orderId].totalTokenAmounts[_tokenIndex] = _totalTokenAmount; orders[_orderId].dealtPrices[_tokenIndex] = _actualPrice; orders[_orderId].completedTokenAmounts[_tokenIndex] = _completedQuantity; orders[_orderId].subStatuses[_tokenIndex] = _status; }",
+        "vulnerability": "Missing input validation",
+        "reason": "This function lacks validation on the _tokenIndex input, which is used to directly access array elements such as 'totalTokenAmounts', 'dealtPrices', 'completedTokenAmounts', and 'subStatuses'. If an out-of-bounds _tokenIndex is supplied, this could lead to an array out-of-bounds exception, causing transaction reversion. Moreover, unchecked access could be exploited leading to denial of service (DoS) or unintended overwrites in the contract's storage.",
+        "file_name": "0x82c19d554169909539ac8502d99709abc6f0dce7.sol"
+    },
+    {
+        "function_name": "resetOrderIdTo",
+        "code": "function resetOrderIdTo(uint _start) external onlyOwner returns (uint) { orderId = _start; return orderId; }",
+        "vulnerability": "Incorrect modifier usage",
+        "reason": "Similar to the first vulnerability, this function is intended to allow resetting the 'orderId' to a specific number. However, it uses the 'onlyOwner' modifier which, due to its faulty implementation in the Manageable contract ('require(true == false);'), will always fail and prevent this function from executing successfully. This prevents any management or reset operation on the 'orderId', potentially leading to operational issues or halted functionalities.",
+        "file_name": "0x82c19d554169909539ac8502d99709abc6f0dce7.sol"
+    }
+]

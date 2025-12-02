@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(uint amt) public{ require(msg.sender==owner); balances[address(this)] += amt; emit Transfer(address(0), address(this), amt); }",
+        "vulnerability": "Unlimited Minting",
+        "reason": "The function 'mint' allows the owner to mint an arbitrary amount of tokens to the contract address. This can lead to inflation and devaluation of the token as the total supply is not capped or controlled beyond the owner's discretion.",
+        "file_name": "0xac3a018b22677a52c4a5c5aabca551898abc49d1.sol"
+    },
+    {
+        "function_name": "destroy",
+        "code": "function destroy(address payable receiver) public { require(msg.sender==owner); selfdestruct(receiver); }",
+        "vulnerability": "Selfdestruct Vulnerability",
+        "reason": "The 'destroy' function allows the owner to self-destruct the contract, transferring all remaining ether in the contract to a specified address. This can be used maliciously to rug-pull by withdrawing all the funds and leaving token holders with worthless tokens.",
+        "file_name": "0xac3a018b22677a52c4a5c5aabca551898abc49d1.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { require(to!=address(0)); require(balances[from]>=tokens); require(allowed[from][msg.sender]>=tokens); balances[from] = balances[from] - tokens; allowed[from][msg.sender] = allowed[from][msg.sender] - tokens; balances[to] = balances[to] + tokens; emit Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transferFrom' function does not prevent reentrancy attacks. An attacker can exploit this by creating a fallback function in their contract that calls 'transferFrom' again, allowing them to withdraw more tokens than they are allowed.",
+        "file_name": "0xac3a018b22677a52c4a5c5aabca551898abc49d1.sol"
+    }
+]

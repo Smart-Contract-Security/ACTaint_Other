@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "remove",
+        "code": "function remove() checkAccess('owner') returns(bool) { if (isImmortal) { return false; } selfdestruct(msg.sender); return true; }",
+        "vulnerability": "Unchecked Selfdestruct",
+        "reason": "The 'remove' function allows the contract to be destroyed using selfdestruct if 'isImmortal' is false. Although it checks if the caller has the 'owner' role, there's no safeguard against potential misuse or errors that could lead to selfdestruct being called unintentionally or maliciously, resulting in loss of contract code and stored ether.",
+        "file_name": "0x96a51938cfb22565e0d40694fe103675c63ae218.sol"
+    },
+    {
+        "function_name": "setAmbiAddress",
+        "code": "function setAmbiAddress(address _ambi, bytes32 _name) returns (bool){ if(address(ambiC) != 0x0){ return false; } Ambi ambiContract = Ambi(_ambi); if(ambiContract.getNodeAddress(_name)!=address(this)) { if (!ambiContract.addNode(_name, address(this))){ return false; } } name = _name; ambiC = ambiContract; return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "This function makes an external call to 'ambiContract.addNode' without checking the return value for success or failure. This could lead to unexpected behavior if the external call fails, and the contract state (specifically 'name' and 'ambiC') will still be updated as if the operation was successful.",
+        "file_name": "0x96a51938cfb22565e0d40694fe103675c63ae218.sol"
+    },
+    {
+        "function_name": "registerInstitution",
+        "code": "function registerInstitution(string _institution, address _address) noValue() checkAccess('admin') returns(bool) { if (bytes(_institution).length != 4) { return false; } if (institutionOwners[sha3(_institution)] != 0) { return false; } institutionOwners[sha3(_institution)] = _address; return true; }",
+        "vulnerability": "Improper Authorization Check",
+        "reason": "This function checks if the caller has the 'admin' role, but does not verify if the institution name is already registered with a non-zero address, allowing potential overwriting if there's a mistake in the check or if the hashing function (sha3) has a collision. This could lead to unauthorized control or replacement of institution registration.",
+        "file_name": "0x96a51938cfb22565e0d40694fe103675c63ae218.sol"
+    }
+]

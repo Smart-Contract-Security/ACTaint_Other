@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "claim",
+        "code": "function claim(string _hash) public returns(bool result) { require(digest == sha256(_hash)); selfdestruct(dest); return true; }",
+        "vulnerability": "Unprotected selfdestruct",
+        "reason": "The claim function allows any user to call it with a correct pre-image of the digest, leading to self-destruct of the contract and sending all stored Ether to the 'dest' address. There is no check ensuring that only the intended recipient or owner can trigger this, making it possible for any attacker who can compute or obtain the correct hash preimage to destruct the contract and redirect funds.",
+        "file_name": "0x7cfc4442dd96d6f85dd41d458a13957ba381e05a.sol"
+    },
+    {
+        "function_name": "refund",
+        "code": "function refund() onlyIssuer public returns(bool result) { require(now >= timeOut); selfdestruct(issuer); return true; }",
+        "vulnerability": "Selfdestruct manipulation",
+        "reason": "The refund function can be called by the issuer after the timeout period to destruct the contract. However, if the issuer's address is compromised, the attacker can trigger the selfdestruct, thereby permanently destroying the contract and transferring any contained Ether to the attacker-controlled issuer address. This poses a risk especially when the contract holds significant funds.",
+        "file_name": "0x7cfc4442dd96d6f85dd41d458a13957ba381e05a.sol"
+    },
+    {
+        "function_name": "claim",
+        "code": "function claim(string _hash) public returns(bool result) { require(digest == sha256(_hash)); selfdestruct(dest); return true; }",
+        "vulnerability": "Lack of event logging",
+        "reason": "The claim function does not emit any events, which means state changes (particularly the selfdestruct operation) are not easily trackable by external watchers or interfaces. This lack of transparency can be exploited in scenarios where quick, unnoticed actions may benefit an attacker, such as in front-running or in scenarios where the contract interacts with other contracts relying on emitted events.",
+        "file_name": "0x7cfc4442dd96d6f85dd41d458a13957ba381e05a.sol"
+    }
+]

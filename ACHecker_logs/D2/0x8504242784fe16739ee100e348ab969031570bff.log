@@ -1,0 +1,38 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x8504242784fe16739ee100e348ab969031570bff.code
+Start time: 25/08/2022 23:03:35
+Building CFG...
+CFG generation time (secs): 9.83
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 1905)  771:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function TodaNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2001)  7d1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function TodaNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2371)  943:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function TodaNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 2953)  b89:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function TodaNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3292)  cdc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function TodaNetwork()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 8.57
+End time: 25/08/2022 23:03:53

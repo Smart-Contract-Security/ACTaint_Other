@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "submitTransaction",
+        "code": "function submitTransaction(address _destination, string _value, string _strTransactionData, uint8[] _v, bytes32[] _r, bytes32[] _s) onlyOwner public{\n    processAndCheckParam(_destination, _strTransactionData, _v, _r, _s);\n    uint256 transactionValue = RLPEncode.stringToUint(_value);\n    bytes32 _msgHash = getMsgHash(_destination, _value, _strTransactionData);\n    verifySignatures(_msgHash, _v, _r, _s);\n    _destination.transfer(transactionValue);\n    emit Transacted(_destination, 0, transactionValue);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'submitTransaction' calls an external contract via '_destination.transfer(transactionValue)' without ensuring that all state changes are finalized (e.g., updating balances, modifying states). This could allow a malicious contract at '_destination' to call back into this contract and modify the state (or re-trigger actions) in an undesirable way during the transfer execution.",
+        "file_name": "0xedb7028fc473843f5b4d5d273b1a154cfe2b3918.sol"
+    },
+    {
+        "function_name": "confirmTransaction",
+        "code": "function confirmTransaction(address _safeAddress) public{\n    require(safeMode && signers[msg.sender] && signers[_safeAddress]);\n    if (safeAddress == 0){\n        safeAddress = _safeAddress;\n    }\n    require(safeAddress == _safeAddress);\n    safeModeConfirmed++;\n    delete(signers[msg.sender]);\n    if(safeModeConfirmed >= required){\n        emit Kill(safeAddress, address(this).balance);\n        selfdestruct(safeAddress);\n    }\n}",
+        "vulnerability": "Unsafe Delegatecall",
+        "reason": "The function 'confirmTransaction' uses 'selfdestruct(safeAddress)' which could be manipulated if a malicious address is set as 'safeAddress'. This address could potentially be controlled by an attacker who can then receive all ether contained in the contract.",
+        "file_name": "0xedb7028fc473843f5b4d5d273b1a154cfe2b3918.sol"
+    },
+    {
+        "function_name": "processAndCheckParam",
+        "code": "function processAndCheckParam(address _destination, string _strTransactionData, uint8[] _v, bytes32[] _r, bytes32[] _s) internal{\n    require(!safeMode && _destination != 0 && _destination != address(this) && _v.length == _r.length && _v.length == _s.length && _v.length > 0);\n    string memory strTransactionTime = RLPEncode.subString(_strTransactionData, 40, 48);\n    uint256 transactionTime = RLPEncode.stringToUint(strTransactionTime);\n    require(!transactions[transactionTime]);\n    string memory strTransactionAddress = RLPEncode.subString(_strTransactionData, 0, 40);\n    address contractAddress = RLPEncode.stringToAddr(strTransactionAddress);\n    require(contractAddress == address(this));\n    transactions[transactionTime] = true;\n}",
+        "vulnerability": "Unchecked external call",
+        "reason": "The 'processAndCheckParam' function relies on the external 'RLPEncode.stringToAddr' function to convert a string to an address, assuming that the conversion is always safe and accurate. However, if the string is not a valid address, or if the function has an error or unexpected behavior, it could result in critical errors or vulnerabilities in address handling.",
+        "file_name": "0xedb7028fc473843f5b4d5d273b1a154cfe2b3918.sol"
+    }
+]

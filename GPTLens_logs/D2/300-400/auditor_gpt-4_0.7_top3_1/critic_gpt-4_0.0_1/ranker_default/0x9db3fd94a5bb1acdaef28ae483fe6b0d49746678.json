@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "burn",
+        "vulnerability": "Underflow risk",
+        "criticism": "The reasoning is valid as the function does not check if '_value' exceeds 'totalDistributed' before subtracting from it, which could indeed lead to an underflow. This is a critical oversight as it affects the integrity of the token's distributed tracking, potentially leading to incorrect token metrics reporting or logic failures in other parts of the contract relying on 'totalDistributed'. The severity is high due to potential economic impact, but profitability for an attacker is low unless they can leverage the underflow to influence other contract behaviors.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "The 'burn' function reduces the 'totalDistributed' without checking if '_value' is greater than 'totalDistributed'. This can lead to an underflow in 'totalDistributed' if '_value' is greater than the amount distributed, potentially destabilizing the token economics.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "file_name": "0x9db3fd94a5bb1acdaef28ae483fe6b0d49746678.sol",
+        "final_score": 6.25
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the external call to 'distr' before updating the 'blacklist'. However, the severity and profitability are overstated. The function does not show how 'value' is set or modified, which is crucial to understanding the impact of reentrancy here. Without this, it's unclear if an attacker can indeed exploit this repeatedly for gain. The vulnerability's impact depends heavily on the implementation of 'distr' and other state variables not shown.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 3,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks because it calls 'distr', which emits a Transfer event before updating the 'blacklist'. An attacker can use the reentrancy to call 'getTokens' again during the Transfer event handling, potentially allowing them to claim more tokens than intended.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x9db3fd94a5bb1acdaef28ae483fe6b0d49746678.sol",
+        "final_score": 4.25
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning is incorrect. The provided code does check if the current allowance is non-zero and only allows setting a new value if the current allowance is zero, or the new value is zero. This mitigates the typical race condition vulnerability in ERC-20 tokens where allowances can be changed from non-zero to another non-zero value without first setting it to zero. Therefore, the vulnerability described does not exist in the given implementation, making the reasoning incorrect.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'approve' function is susceptible to the race condition vulnerability. It allows changing non-zero allowance which can be exploited by a front-running attack. An attacker can call transferFrom between the checks and the actual set of approval, which can lead to unexpected transfers.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0x9db3fd94a5bb1acdaef28ae483fe6b0d49746678.sol",
+        "final_score": 0.5
+    }
+]

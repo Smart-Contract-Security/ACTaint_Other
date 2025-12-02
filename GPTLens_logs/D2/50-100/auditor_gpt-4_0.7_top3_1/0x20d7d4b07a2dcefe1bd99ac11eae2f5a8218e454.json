@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) returns (bool) { var _allowance = allowed[_from][msg.sender]; balances[_to] = balances[_to].add(_value); balances[_from] = balances[_from].sub(_value); allowed[_from][msg.sender] = _allowance.sub(_value); Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the transferFrom function, the balance update and the decrement of the allowance are done before emitting the Transfer event. If the _to address is a contract, it could call back into the contract during the Transfer event, leading to a reentrancy attack where the balance and allowance could be manipulated.",
+        "file_name": "0x20d7d4b07a2dcefe1bd99ac11eae2f5a8218e454.sol"
+    },
+    {
+        "function_name": "awardPrizes",
+        "code": "function awardPrizes(uint256 _seed) private { uint32 winningNumber = rand(SIZE-1, _seed); bool jackpotWon = winningNumber == rand(JACKPOT_SIZE-1, _seed); uint256 start = gameNumber.mul(SIZE); uint256 end = start + SIZE; uint256 winnerIndex = start.add(winningNumber); for (uint8 i = 0; i < prizes.length; i++) { if (jackpotWon && i==0) { distributeJackpot(winnerIndex); } if (winnerIndex+i > end) { winnerIndex -= SIZE; } participants[winnerIndex+i].transfer(prizes[i]); PrizeAwarded(gameNumber, participants[winnerIndex+i], prizes[i]); } jackpot = jackpot.add(245 finney); wallet.transfer(245 finney); msg.sender.transfer(10 finney); gameNumber++; }",
+        "vulnerability": "Pseudo-randomness",
+        "reason": "The function awardPrizes uses a pseudo-random number generation method based on the previous block's hash and a seed passed as an argument. This approach exposes the function to potential manipulation by miners or by users who can predict or influence the seed value, leading to a non-fair distribution of prizes.",
+        "file_name": "0x20d7d4b07a2dcefe1bd99ac11eae2f5a8218e454.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _amount) onlyOwner returns (bool) { totalSupply = totalSupply.add(_amount); balances[_to] = balances[_to].add(_amount); Mint(_to, _amount); Transfer(0x0, _to, _amount); return true; }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The mint function does not have a cap on the amount of tokens that can be minted. This could lead to an overflow of the totalSupply and balances, which would cause significant issues in the token economics, including hyperinflation or value dilution of the token.",
+        "file_name": "0x20d7d4b07a2dcefe1bd99ac11eae2f5a8218e454.sol"
+    }
+]

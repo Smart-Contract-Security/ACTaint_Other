@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in identifying a reentrancy vulnerability due to the state changes after calling an external contract ('distr()'). This could indeed lead to unexpected behavior if the 'getTokens' function is recursively called before the state (like 'totalDistributed') is updated. The severity is high as it could disrupt the token distribution process and potentially allow for draining of funds. Profitability for an attacker is also high if they can exploit this to repeatedly claim tokens.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks. It calls 'distr()' which updates the state of balances and totalDistributed, and then checks if 'totalDistributed' is greater than or equal to 'totalSupply' to potentially finish the distribution. However, since it handles Ether (payable function) and updates user balances, a malicious user could recursively call 'getTokens', leading to unexpected behavior before the distribution is officially finished.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition",
+        "criticism": "The reasoning is partially correct in identifying a potential race condition in the 'approve' function. However, the described scenario is slightly off. The real issue arises if a user sets the allowance to zero and then to a new value in two separate transactions, during which a malicious spender could exploit the intermediate state. The severity is moderate because it can lead to unauthorized token transfers, but the profitability depends on the spender's ability to exploit this race condition quickly.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'approve' function is vulnerable to a race condition known as the 'approve/transferFrom' attack. If a user wants to change the allowance of a spender that already has a non-zero allowance, they must set the allowance to zero and then set the new value. Between these two operations, a malicious spender can call 'transferFrom' when the allowance is set to zero, and then again after it's been set to a new value, potentially causing unexpected transfers.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "adminClaimAirdrop",
+        "vulnerability": "Unbounded loop",
+        "criticism": "The reasoning provided is incorrect as it misidentifies the issue. The vulnerability described is not an 'Unbounded loop' but rather a potential for overflow or excessive minting due to lack of checks on the '_amount'. The function 'doAirdrop()' is not shown, but assuming it only checks for positive amounts, the real issue would be unchecked minting rather than an unbounded loop. The severity could be high if it allows for significant manipulation of token balances, but profitability is only relevant to the owner, not an external attacker.",
+        "correctness": 2,
+        "severity": 6,
+        "profitability": 1,
+        "reason": "The function 'adminClaimAirdrop' allows the owner to airdrop any amount of tokens to any participant. Since there is no check on the value of '_amount' other than in 'doAirdrop()' which only checks for positive amount, the owner can airdrop an exceedingly large amount of tokens, potentially leading to overflow issues in 'totalDistributed' and 'balances[_participant]' in the 'doAirdrop()' function.",
+        "code": "function adminClaimAirdrop(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "file_name": "0x724e3a236d3e9c8ad2c3d1aff181118e6e9b3026.sol",
+        "final_score": 2.75
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buySprite",
+        "code": "function buySprite (uint spriteId) payable { uint _ownerCut; uint _charityCut; if (broughtSprites[spriteId].forSale == true) { _ownerCut = ((broughtSprites[spriteId].price / 1000) * ownerCut); _charityCut = ((broughtSprites[spriteId].price / 1000) * charityCut); require (msg.value == broughtSprites[spriteId].price + _ownerCut + _charityCut); broughtSprites[spriteId].owner.transfer(broughtSprites[spriteId].price); numberOfSpritesOwnedByUser[broughtSprites[spriteId].owner]--; if (broughtSprites[spriteId].timesTraded == 0) { allPurchasedSprites.push(spriteId); } Transfer (broughtSprites[spriteId].owner, msg.sender, spriteId); } else { require (broughtSprites[spriteId].timesTraded == 0); require (broughtSprites[spriteId].price == 0); uint priceIfAny = SaleClockAuction(SaleClockAuctionAddress).getCurrentPrice(spriteId); require (priceIfAny > 0); _ownerCut = ((priceIfAny / 1000) * ownerCut) * priceMultiplier / priceDivider; _charityCut = ((priceIfAny / 1000) * charityCut) * priceMultiplier / priceDivider; require (msg.value >= (priceIfAny * priceMultiplier / priceDivider) + _ownerCut + _charityCut); var (kittyOwner,,,,) = SaleClockAuction(SaleClockAuctionAddress).getAuction(spriteId); kittyOwner.transfer(priceIfAny * priceMultiplier / priceDivider); allPurchasedSprites.push(spriteId); broughtSprites[spriteId].spriteImageID = uint(block.blockhash(block.number-1))%360 + 1; Transfer (kittyOwner, msg.sender, spriteId); } totalBuys++; spriteOwningHistory[msg.sender].push(spriteId); numberOfSpritesOwnedByUser[msg.sender]++; broughtSprites[spriteId].owner = msg.sender; broughtSprites[spriteId].forSale = false; broughtSprites[spriteId].timesTraded++; broughtSprites[spriteId].featured = false; etherForOwner += _ownerCut; etherForCharity += _charityCut; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buySprite' transfers ether to an external address (kittyOwner) which may contain arbitrary code that could re-enter the smart contract leading to unexpected behavior, such as draining the contract's funds or corrupting the state.",
+        "file_name": "0xf3c8ed6c721774c022c530e813a369dfe78a6e85.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner { owner.transfer(etherForOwner); charityAddress.transfer(etherForCharity); etherForOwner = 0; etherForCharity = 0; }",
+        "vulnerability": "Multiple Withdrawal",
+        "reason": "If the 'transfer' call to 'charityAddress' fails (e.g., if the call stack depth limit is reached or it runs out of gas), the function execution will revert. However, the ether transfer to the 'owner' would have already occurred. This allows the 'owner' to potentially withdraw more than their intended share by causing the call to 'charityAddress' to fail.",
+        "file_name": "0xf3c8ed6c721774c022c530e813a369dfe78a6e85.sol"
+    },
+    {
+        "function_name": "featureSprite",
+        "code": "function featureSprite (uint spriteId) payable { require (msg.value == featurePrice); broughtSprites[spriteId].featured = true; if (broughtSprites[spriteId].timesTraded == 0) { var (kittyOwner,,,,) = SaleClockAuction(SaleClockAuctionAddress).getAuction(spriteId); uint priceIfAny = SaleClockAuction(SaleClockAuctionAddress).getCurrentPrice(spriteId); address kittyOwnerNotForSale = KittyCore(KittyCoreAddress).ownerOf(spriteId); if (priceIfAny > 0 && msg.sender == kittyOwner) { broughtSprites[spriteId].price = priceIfAny * priceMultiplier / priceDivider; broughtSprites[spriteId].forSale = true; broughtSprites[spriteId].owner = kittyOwner; numberOfSpritesOwnedByUser[msg.sender]++; } else if (kittyOwnerNotForSale == msg.sender) { broughtSprites[spriteId].owner = kittyOwnerNotForSale; numberOfSpritesOwnedByUser[msg.sender]++; } broughtSprites[spriteId].spriteImageID = uint(block.blockhash(block.number-1))%360 + 1; } totalFeatures++; etherForOwner += msg.value; featuredSprites.push(spriteId); }",
+        "vulnerability": "Unvalidated External Call",
+        "reason": "The function 'featureSprite' does not validate the returned 'kittyOwner' from 'SaleClockAuction.getAuction(spriteId)' before using it in a transfer operation. This could result in transfers to unintended addresses if the 'SaleClockAuction' contract is compromised or returns incorrect data.",
+        "file_name": "0xf3c8ed6c721774c022c530e813a369dfe78a6e85.sol"
+    }
+]

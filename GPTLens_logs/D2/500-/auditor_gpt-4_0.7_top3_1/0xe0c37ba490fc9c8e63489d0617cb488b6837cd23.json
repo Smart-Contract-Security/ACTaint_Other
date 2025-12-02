@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "aggiungiFrase",
+        "code": "function aggiungiFrase(string _frase) public returns (uint256) { frasi[frasiTotali] = _frase; frasiTotali++; return frasiTotali-1; }",
+        "vulnerability": "Unbounded Loop",
+        "reason": "The function 'aggiungiFrase' allows adding an unlimited number of phrases to the 'frasi' mapping by incrementing 'frasiTotali' each time a phrase is added. This can lead to a scenario where the contract becomes extremely large and expensive to interact with due to high gas costs, potentially causing denial of service if the contract's state grows too large for practical use.",
+        "file_name": "0xe0c37ba490fc9c8e63489d0617cb488b6837cd23.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public { if (proprietario != msg.sender) return; selfdestruct(proprietario); }",
+        "vulnerability": "Authorization through tx.origin Misuse",
+        "reason": "The function 'kill' uses a simple conditional check to compare 'proprietario' with 'msg.sender' to authenticate the caller. However, this approach is susceptible to phishing-like attacks where if a contract owner interacts with a malicious contract, the malicious contract can call this 'kill' function while impersonating the owner since 'msg.sender' would be the malicious contract in that transaction context. This can lead to unauthorized self-destruction of the contract.",
+        "file_name": "0xe0c37ba490fc9c8e63489d0617cb488b6837cd23.sol"
+    },
+    {
+        "function_name": "leggiFrase",
+        "code": "function leggiFrase(uint256 _numeroFrase) public view returns (string) { return frasi[_numeroFrase]; }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'leggiFrase' does not perform any checks to ensure that the '_numeroFrase' index provided is valid, i.e., there is no check to see if '_numeroFrase' is within the bounds of 'frasiTotali'. This can lead to an out-of-bounds access, potentially exposing uninitialized or previously deleted storage, which can result in unexpected behavior or sensitive data leakage if the contract state includes other confidential information.",
+        "file_name": "0xe0c37ba490fc9c8e63489d0617cb488b6837cd23.sol"
+    }
+]

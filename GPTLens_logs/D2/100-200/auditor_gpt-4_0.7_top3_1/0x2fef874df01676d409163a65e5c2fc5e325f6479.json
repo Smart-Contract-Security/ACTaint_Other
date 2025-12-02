@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); emit Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "This function does not check the return value of the 'sub' and 'add' functions from the SafeMath library. Although SafeMath is designed to throw on errors, ignoring return values can lead to unexpected behavior if the library's implementation changes or if there is an error in the contract logic.",
+        "file_name": "0x2fef874df01676d409163a65e5c2fc5e325f6479.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Potential Race Condition (Known as the \"approve/transferFrom\" Attack)",
+        "reason": "This function allows an address to change the allowance from a non-zero value to another non-zero value, which is known to be prone to race conditions. An attacker can exploit this by first calling 'approve' to set the allowance to a certain value, and then quickly transferring a different amount right before the owner calls 'approve' to change the allowance, potentially leading to unexpected transfers.",
+        "file_name": "0x2fef874df01676d409163a65e5c2fc5e325f6479.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply = totalSupply.sub(_value); totalDistributed = totalDistributed.sub(_value); emit Burn(burner, _value); }",
+        "vulnerability": "Unintended Token Destruction",
+        "reason": "The 'burn' function decreases 'totalSupply' and 'totalDistributed' by '_value', which can lead to unintentional destruction of tokens if not properly managed, especially since 'totalDistributed' might be used elsewhere in the contract logic to track distribution metrics. This can disrupt the intended supply and distribution dynamics of the token.",
+        "file_name": "0x2fef874df01676d409163a65e5c2fc5e325f6479.sol"
+    }
+]

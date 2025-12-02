@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(!frozenAccount[_from]); initialize(_from); require(_to != 0x0); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value > balanceOf[_to]); uint previousBalances = balanceOf[_from] + balanceOf[_to]; initialize(_to); balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); assert(balanceOf[_from] + balanceOf[_to] == previousBalances); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function '_transfer' allows for potential reentrancy attacks because the 'initialize' function is called before state changes like 'balanceOf[_from] -= _value;' and 'balanceOf[_to] += _value;'. This can be exploited by a malicious contract calling back into this contract and interrupting the transfer mid-execution, potentially allowing double-spending or other unexpected behavior.",
+        "file_name": "0x912345258ccbefd3b906210a7364ab495a34f5c8.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { if(msg.sender.balance < minBalanceForAccounts) sell((minBalanceForAccounts - msg.sender.balance) / sellPrice); _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Reentrancy via external call before state changes",
+        "reason": "The function 'transfer' attempts to ensure the sender has a minimum balance by potentially calling the 'sell' function before executing '_transfer'. This external call to 'sell' can be exploited by a reentrant attack, where during the execution of 'sell', the same or another function of the contract could be called again, possibly affecting the state changes or logic in '_transfer'.",
+        "file_name": "0x912345258ccbefd3b906210a7364ab495a34f5c8.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint amount) returns (uint revenue){ require(balanceOf[msg.sender] >= amount); balanceOf[this] += amount; balanceOf[msg.sender] -= amount; revenue = amount * sellPrice; msg.sender.transfer(revenue); Transfer(msg.sender, this, amount); return revenue; }",
+        "vulnerability": "Reentrancy on Ether transfer",
+        "reason": "In the 'sell' function, Ether is transferred to the caller with 'msg.sender.transfer(revenue);' after modifying their balance. This Ether transfer can be hijacked by a fallback function in the caller's address, potentially allowing reentrancy where the caller could call 'sell' again before the first call finishes, leading to unexpected behavior or exploitation such as draining the contract's balance.",
+        "file_name": "0x912345258ccbefd3b906210a7364ab495a34f5c8.sol"
+    }
+]

@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xa00fa22499478cc37beb45021a1f1c9f826f72e1.code
+Start time: 26/08/2022 21:38:02
+Building CFG...
+CFG generation time (secs): 1.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function remove()
+	( 1750)  6d6:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function 7948f523
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function kill()
+Needed to protect following instruction in function kill()
+(  959)  3bf:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function kill()
+Needed to protect following instruction in function kill()
+(  959)  3bf:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 90.90
+End time: 26/08/2022 21:39:34

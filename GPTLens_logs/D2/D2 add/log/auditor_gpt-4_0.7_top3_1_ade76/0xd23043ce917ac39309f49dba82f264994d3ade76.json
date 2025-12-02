@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "delegatedFwd",
+        "code": "function delegatedFwd(address _dst, bytes _calldata) internal {\n    require(isContract(_dst));\n    assembly {\n        let result := delegatecall(sub(gas, 10000), _dst, add(_calldata, 0x20), mload(_calldata), 0, 0)\n        let size := returndatasize\n        let ptr := mload(0x40)\n        returndatacopy(ptr, 0, size)\n        switch result\n        case 0 {revert(ptr, size)}\n        default {return (ptr, size)}\n    }\n}",
+        "vulnerability": "Delegatecall to Arbitrary Contract",
+        "reason": "The function 'delegatedFwd' uses delegatecall to call code from another contract specified by '_dst'. This can lead to unexpected behavior if '_dst' is controlled by a malicious contract, potentially resulting in state changes or logic execution that compromises the contract. Furthermore, the subtraction of 10000 gas could be insufficient, leading to out-of-gas errors under certain conditions.",
+        "file_name": "0xd23043ce917ac39309f49dba82f264994d3ade76.sol"
+    },
+    {
+        "function_name": "setTarget",
+        "code": "function setTarget(address _target) public auth {\n    target = _target;\n}",
+        "vulnerability": "Arbitrary Redirection of Delegatecall",
+        "reason": "The 'setTarget' function allows the target address of delegatecalls to be changed. Since this function is protected only by the 'auth' modifier, if there are flaws or bypasses in the authorization scheme (e.g., if the 'owner' account is compromised), an attacker could redirect delegatecalls to any arbitrary contract, which can lead to severe security vulnerabilities such as loss of funds or unintended execution of harmful logic.",
+        "file_name": "0xd23043ce917ac39309f49dba82f264994d3ade76.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _tokenId) onlyRegistryEntry public {\n    super._mint(_to, _tokenId);\n    tokenURIs[_tokenId] = msg.sender;\n}",
+        "vulnerability": "Reentrancy Risk",
+        "reason": "The 'mint' function in 'MemeToken' modifies the state after calling an external contract through 'super._mint'. This could be exploited by a reentrant attack if the external contract called is malicious or compromised, allowing it to call back into 'mint' or other functions in 'MemeToken' before the initial execution completes, potentially leading to unexpected behavior or state corruption.",
+        "file_name": "0xd23043ce917ac39309f49dba82f264994d3ade76.sol"
+    }
+]

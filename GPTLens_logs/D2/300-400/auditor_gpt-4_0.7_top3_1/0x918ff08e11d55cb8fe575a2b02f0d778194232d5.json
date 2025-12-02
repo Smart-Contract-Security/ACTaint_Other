@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) public isTradable returns (bool) { if ( (balances[msg.sender] >= _amount) && (_amount >= 0) && (balances[_to] + _amount > balances[_to]) ) { balances[msg.sender] -= _amount; balances[_to] += _amount; Transfer(msg.sender, _to, _amount); return true; } else { return false; } }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The check (balances[_to] + _amount > balances[_to]) is intended to prevent overflow, but it only checks after the overflow might have already occurred. If an overflow happens, this condition will still be true, but the balance of the recipient would be incorrect and less than expected, potentially leading to loss of funds or unexpected behavior.",
+        "file_name": "0x918ff08e11d55cb8fe575a2b02f0d778194232d5.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom( address _from, address _to, uint256 _amount ) public isTradable returns (bool success) { if (balances[_from] >= _amount && allowed[_from][msg.sender] >= _amount && _amount > 0 && balances[_to] + _amount > balances[_to]) { balances[_from] -= _amount; allowed[_from][msg.sender] -= _amount; balances[_to] += _amount; Transfer(_from, _to, _amount); return true; } else { return false; } }",
+        "vulnerability": "Integer Overflow",
+        "reason": "Similar to the transfer function, this function also has a vulnerability to integer overflow in the expression (balances[_to] + _amount > balances[_to]). This can lead to incorrect balance assignments and potential theft or loss of tokens if an attacker exploits this overflow.",
+        "file_name": "0x918ff08e11d55cb8fe575a2b02f0d778194232d5.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _amount) public isTradable returns (bool success) { allowed[msg.sender][_spender] = _amount; Approval(msg.sender, _spender, _amount); return true; }",
+        "vulnerability": "Missing Increase/Decrease Approval Pattern",
+        "reason": "The function directly sets the approval amount which can lead to a race condition known as the 'approve/transferFrom attack'. An attacker can exploit this by first seeing a transaction on the pending transaction pool of the blockchain that sets an allowance and then quickly broadcasting a transaction that uses the current allowance just before the first transaction is confirmed.",
+        "file_name": "0x918ff08e11d55cb8fe575a2b02f0d778194232d5.sol"
+    }
+]

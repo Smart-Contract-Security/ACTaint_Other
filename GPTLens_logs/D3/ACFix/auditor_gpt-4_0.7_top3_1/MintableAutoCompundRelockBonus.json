@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint256 _amount) public override canWithdraw(_amount) updateReward(msg.sender) { _withdraw(_amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function calls '_withdraw' which in turn uses external calls such as 'IERC20.safeTransfer' before updating the state variables such as '_balances[msg.sender]'. This can lead to reentrancy attacks where an attacker can potentially call 'withdraw' repeatedly in a single transaction before the state is updated, leading to the draining of funds.",
+        "file_name": "MintableAutoCompundRelockBonus.sol"
+    },
+    {
+        "function_name": "setToken",
+        "code": "function setToken(address _addr) public { configuration.stakingToken = ERC20(_addr); configuration.rewardsToken = ERC20(_addr); }",
+        "vulnerability": "Arbitrary Token Injection",
+        "reason": "The 'setToken' function allows the admin to change the staking and rewards token to any token address. This can be exploited by setting a malicious token that could have detrimental code in the ERC20 functions such as 'transfer' and 'transferFrom', leading to potential loss of funds or other unexpected behavior.",
+        "file_name": "MintableAutoCompundRelockBonus.sol"
+    },
+    {
+        "function_name": "_compound",
+        "code": "function _compound(address account) internal virtual override(BaseStaking, MintableSupplyStaking) { earnings[account] += rewards[account]; MintableSupplyStaking._compound(account); }",
+        "vulnerability": "Incorrect Reward Calculation",
+        "reason": "In the '_compound' function, the earnings are simply incremented by the rewards without any checks or caps. This can lead to incorrect reward calculations if there are any bugs or exploits in how 'rewards' are calculated in other parts of the contract, potentially leading to an excessive minting of tokens.",
+        "file_name": "MintableAutoCompundRelockBonus.sol"
+    }
+]

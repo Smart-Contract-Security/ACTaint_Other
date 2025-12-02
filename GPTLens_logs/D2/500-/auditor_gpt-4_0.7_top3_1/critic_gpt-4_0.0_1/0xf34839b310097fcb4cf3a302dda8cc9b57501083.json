@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided for the reentrancy vulnerability is not entirely accurate. The function `getTokens` does call `distr` which emits a Transfer event, but the reentrancy risk is not clearly established just by this event emission. The critical state changes like `blacklist[investor]` and `distributionFinished` are indeed updated after the call, but without knowing the implementation of `distr`, it's speculative to assume it allows for reentrancy. Moreover, the function modifies `value` at the end, which could mitigate reentrancy risks depending on its role in `distr`. The correctness is moderate due to the speculative nature, and the severity and profitability are low as the exploitability is not clearly demonstrated.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The function `getTokens` can potentially lead to a reentrancy attack because it calls `distr`, which emits a Transfer event, before setting the `blacklist[investor]` and possibly updating `distributionFinished`. An attacker could use the Transfer event as an entry point to re-enter before these state changes are set.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xf34839b310097fcb4cf3a302dda8cc9b57501083.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race Condition (front running)",
+        "criticism": "The reasoning about the race condition vulnerability due to front-running in the `approve` function is incorrect. The function does check if `_value` is not zero and if `allowed[msg.sender][_spender]` is not zero, it returns false, which prevents changing the allowance in such cases. This check actually mitigates the risk of a race condition where an attacker could exploit the zero allowance state. Therefore, the vulnerability described does not exist with the given implementation. The correctness is very low, and both severity and profitability are non-existent as the described attack scenario is not applicable.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function `approve` has a condition that checks if the `_value` is not zero and `allowed[msg.sender][_spender]` is not zero, it returns false without changing the allowance. An attacker can front-run a transaction that is trying to change an approval amount to zero and then to a new value, exploiting the period in which the allowance is zero to withdraw tokens.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xf34839b310097fcb4cf3a302dda8cc9b57501083.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS via unexpected revert",
+        "criticism": "The reasoning is correct in identifying a potential Denial of Service (DoS) vulnerability in the `withdraw` function. If the `owner` address is a contract that reverts on receiving ether, it could indeed lock all funds within the contract. This is a significant issue as it affects the availability of the contract's funds. The correctness of the reasoning is high. The severity is also high because it could lead to total loss of functionality for withdrawing funds. However, the profitability is low as this vulnerability does not provide a direct profit mechanism for an attacker, but rather disrupts the contract operation.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The `withdraw` function transfers all the ether in the contract to the `owner`. If the `owner` address is a contract and it fails to receive ether (e.g., by reverting in its fallback function), this function will also revert, potentially locking all funds in the contract indefinitely, denying service to legitimate users.",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0xf34839b310097fcb4cf3a302dda8cc9b57501083.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address receiver, uint amount) public { if (msg.sender != minter) return; balances[receiver] += amount; }",
+        "vulnerability": "Unchecked minting",
+        "reason": "The 'mint' function allows the 'minter' to issue an arbitrary amount of coins to any address. There is no check on the 'amount' parameter, which could lead to an overflow if the value gets too high, potentially resetting the balance of 'receiver' to a lower value due to integer overflow.",
+        "file_name": "0x51c83d97236646fca3239556253032357285c0a1.sol"
+    },
+    {
+        "function_name": "send",
+        "code": "function send(address receiver, uint amount) public { if (balances[msg.sender] < amount) return; balances[msg.sender] -= amount; balances[receiver] += amount; Sent(msg.sender, receiver, amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'send' function performs a transfer of balances without any checks for reentrancy attacks. An attacker could potentially exploit this by creating a fallback function in the 'receiver' contract that calls back into 'send' during the execution of 'balances[receiver] += amount', leading to multiple withdrawals and potentially draining the contract.",
+        "file_name": "0x51c83d97236646fca3239556253032357285c0a1.sol"
+    },
+    {
+        "function_name": "send",
+        "code": "function send(address receiver, uint amount) public { if (balances[msg.sender] < amount) return; balances[msg.sender] -= amount; balances[receiver] += amount; Sent(msg.sender, receiver, amount); }",
+        "vulnerability": "Unchecked addition",
+        "reason": "The function does not check for overflow on the 'balances[receiver] += amount' operation. This can lead to balance overflow vulnerabilities where the balance of the receiver could wrap around and become less than expected if a very large 'amount' is used.",
+        "file_name": "0x51c83d97236646fca3239556253032357285c0a1.sol"
+    }
+]

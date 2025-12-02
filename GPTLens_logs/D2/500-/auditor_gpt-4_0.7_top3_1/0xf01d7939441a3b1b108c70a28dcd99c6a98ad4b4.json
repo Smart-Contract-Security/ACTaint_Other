@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Missing return value check",
+        "reason": "The function does not check the return value of safeSub and safeAdd function calls within transferFrom. This can lead to unintended behavior if safeSub or safeAdd fail due to underflow or overflow, since the function will continue execution and return true, indicating a successful transfer, even if the underlying math operations failed.",
+        "file_name": "0xf01d7939441a3b1b108c70a28dcd99c6a98ad4b4.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address spender, uint tokens) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); return true; }",
+        "vulnerability": "ERC20 race condition",
+        "reason": "This implementation of the approve function is vulnerable to a known race condition in ERC20 tokens where the approved amount can be manipulated before the transaction is mined. An attacker can exploit this by first setting a large allowance, initiating a transfer, and then setting it to a lower value. This could potentially allow an attacker to spend more tokens than intended by the token owner.",
+        "file_name": "0xf01d7939441a3b1b108c70a28dcd99c6a98ad4b4.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Ownership takeover",
+        "reason": "The function allows the current owner to set a new owner, but does not immediately transfer ownership until acceptOwnership is called by the new owner. This opens a window where the new owner can refuse to accept ownership or the previous owner can change their mind and set a different new owner. It creates a period of uncertainty about who actually controls the contract.",
+        "file_name": "0xf01d7939441a3b1b108c70a28dcd99c6a98ad4b4.sol"
+    }
+]

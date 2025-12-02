@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "play",
+        "code": "function play(uint256 number) payable public {\n    require(msg.value >= betPrice && number <= 10);\n    Game game;\n    game.player = msg.sender;\n    game.number = number;\n    gamesPlayed.push(game);\n    if (number == secretNumber) {\n        msg.sender.transfer(this.balance);\n    }\n    shuffle();\n    lastPlayed = now;\n}",
+        "vulnerability": "Predictable RNG",
+        "reason": "The 'secretNumber' is generated using 'sha3(now, block.blockhash(block.number-1))', which is predictable because 'now' (alias for 'block.timestamp') and 'block.blockhash(block.number-1)' can be influenced or anticipated by miners. An attacker can call the 'play' function with the predicted number to always win the roulette.",
+        "file_name": "0x36f726e01cc85fdb0d998dfc442856379c569274.sol"
+    },
+    {
+        "function_name": "play",
+        "code": "function play(uint256 number) payable public {\n    require(msg.value >= betPrice && number <= 10);\n    Game game;\n    game.player = msg.sender;\n    game.number = number;\n    gamesPlayed.push(game);\n    if (number == secretNumber) {\n        msg.sender.transfer(this.balance);\n    }\n    shuffle();\n    lastPlayed = now;\n}",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "The 'shuffle' function is called after transferring the entire balance of the contract to the winner. If the transfer fails (e.g., the recipient is a contract that does not accept ether), the contract's state (including 'lastPlayed' and 'secretNumber') will not be updated due to the revert, making the contract unusable until a successful transfer occurs.",
+        "file_name": "0x36f726e01cc85fdb0d998dfc442856379c569274.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public {\n    if (msg.sender == ownerAddr && now > lastPlayed + 1 days) {\n        suicide(msg.sender);\n    }\n}",
+        "vulnerability": "Use of deprecated function",
+        "reason": "The function uses 'suicide(msg.sender)', which is deprecated and should be replaced with 'selfdestruct(msg.sender)'. Using deprecated functions can lead to unpredicted behavior and makes the contract less maintainable and secure.",
+        "file_name": "0x36f726e01cc85fdb0d998dfc442856379c569274.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "finalize",
+        "code": "function finalize() external { if (!funding) throw; if ((block.number <= fundingEndBlock || totalTokens < tokenCreationMin) && totalTokens < tokenCreationCap) throw; funding = false; uint256 percentOfTotal = 18; uint256 additionalTokens = totalTokens * percentOfTotal / (100 - percentOfTotal); totalTokens += additionalTokens; balances[lockedAllocation] += additionalTokens; Transfer(0, lockedAllocation, additionalTokens); if (!prospectors_team.send(this.balance)) throw; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The finalize function sends ether to an external address (prospectors_team) via 'prospectors_team.send(this.balance)'. If the prospectors_team address is a contract, it could execute a fallback function when receiving ether, potentially leading to reentrancy attacks. This can be exploited by the called contract making calls back into this contract and altering state in unexpected ways before the initial execution completes.",
+        "file_name": "0x74e5f1a34a651c052d86dbd25042d6f710187f0a.sol"
+    },
+    {
+        "function_name": "unlock",
+        "code": "function unlock() external { if (now < unlockedAt) throw; if (tokensCreated == 0) tokensCreated = obg.balanceOf(this); var allocation = allocations[msg.sender]; allocations[msg.sender] = 0; var toTransfer = tokensCreated * allocation / totalAllocations; if (!obg.transfer(msg.sender, toTransfer)) throw; }",
+        "vulnerability": "Arithmetic Overflow",
+        "reason": "The calculation of 'toTransfer' in 'unlock' does not have safe checks for overflows. The multiplication 'tokensCreated * allocation' can overflow if the values are large enough, leading to incorrect calculations of how many tokens to transfer. This could be exploited to withdraw more tokens than intended.",
+        "file_name": "0x74e5f1a34a651c052d86dbd25042d6f710187f0a.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool) { if (funding) throw; var senderBalance = balances[msg.sender]; if (senderBalance >= _value && _value > 0) { senderBalance -= _value; balances[msg.sender] = senderBalance; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function does not check the return value of the 'Transfer' event. Although the event itself cannot fail, the lack of checks might obscure potential issues in logging or event handling mechanisms, particularly in different client implementations or in future updates that might change event behaviors.",
+        "file_name": "0x74e5f1a34a651c052d86dbd25042d6f710187f0a.sol"
+    }
+]

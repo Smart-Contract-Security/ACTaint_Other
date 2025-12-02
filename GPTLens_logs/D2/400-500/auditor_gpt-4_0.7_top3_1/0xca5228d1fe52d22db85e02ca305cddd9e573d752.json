@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buy",
+        "code": "function buy(bytes32 _routingCode, bytes32 _referal) payable {\n    uint moneyBucks = _makeSale();\n    if (routingCodeMap[_routingCode] == address(0)) {\n        bool routingCodeCreated = createRoutingCode(_routingCode);\n        require(routingCodeCreated);\n    }\n    if (_referal[0] != 0) {\n        uint referalFee;\n        if (fastCashBank > (moneyBucks / referalBonus)) {\n            referalFee = moneyBucks / referalBonus;\n        } else {\n            referalFee = fastCashBank;\n        }\n        address reference = routingCodeMap[_referal];\n        if (reference != address(0)) {\n            balanceOf[reference] += referalFee;\n            fastCashBank -= referalFee;\n        }\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buy' allows for a reentrancy attack because it calls external contracts (via 'createRoutingCode') before updating all state variables (`fastCashBank`). This means that if the called contract makes a recursive call back to 'buy', it could manipulate or drain resources in a manner that doesn't respect the intended logic of the function.",
+        "file_name": "0xca5228d1fe52d22db85e02ca305cddd9e573d752.sol"
+    },
+    {
+        "function_name": "transferFromBank",
+        "code": "function transferFromBank(address _to, uint _amount) external onlyCentralBanker returns (bool success) {\n    return _transferFromBank(_to, _amount);\n}",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function 'transferFromBank' calls '_transferFromBank', which performs critical state changes including balance updates and event logging, but it does not check the return value of this call. If '_transferFromBank' fails internally, 'transferFromBank' will still return 'true', potentially misleading callers about the success of the transaction.",
+        "file_name": "0xca5228d1fe52d22db85e02ca305cddd9e573d752.sol"
+    },
+    {
+        "function_name": "_makeSale",
+        "code": "function _makeSale() private returns (uint) {\n    uint _week = weeksFromCreation();\n    uint _value = msg.value;\n    uint moneyBucks = getExchangeRate(_week, _value, USDWEI);\n    require(moneyBucks > 0);\n    require(fastCashBank >= moneyBucks);\n    balanceOf[msg.sender] += moneyBucks;\n    fastCashBank -= moneyBucks;\n    centralBanker.transfer(msg.value);\n    Sale(msg.sender, moneyBucks);\n    return moneyBucks;\n}",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The '_makeSale' function includes an unconditional transfer of Ether to the 'centralBanker' address. If the 'centralBanker' is a contract that fails or runs out of gas, this could prevent the function from successfully completing, potentially leading to denial of service if this function is critical to the contract's operation.",
+        "file_name": "0xca5228d1fe52d22db85e02ca305cddd9e573d752.sol"
+    }
+]

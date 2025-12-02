@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner {\n\tnewOwner = _newOwner;\n}",
+        "vulnerability": "Ownership hijacking",
+        "reason": "The function 'transferOwnership' allows the current owner to set a new owner just by specifying a new address. However, it doesn't immediately change ownership. The new owner has to call 'acceptOwnership' to finalize the transfer. If the new owner address is incorrect or malicious, it may lead to ownership being stuck or hijacked.",
+        "file_name": "0x824abb5adc6a58751bee067cc607f12f4c929dea.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint _value, bytes _data) public {\n\trequire(_value > 0 );\n\tif(isContract(_to)) {\n\t\tERC223ReceivingContract receiver = ERC223ReceivingContract(_to);\n\t\treceiver.tokenFallback(msg.sender, _value, _data);\n\t}\n\tbalances[msg.sender] = subSafe(balances[msg.sender], _value);\n\tbalances[_to] = addSafe(balances[_to], _value);\n\tTransfer(msg.sender, _to, _value, _data);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function reduces the sender's balance after calling another contract (tokenFallback). If the called contract is malicious, it can call back into this contract before the sender's balance is reduced, potentially allowing double spending or other unexpected behavior.",
+        "file_name": "0x824abb5adc6a58751bee067cc607f12f4c929dea.sol"
+    },
+    {
+        "function_name": "TBToken",
+        "code": "function TBToken() public {\n\ttotalSupply = 200000000;\n\tbalances[msg.sender] = totalSupply * 10 ** uint256(decimals);\n\towner = msg.sender;\n}",
+        "vulnerability": "Overflow",
+        "reason": "In the constructor of the TBToken, the balance of the creator is set with an operation that can easily overflow without proper checks. 'totalSupply * 10 ** uint256(decimals)' could exceed the size limits of uint256 if decimals or totalSupply are large enough.",
+        "file_name": "0x824abb5adc6a58751bee067cc607f12f4c929dea.sol"
+    }
+]

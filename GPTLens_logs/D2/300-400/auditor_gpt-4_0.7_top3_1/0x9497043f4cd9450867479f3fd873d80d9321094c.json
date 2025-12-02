@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "protectKingdom",
+        "code": "function protectKingdom() returns(bool) { uint amount = msg.value; if (amount < 10 finney) { msg.sender.send(msg.value); return false; } if (amount > 100 ether) { msg.sender.send(msg.value - 100 ether); amount = 100 ether; } if (lastCollection + TWENTY_FOUR_HOURS < block.timestamp) { if (totalCitizens == 1) { citizensAddresses[citizensAddresses.length - 1].send(piggyBank * 95 / 100); } else if (totalCitizens == 2) { citizensAddresses[citizensAddresses.length - 1].send(piggyBank * 60 / 100); citizensAddresses[citizensAddresses.length - 2].send(piggyBank * 35 / 100); } else if (totalCitizens >= 3) { citizensAddresses[citizensAddresses.length - 1].send(piggyBank * 50 / 100); citizensAddresses[citizensAddresses.length - 2].send(piggyBank * 30 / 100); citizensAddresses[citizensAddresses.length - 3].send(piggyBank * 15 / 100); } godBank += piggyBank * 5 / 100; piggyBank = 0; jester = msg.sender; citizensAddresses.push(msg.sender); citizensAmounts.push(amount * 110 / 100); totalCitizens += 1; investInTheSystem(amount); godAutomaticCollectFee(); piggyBank += amount * 90 / 100; round += 1; } else { citizensAddresses.push(msg.sender); citizensAmounts.push(amount * 110 / 100); totalCitizens += 1; investInTheSystem(amount); while (citizensAmounts[lastCitizenPaid] < (address(this).balance - piggyBank - godBank - kingBank - jesterBank) && lastCitizenPaid <= totalCitizens) { citizensAddresses[lastCitizenPaid].send(citizensAmounts[lastCitizenPaid]); amountAlreadyPaidBack += citizensAmounts[lastCitizenPaid]; lastCitizenPaid += 1; } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function sends ETH to external addresses within loops (e.g., citizensAddresses[lastCitizenPaid].send(citizensAmounts[lastCitizenPaid])). If any of these external addresses are contracts, they could call back into the GameOfThrones contract before the previous call completes, potentially leading to reentrancy attacks where, for instance, changes to state variables (like lastCitizenPaid or amountAlreadyPaidBack) are not yet reflected.",
+        "file_name": "0x9497043f4cd9450867479f3fd873d80d9321094c.sol"
+    },
+    {
+        "function_name": "murder",
+        "code": "function murder() { uint amount = 100 finney; if (msg.value >= amount && msg.sender != jester) { jester.send(jesterBank); jesterBank = 0; jester = msg.sender; msg.sender.send(msg.value - amount); investInTheSystem(amount); } else { throw; } }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "The function uses 'throw' to handle errors, which consumes all remaining gas and reverts all changes. If the condition (msg.value >= amount && msg.sender != jester) is not met, it will throw, potentially leading to denial of service if used maliciously or just for accidental calls with insufficient value. Using 'require' would be more gas efficient and clearer for handling these conditions.",
+        "file_name": "0x9497043f4cd9450867479f3fd873d80d9321094c.sol"
+    },
+    {
+        "function_name": "usurpation",
+        "code": "function usurpation() { uint amount = msg.value; if (msg.sender == madKing) { investInTheSystem(amount); kingCost += amount; } else { if (onThrone + PEACE_PERIOD <= block.timestamp && amount >= kingCost * 150 / 100) { madKing.send(kingBank); godBank += amount * 5 / 100; kingCost = amount; madKing = msg.sender; onThrone = block.timestamp; investInTheSystem(amount); } else { throw; } } }",
+        "vulnerability": "Unchecked send",
+        "reason": "The function does not check the return value of the 'send' function when sending ether to 'madKing' (madKing.send(kingBank)). If the send fails (e.g., if the recipient is a contract that runs out of gas), the ether is not transferred, but the function continues as if it had been, potentially leading to inconsistent contract state or loss of funds.",
+        "file_name": "0x9497043f4cd9450867479f3fd873d80d9321094c.sol"
+    }
+]

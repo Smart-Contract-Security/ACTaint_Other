@@ -1,0 +1,7 @@
+WARNING:src.cfg.rattle.recover:Error parsing contract metadata. Ignoring.
+Checking contract for Violated-AC-Check 
+------------------
+
+
+Checking contract for Missing-AC-Check 
+------------------

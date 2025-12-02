@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "registerForCompetition",
+        "code": "function registerForCompetition( address fund, address manager, address buyinAsset, address payoutAsset, address payoutAddress, uint buyinQuantity, uint8 v, bytes32 r, bytes32 s ) pre_cond(termsAndConditionsAreSigned(manager, v, r, s) && isKYCVerified(msg.sender)) pre_cond(registeredFundToRegistrants[fund] == address(0) && registrantToHopefulIds[msg.sender].exists == false) { require(buyinAsset == MELON_ASSET && payoutAsset == MELON_ASSET); require(buyinQuantity <= maxbuyinQuantity && hopefuls.length <= maxHopefulsNumber); registeredFundToRegistrants[fund] = msg.sender; registrantToHopefulIds[msg.sender] = HopefulId({id: hopefuls.length, exists: true}); Register(hopefuls.length, fund, msg.sender); hopefuls.push(Hopeful({ fund: fund, manager: manager, registrant: msg.sender, hasSigned: true, buyinAsset: buyinAsset, payoutAsset: payoutAsset, payoutAddress: payoutAddress, buyinQuantity: buyinQuantity, payoutQuantity: 0, isCompeting: true, isDisqualified: false, finalSharePrice: 0, finalCompetitionRank: 0 })); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'registerForCompetition' function modifies the state after calling an external contract (Register event). If the external contract (in this case, related to the event) is malicious or if there's another contract interaction that can trigger this function, it could lead to unexpected state changes or nested reentrancy attacks. This is because the state changes which register the fund and registrants are committed before the event emission, allowing reentrancy to exploit the partially changed state.",
+        "file_name": "0x5652ac06e148b8c8d86c2c040fdbbbf98860ef47.sol"
+    },
+    {
+        "function_name": "finalizeAndPayoutForHopeful",
+        "code": "function finalizeAndPayoutForHopeful( uint withId, uint payoutQuantity, uint finalSharePrice, uint finalCompetitionRank ) pre_cond(isOracle()) pre_cond(hopefuls[withId].isDisqualified == false) pre_cond(block.timestamp >= endTime) { hopefuls[withId].finalSharePrice = finalSharePrice; hopefuls[withId].finalCompetitionRank = finalCompetitionRank; hopefuls[withId].payoutQuantity = payoutQuantity; require(MELON_CONTRACT.transfer(hopefuls[withId].registrant, payoutQuantity)); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'finalizeAndPayoutForHopeful' directly calls an external contract (MELON_CONTRACT.transfer) to transfer funds. There's no check after this external call to ensure it succeeded. If the transfer fails (e.g., the contract doesn't have enough tokens), the function will still proceed as if it succeeded, leading to inaccurate state tracking and potential financial discrepancies.",
+        "file_name": "0x5652ac06e148b8c8d86c2c040fdbbbf98860ef47.sol"
+    },
+    {
+        "function_name": "changeCertifier",
+        "code": "function changeCertifier( address newCertifier ) pre_cond(isOracle()) { CERTIFIER = Certifier(newCertifier); }",
+        "vulnerability": "Arbitrary Assignment",
+        "reason": "The function 'changeCertifier' allows the oracle to change the Certifier contract to any address, without any validations on the new address being a valid contract or having the correct interface. This could lead to critical functions relying on certification (like 'isKYCVerified') interacting with a malicious or incorrect contract, potentially leading to security breaches such as unauthorized registrations or unauthorized actions being permitted.",
+        "file_name": "0x5652ac06e148b8c8d86c2c040fdbbbf98860ef47.sol"
+    }
+]

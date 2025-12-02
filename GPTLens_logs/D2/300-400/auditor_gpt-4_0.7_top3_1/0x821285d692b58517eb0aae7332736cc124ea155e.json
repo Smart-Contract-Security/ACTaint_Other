@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { require(newOwner != address(0)); OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Unchecked return value",
+        "reason": "This function fails to check the return value of the OwnershipTransferred event. Although event emissions typically do not fail in Solidity, if there were ever a change in the underlying EVM or if the event log limit is reached, this could fail silently, leading to unexpected behavior without alerts.",
+        "file_name": "0x821285d692b58517eb0aae7332736cc124ea155e.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool) { allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Missing return value description",
+        "reason": "The function 'approve' always returns true regardless of whether the approval was actually recorded successfully. There's no error handling or condition that checks if the 'allowed' mapping update was successful. This can mislead external callers about the success of the operation.",
+        "file_name": "0x821285d692b58517eb0aae7332736cc124ea155e.sol"
+    },
+    {
+        "function_name": "increaseApproval",
+        "code": "function increaseApproval(address _spender, uint _addedValue) public returns (bool) { allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue); Approval(msg.sender, _spender, allowed[msg.sender][_spender]); return true; }",
+        "vulnerability": "Potential Overflow",
+        "reason": "The function 'increaseApproval' increases the allowance without checking for overflows beyond the maximum uint256 value. Although SafeMath is used to prevent overflows, it's essential to consider that a successful overflow could significantly disrupt the contract's economic invariants and token mechanics.",
+        "file_name": "0x821285d692b58517eb0aae7332736cc124ea155e.sol"
+    }
+]

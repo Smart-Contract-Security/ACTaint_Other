@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "execute",
+        "code": "function execute(address _target, bytes _data) public payable returns (bytes response) { require(_target != address(0), \"user-proxy-target-address-required\"); assembly { let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 0) let size := returndatasize response := mload(0x40) mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f)))) mstore(response, size) returndatacopy(add(response, 0x20), 0, size) switch iszero(succeeded) case 1 { revert(add(response, 0x20), size) } } }",
+        "vulnerability": "Delegatecall to arbitrary contract",
+        "reason": "The function 'execute' uses delegatecall to call code at an arbitrary address (_target) with arbitrary data (_data). Delegatecall runs the target address's code in the context of the caller's contract, including storage, which can lead to unintended alterations of storage or other effects if the target contract is malicious or contains errors. This can be exploited by an attacker if they can convince the contract to execute a delegatecall to a malicious contract, potentially leading to loss of funds or other critical state changes.",
+        "file_name": "0x05956f2f527b2238f35deee7562a9a6ea849657a.sol"
+    },
+    {
+        "function_name": "execute",
+        "code": "function execute(address _target, bytes _data) public payable returns (bytes response) { require(_target != address(0), \"user-proxy-target-address-required\"); assembly { let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 0) let size := returndatasize response := mload(0x40) mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f)))) mstore(response, size) returndatacopy(add(response, 0x20), 0, size) switch iszero(succeeded) case 1 { revert(add(response, 0x20), size) } } }",
+        "vulnerability": "Unchecked return data size",
+        "reason": "The function does not check the returndata size after the delegatecall. This can lead to incorrect behavior if the called contract returns data of an unexpected size. An attacker could potentially exploit this by crafting a contract that returns data to manipulate memory layout or to cause the calling contract to operate incorrectly due to unexpected return data.",
+        "file_name": "0x05956f2f527b2238f35deee7562a9a6ea849657a.sol"
+    },
+    {
+        "function_name": "execute",
+        "code": "function execute(address _target, bytes _data) public payable returns (bytes response) { require(_target != address(0), \"user-proxy-target-address-required\"); assembly { let succeeded := delegatecall(sub(gas, 5000), _target, add(_data, 0x20), mload(_data), 0, 0) let size := returndatasize response := mload(0x40) mstore(0x40, add(response, and(add(add(size, 0x20), 0x1f), not(0x1f)))) mstore(response, size) returndatacopy(add(response, 0x20), 0, size) switch iszero(succeeded) case 1 { revert(add(response, 0x20), size) } } }",
+        "vulnerability": "Gas stipend hardcoding",
+        "reason": "The function reduces the gas amount by a hard-coded value of 5000 before making the delegatecall. This might not be sufficient for the called function to execute properly, especially if the function requires more gas. This can lead to unexpected reverts or failures in execution, which could be used by an attacker in denial-of-service attacks or to enforce a specific control flow.",
+        "file_name": "0x05956f2f527b2238f35deee7562a9a6ea849657a.sol"
+    }
+]

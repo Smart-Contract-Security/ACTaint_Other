@@ -1,0 +1,31 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb052d4d50577e2081f85558ae84b47feb11a2fb8.code
+Start time: 27/08/2022 13:07:54
+Building CFG...
+CFG generation time (secs): 0.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+(  761)  2f9:	57	-2 +0 = -2	JUMPI
+((  748)  2ec:	60	-0 +1 = 1	PUSH1(4) 	04, (  750)  2ee:	80	-1 +2 = 1	DUP1, (  751)  2ef:	36	-0 +1 = 1	CALLDATASIZE, (  752)  2f0:	03	-2 +1 = -1	SUB, (  753)  2f1:	60	-0 +1 = 1	PUSH1(32) 	20, (  755)  2f3:	81	-2 +3 = 1	DUP2, (  756)  2f4:	10	-2 +1 = -1	LT, (  757)  2f5:	15	-1 +1 = 0	ISZERO, (    0)    0:	63	-0 +1 = 1	PUSH4(3735929054) 	deadc0de)
+
+Violated access control check in function createWeightedMultiplierLot(address,uint256,uint256)
+	( 1676)  68c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function setAOIonAddress(address)
+
+Violated access control check in function createPrimordialLot(address,uint256,uint256,uint256)
+	( 3507)  db3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function setAOIonAddress(address)
+
+Violated access control check in function createBurnLot(address,uint256,uint256)
+	( 1763)  6e3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function setAOIonAddress(address)
+
+Violated access control check in function createConvertLot(address,uint256,uint256)
+	( 2236)  8bc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function setAOIonAddress(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 3.26
+End time: 27/08/2022 13:07:57

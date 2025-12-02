@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb104df39250112eda59b27f5db7013c7ee132d50.code
+Start time: 27/08/2022 13:46:20
+Building CFG...
+CFG generation time (secs): 5.89
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setExecutor(address)
+	( 5622) 15f6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setExecutor(address)
+
+Violated access control check in function selectWinner(uint256)
+	( 7166) 1bfe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setExecutor(address)
+
+Violated access control check in function setAttrs(address,address,address,uint8,uint256,uint256)
+	( 7521) 1d61:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setExecutor(address)
+
+Violated access control check in function voteInitiate(uint256,uint256,uint256,uint256,uint256,uint256)
+	( 8538) 215a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setExecutor(address)
+
+Violated access control check in function distributeTokenSale(uint256,uint256,uint256,uint256)
+	( 8970) 230a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setExecutor(address)
+
+Violated access control check in function lossToCharity(uint256,address)
+	(10677) 29b5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setExecutor(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 18.60
+End time: 27/08/2022 13:46:45

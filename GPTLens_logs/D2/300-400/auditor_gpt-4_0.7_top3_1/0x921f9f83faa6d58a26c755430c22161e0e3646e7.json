@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { _transferOwnership(newOwner); }",
+        "vulnerability": "Owner Privilege",
+        "reason": "The function allows the current owner of the contract to transfer ownership to a new address. This poses a severe risk as the new owner can take full control of the contract, including changing critical parameters or redirecting funds. The lack of checks or constraints on who the new owner can be, or conditions under which ownership can be transferred, makes this a risky function.",
+        "file_name": "0x921f9f83faa6d58a26c755430c22161e0e3646e7.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint256 value) public onlyOwner returns (bool) { require(value <= _balances[from]); require(value <= _allowed[from][msg.sender]); require(to != address(0)); _balances[from] = _balances[from].sub(value); _balances[to] = _balances[to].add(value); _allowed[from][msg.sender] = _allowed[from][msg.sender].sub(value); emit Transfer(from, to, value); return true; }",
+        "vulnerability": "Unauthorized Token Transfer",
+        "reason": "This function allows only the owner to transfer tokens from any account to another without requiring approval from the token holder. This breaks the typical ERC20 standard behavior where `transferFrom` should only allow a spender who has been approved by the token holder to transfer tokens on their behalf. This could allow the owner to misappropriate tokens.",
+        "file_name": "0x921f9f83faa6d58a26c755430c22161e0e3646e7.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address account, uint256 amount) public onlyOwner { require(amount <= _allowed[account][msg.sender]); _allowed[account][msg.sender] = _allowed[account][msg.sender].sub(amount); _burn(account, amount); }",
+        "vulnerability": "Owner Burning Tokens",
+        "reason": "This function allows the owner to burn tokens from any user's account as long as the amount is less than or equal to the allowed amount that the user has permitted the owner. Typically, burning should only be done by the token holder or an approved spender, not unilaterally by the contract owner. This can result in loss of tokens without the token holder's consent.",
+        "file_name": "0x921f9f83faa6d58a26c755430c22161e0e3646e7.sol"
+    }
+]

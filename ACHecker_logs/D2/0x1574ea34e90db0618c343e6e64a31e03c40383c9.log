@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x1574ea34e90db0618c343e6e64a31e03c40383c9.code
+Start time: 19/08/2022 10:05:06
+Building CFG...
+CFG generation time (secs): 7.27
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setPrice(uint256)
+	( 4926) 133e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function setOracleAddress(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 13.63
+End time: 19/08/2022 10:05:27

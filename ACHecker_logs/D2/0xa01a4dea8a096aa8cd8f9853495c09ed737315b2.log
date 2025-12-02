@@ -1,0 +1,43 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xa01a4dea8a096aa8cd8f9853495c09ed737315b2.code
+Start time: 26/08/2022 21:46:33
+Building CFG...
+CFG generation time (secs): 0.57
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function batchTransferToken(address[])
+	( 3146)  c4a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function manualBatchTransferToken(uint256[],address[])
+	( 3884)  f2c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function refundContribution(address,uint256)
+	( 4515) 11a3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setGasPrice(uint256)
+	( 4798) 12be:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferToken(address)
+	( 4901) 1325:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 5570) 15c2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 4.94
+End time: 26/08/2022 21:46:39

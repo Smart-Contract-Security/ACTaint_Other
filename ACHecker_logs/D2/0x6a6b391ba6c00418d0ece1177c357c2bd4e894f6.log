@@ -1,0 +1,41 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x6a6b391ba6c00418d0ece1177c357c2bd4e894f6.code
+Start time: 22/08/2022 01:05:05
+Building CFG...
+CFG generation time (secs): 0.95
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function commitPrice(uint256,uint256)
+	( 2050)  802:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {14} in function updatePriceFeed(uint256)
+
+Violated access control check in function commitPrice(uint256,uint256)
+	( 2138)  85a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function updatePriceFeed(uint256)
+
+Violated access control check in function commitPrice(uint256,uint256)
+	( 2227)  8b3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {16} in function updatePriceFeed(uint256)
+
+Violated access control check in function startOracle(uint256,uint256)
+	( 5395) 1513:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {14} in function updatePriceFeed(uint256)
+
+Violated access control check in function startOracle(uint256,uint256)
+	( 5483) 156b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function updatePriceFeed(uint256)
+
+Violated access control check in function startOracle(uint256,uint256)
+	( 5572) 15c4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {16} in function updatePriceFeed(uint256)
+
+Violated access control check in function setValue(uint256,uint256)
+	( 5946) 173a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function updateOperator()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 43.96
+End time: 22/08/2022 01:05:50

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "onGenerateTokens",
+        "code": "function onGenerateTokens(address , address owner, uint256 amount) public constant returns (bool allow) { if (amount < _minDepositAmountEurUlps) { return false; } if(_allowedTransferTo[owner]) { return true; } IdentityClaims memory claims = deserializeClaims(_identityRegistry.getClaims(owner)); return claims.isVerified && !claims.accountFrozen; }",
+        "vulnerability": "Unchecked token minting based on identity claims",
+        "reason": "The function 'onGenerateTokens' allows tokens to be minted to any address as long as the amount is above '_minDepositAmountEurUlps' and the address has verified identity claims. However, this does not restrict the total amount of tokens that can be minted, potentially leading to an unlimited minting vulnerability if identity claims are not managed securely.",
+        "file_name": "0x4fb4ca5b6811b47775e914193ab3a136ee8f0ed8.sol"
+    },
+    {
+        "function_name": "burnPrivate",
+        "code": "function burnPrivate(uint256 burnNeumarkUlps, uint256 minEurUlps, uint256 maxEurUlps) private { uint256 prevEuroUlps = _totalEurUlps; mDestroyTokens(msg.sender, burnNeumarkUlps); _totalEurUlps = cumulativeInverse(totalSupply(), minEurUlps, maxEurUlps); assert(prevEuroUlps >= _totalEurUlps); uint256 euroUlps = prevEuroUlps - _totalEurUlps; emit LogNeumarksBurned(msg.sender, euroUlps, burnNeumarkUlps); }",
+        "vulnerability": "Burning tokens can affect total euro token supply",
+        "reason": "The 'burnPrivate' function recalculates '_totalEurUlps' after burning tokens. This could lead to inconsistencies in the token's Euro backing if not properly synchronized with actual deposits and withdrawals, potentially affecting the token's value and stability.",
+        "file_name": "0x4fb4ca5b6811b47775e914193ab3a136ee8f0ed8.sol"
+    },
+    {
+        "function_name": "applySettings",
+        "code": "function applySettings( uint256 minDepositAmountEurUlps, uint256 minWithdrawAmountEurUlps, uint256 maxSimpleExchangeAllowanceEurUlps ) public only(ROLE_EURT_LEGAL_MANAGER) { applySettingsPrivate( minDepositAmountEurUlps, minWithdrawAmountEurUlps, maxSimpleExchangeAllowanceEurUlps ); _identityRegistry = IIdentityRegistry(UNIVERSE.identityRegistry()); allowFromUniverse(); }",
+        "vulnerability": "Potential for misconfiguration leading to unauthorized transfers",
+        "reason": "The function 'applySettings' configures critical financial thresholds and permissions. If the parameters are not properly validated or if the function is invoked incorrectly, it could allow for unauthorized or unintended transfers, especially since it interacts with the identity registry and universe settings.",
+        "file_name": "0x4fb4ca5b6811b47775e914193ab3a136ee8f0ed8.sol"
+    }
+]

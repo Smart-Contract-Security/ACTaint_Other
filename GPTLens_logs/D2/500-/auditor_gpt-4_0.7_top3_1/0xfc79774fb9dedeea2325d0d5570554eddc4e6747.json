@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'distr' is called without checking the return value which could lead to unexpected behaviors if 'distr' fails silently. This can be particularly dangerous as it involves token distribution logic that might not execute as intended.",
+        "file_name": "0xfc79774fb9dedeea2325d0d5570554eddc4e6747.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "DoS with (unexpected) revert",
+        "reason": "In the 'withdraw' function, if the 'transfer' fails (for instance, if the gas cost of the transfer exceeds the available gas), it will cause the transaction to revert. This could lead to denial of service where the legitimate owner cannot withdraw funds because the transaction consistently fails.",
+        "file_name": "0xfc79774fb9dedeea2325d0d5570554eddc4e6747.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Race condition",
+        "reason": "This function is susceptible to a race condition known as the 'approval race condition'. An attacker can take advantage of the time window after the check and before the setting of the allowance, to change the allowance of a spender. This can result in incorrect or unintended allowance being set.",
+        "file_name": "0xfc79774fb9dedeea2325d0d5570554eddc4e6747.sol"
+    }
+]

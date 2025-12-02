@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintCETH",
+        "code": "function mintCETH(uint ethAmt) internal {\n    if (ethAmt > 0) {\n        CETHInterface cToken = CETHInterface(cEth);\n        cToken.mint.value(ethAmt)();\n        uint exchangeRate = CTokenInterface(cEth).exchangeRateCurrent();\n        uint cEthToReturn = wdiv(ethAmt, exchangeRate);\n        cEthToReturn = wmul(cEthToReturn, exchangeRate) <= ethAmt ? cEthToReturn : cEthToReturn - 1;\n        require(cToken.transfer(msg.sender, cEthToReturn), \"CETH Transfer failed\");\n        emit LogMint(\n            ethAddr,\n            cEth,\n            ethAmt,\n            msg.sender\n        );\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function mintCETH calls an external contract (cToken.mint.value(ethAmt)()) and performs state changes after this call. This can lead to reentrancy attacks where an attacker can repeatedly call this function in a fallback function to drain ETH.",
+        "file_name": "0x7077c42d295a5d6c6f120ffa3c371ffaf0a0b79a.sol"
+    },
+    {
+        "function_name": "withdrawDAI",
+        "code": "function withdrawDAI(uint amt) public {\n    require(deposits[msg.sender] != 0, \"Nothing to Withdraw\");\n    CTokenInterface cToken = CTokenInterface(cDai);\n    uint exchangeRate = cToken.exchangeRateCurrent();\n    uint withdrawAmt = wdiv(amt, exchangeRate);\n    uint daiAmt = amt;\n    if (withdrawAmt > deposits[msg.sender]) {\n        withdrawAmt = deposits[msg.sender];\n        daiAmt = wmul(withdrawAmt, exchangeRate);\n    }\n    require(cToken.redeem(withdrawAmt) == 0, \"something went wrong\");\n    require(ERC20Interface(daiAddr).transfer(msg.sender, daiAmt), \"Dai Transfer failed\");\n    deposits[msg.sender] -= withdrawAmt;\n    totalDeposits -= withdrawAmt;\n}",
+        "vulnerability": "Improper Input Validation",
+        "reason": "The function does not properly validate the input 'amt'. It directly uses it to compute 'withdrawAmt' without ensuring that 'amt' corresponds to a valid deposit amount, potentially leading to incorrect calculations and logical errors in the contract state.",
+        "file_name": "0x7077c42d295a5d6c6f120ffa3c371ffaf0a0b79a.sol"
+    },
+    {
+        "function_name": "lockAndDraw",
+        "code": "function lockAndDraw(uint cdpNum, uint jam, uint _wad) internal {\n    lock(cdpNum, jam);\n    draw(cdpNum, _wad);\n}",
+        "vulnerability": "Lack of Modifiers",
+        "reason": "The function lockAndDraw lacks appropriate access control mechanisms. It is an internal function and can be called by any other function within the contract without restrictions, potentially allowing unauthorized access and manipulation of sensitive contract operations related to collateral locking and DAI drawing.",
+        "file_name": "0x7077c42d295a5d6c6f120ffa3c371ffaf0a0b79a.sol"
+    }
+]

@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5652ac06e148b8c8d86c2c040fdbbbf98860ef47.code
+Start time: 21/08/2022 09:15:51
+Building CFG...
+CFG generation time (secs): 0.08
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function registerForCompetition(address,address,address,address,address,uint256,uint8,bytes32,bytes32)
+	( 4256) 10a0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {13} in function registerForCompetition(address,address,address,address,address,uint256,uint8,bytes32,bytes32)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 9.06
+End time: 21/08/2022 09:16:00

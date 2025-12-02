@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "confirmERC20",
+        "code": "function confirmERC20(bytes32 _h, address from) onlymanyowners(_h) public returns (bool) { if (m_txs[_h].to != 0) { ERC20Basic token = ERC20Basic(m_txs[_h].token); token.transferFrom(from, m_txs[_h].to, m_txs[_h].value); emit MultiTransact(msg.sender, _h, m_txs[_h].value, m_txs[_h].to); delete m_txs[_h]; return true; } }",
+        "vulnerability": "Missing sender authentication in ERC20 transfer",
+        "reason": "The function 'confirmERC20' allows transferring ERC20 tokens using 'transferFrom' method but does not ensure that the 'from' parameter is the legitimate owner of the tokens. This can allow an attacker to transfer tokens from any address for which allowance is set, potentially leading to unauthorized token transfer.",
+        "file_name": "0x37525cd6847b5dc2700a304d34f56208c18681a2.sol"
+    },
+    {
+        "function_name": "transferETH",
+        "code": "function transferETH(address _to, uint _value) external onlyowner returns (bytes32 _r) { if (underLimit(_value)) { emit SingleTransact(msg.sender, _value, _to); _to.transfer(_value); return 0; } _r = keccak256(abi.encodePacked(msg.data, block.number)); if (!confirmETH(_r) && m_txs[_r].to == 0) { m_txs[_r].to = _to; m_txs[_r].value = _value; emit ConfirmationETHNeeded(_r, msg.sender, _value, _to); } }",
+        "vulnerability": "Reentrancy in ETH transfer",
+        "reason": "The function 'transferETH' contains a direct call to '_to.transfer(_value)' without any reentrancy guard mechanism such as the Checks-Effects-Interactions pattern. This can lead to reentrancy attacks where, if the recipient is a contract, it could call back into the Wallet contract before the state, such as 'm_spentToday', is fully updated.",
+        "file_name": "0x37525cd6847b5dc2700a304d34f56208c18681a2.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill(address _to) onlymanyowners(keccak256(abi.encodePacked(msg.data))) external { selfdestruct(_to); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'kill' uses 'selfdestruct(_to)' which sends all contract balance to the address '_to'. If '_to' is a contract, it could fail to receive the ether if it falls back to a function that consumes more than the provided 2300 gas stipend, leading to locked funds without proper error handling or logging.",
+        "file_name": "0x37525cd6847b5dc2700a304d34f56208c18681a2.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition",
+        "criticism": "The reasoning provided is incorrect. The code does indeed check if the current allowance is non-zero and if so, it throws an error if the new value is not zero. This prevents the multiple withdrawal attack by ensuring that the allowance must be explicitly reset to zero before a new non-zero allowance can be set. Therefore, the vulnerability as described does not exist in the provided code. The correctness is low, and the severity and profitability are both zero as the vulnerability does not exist.",
+        "correctness": 2,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The ERC20 'approve' function does not properly protect against the race condition known as the 'multiple withdrawal attack'. This vulnerability occurs because the function does not set the allowance to zero before setting it to a new value when it is not already zero. Attackers could potentially call 'transferFrom' multiple times before the 'approve' transaction is confirmed, allowing them to transfer more tokens than intended.",
+        "code": "function approve(address _spender, uint _value) { if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) throw; allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); }",
+        "file_name": "0xaf71b19e6292c6e1491ff3a54b3e63dbd41ef023.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Unchecked return values",
+        "criticism": "The criticism is partially correct. The function uses the SafeMath library, which throws an error if an arithmetic operation fails (e.g., subtraction resulting in a negative number). Therefore, the state will not be corrupted as the transaction will revert in case of an error. The reasoning incorrectly assumes that SafeMath operations can fail silently. The correctness score is moderate because the reasoning misunderstood how SafeMath functions. Severity and profitability are low because the actual vulnerability risk is minimal.",
+        "correctness": 5,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "This function uses the SafeMath library to perform safe arithmetic operations. However, it does not check the return values of these operations to ensure they succeed. If an arithmetic operation fails (e.g., subtraction resulting in a negative number), the function will continue execution with potentially corrupted state. This might lead to unexpected behavior such as transferring more tokens than allowed or corrupting the balances.",
+        "code": "function transferFrom(address _from, address _to, uint _value) onlyPayloadSize(3 * 32) { var _allowance = allowed[_from][msg.sender]; balances[_to] = balances[_to].add(_value); balances[_from] = balances[_from].sub(_value); allowed[_from][msg.sender] = _allowance.sub(_value); Transfer(_from, _to, _value); }",
+        "file_name": "0xaf71b19e6292c6e1491ff3a54b3e63dbd41ef023.sol"
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked return values",
+        "criticism": "Similar to the 'transferFrom' function, this reasoning is also incorrect. The SafeMath library used in the function will throw an error and revert the transaction if an arithmetic operation like subtraction fails. This prevents the continuation of the function with a corrupted state. The reasoning fails to recognize the protective behavior of the SafeMath library. Correctness is moderate due to the misunderstanding, and both severity and profitability are low due to the minimal risk of actual vulnerability.",
+        "correctness": 5,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "Similar to 'transferFrom', this function also fails to check the return values from SafeMath operations. If an operation like subtraction fails due to underflow (when trying to transfer more tokens than the sender has), the function will continue with corrupted state, potentially allowing token theft or other unintended transfers.",
+        "code": "function transfer(address _to, uint _value) onlyPayloadSize(2 * 32) { balances[msg.sender] = balances[msg.sender].sub(_value); balances[_to] = balances[_to].add(_value); Transfer(msg.sender, _to, _value); }",
+        "file_name": "0xaf71b19e6292c6e1491ff3a54b3e63dbd41ef023.sol"
+    }
+]

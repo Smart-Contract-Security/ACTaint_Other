@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "ActiveAdmin",
+        "code": "function ActiveAdmin () public { owner = 0x3653A2205971AD524Ea31746D917430469D3ca23; }",
+        "vulnerability": "Hardcoded ownership assignment",
+        "reason": "This function allows anyone to call it and set the owner of the contract to a specific address. This is highly insecure as it does not check who is calling the function, allowing any user to potentially take over the contract by setting themselves or any other address as the owner.",
+        "file_name": "0x6a21a83da9863d929a3d70c55bee2536fa48d544.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "vulnerability": "Predictable random number generation",
+        "reason": "The random number generation method used in this function relies on the blockhash of the previous block. This method is predictable and can be influenced by miners, making the lottery susceptible to manipulation. Attackers could potentially predict or influence lottery outcomes.",
+        "file_name": "0x6a21a83da9863d929a3d70c55bee2536fa48d544.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { require(newOwner != address(0)); OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Single transaction ownership transfer",
+        "reason": "This function allows the current owner to transfer ownership to another address in a single transaction without any additional security checks, such as multi-factor authentication or time delays. This could lead to unintended transfers if the owner's account is compromised.",
+        "file_name": "0x6a21a83da9863d929a3d70c55bee2536fa48d544.sol"
+    }
+]

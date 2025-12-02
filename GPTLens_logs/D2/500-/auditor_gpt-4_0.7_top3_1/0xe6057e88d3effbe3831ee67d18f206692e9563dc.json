@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "remove",
+        "code": "function remove() checkAccess(\"owner\") { suicide(msg.sender); }",
+        "vulnerability": "Use of deprecated function",
+        "reason": "The function uses 'suicide(msg.sender)', which is deprecated in favor of 'selfdestruct'. Using deprecated functions can lead to unexpected behavior and vulnerabilities in smart contracts.",
+        "file_name": "0xe6057e88d3effbe3831ee67d18f206692e9563dc.sol"
+    },
+    {
+        "function_name": "setCaller",
+        "code": "function setCaller(address pCaller) checkOwner() returns (bool _success) { caller = pCaller; return true; }",
+        "vulnerability": "Missing input validation",
+        "reason": "The function 'setCaller' does not validate the input address 'pCaller'. This could lead to setting a zero address or an invalid address as caller, which might disrupt the intended functionality of the contract or lead to other security issues.",
+        "file_name": "0xe6057e88d3effbe3831ee67d18f206692e9563dc.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _from, address _to, uint _amount) checkAccess(\"elcoin\") { if (startTime > now || periodicity == 0 || auctionSize == 0 || prize == 0) { return; } counter++; if (_amount >= minTx && counter > periodicity - auctionSize) { transactions.push(Transaction(_from, _amount)); } if (counter >= periodicity) { _prepareAndSendReward(); counter = 0; round++; delete transactions; } }",
+        "vulnerability": "Unrestricted push to array",
+        "reason": "The function 'transfer' pushes new transactions to the 'transactions' array without implementing a limit on the size of the array. This can cause the contract to run out of gas if too many transactions are pushed, leading to denial of service or other unexpected behaviors.",
+        "file_name": "0xe6057e88d3effbe3831ee67d18f206692e9563dc.sol"
+    }
+]

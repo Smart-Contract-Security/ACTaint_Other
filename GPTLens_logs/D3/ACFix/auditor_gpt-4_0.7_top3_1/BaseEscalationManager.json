@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getPrice",
+        "code": "function getPrice( bytes32 identifier, uint256 time, bytes memory ancillaryData ) public view virtual override returns (int256) {}",
+        "vulnerability": "Unimplemented function",
+        "reason": "The function 'getPrice' is expected to return a price based on the inputs but currently has no implementation (empty function body). This could lead to unexpected behavior in dependent functions or contracts that rely on this function to provide a valid price, potentially leading to financial losses or system malfunction.",
+        "file_name": "BaseEscalationManager.sol"
+    },
+    {
+        "function_name": "isDisputeAllowed",
+        "code": "function isDisputeAllowed(bytes32 assertionId, address disputeCaller) public view virtual override returns (bool) { return true; }",
+        "vulnerability": "Dispute always allowed",
+        "reason": "This function always returns true, meaning any dispute is allowed regardless of the assertion details or the identity of the caller. This could be exploited by malicious actors to initiate disputes without cause, potentially disrupting the normal operation of the contract or leading to denial of service if the system is not equipped to handle a large volume of disputes.",
+        "file_name": "BaseEscalationManager.sol"
+    },
+    {
+        "function_name": "requestPrice",
+        "code": "function requestPrice( bytes32 identifier, uint256 time, bytes memory ancillaryData ) public virtual override { emit PriceRequestAdded(identifier, time, ancillaryData); }",
+        "vulnerability": "Event spamming",
+        "reason": "This function allows anyone to emit an event without any checks or restrictions. Malicious actors could exploit this to spam the event log, potentially leading to increased transaction costs for storing unnecessary data and making it more difficult to retrieve useful information from the logs.",
+        "file_name": "BaseEscalationManager.sol"
+    }
+]

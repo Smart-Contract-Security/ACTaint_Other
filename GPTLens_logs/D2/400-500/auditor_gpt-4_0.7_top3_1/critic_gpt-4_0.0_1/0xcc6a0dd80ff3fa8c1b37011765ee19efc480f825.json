@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Logic flaw",
+        "criticism": "The reasoning is accurate in identifying a logic flaw where the conditional check to set 'distributionFinished = true' is unreachable due to its placement after the return statement. This flaw could indeed lead to continued distribution beyond the intended total supply, potentially causing token inflation. The severity is high because it affects the token economics directly, but the profitability is moderate as it requires control over the distribution process to exploit.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The function distr has a logic flaw where the conditional check to set distributionFinished = true; will never be executed because it is placed after the return statement. This could result in continued distribution even after the total supply has been distributed, leading to unexpected token inflation.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Unexpected behavior in token allowance",
+        "criticism": "The reasoning correctly identifies a deviation from the typical ERC20 standard in the approve function, which could lead to user confusion and locked allowances. However, this is more of a design choice rather than a vulnerability. The severity is moderate due to potential user confusion and interface issues, but profitability is low as it does not directly lead to an exploitable condition for an attacker.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The approve function has a condition that prevents updating the allowance value when it is not zero unless the new value is also zero. This behavior deviates from the typical ERC20 standard, where you should be able to freely update the allowance. This might confuse users and interface developers, potentially leading to locked allowances where users cannot change them if not set to zero first.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Lack of checks",
+        "criticism": "The reasoning is correct in pointing out the lack of checks for the withdrawal of Ether, which could lead to unintended use of funds if the contract receives Ether unexpectedly. This could be severe if large amounts of Ether are sent to the contract by mistake or through other contracts' interactions. However, the profitability is low as it primarily benefits the owner, who is already in control of the contract.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 2,
+        "reason": "The withdraw function sends all Ether in the contract to the owner without any checks or conditions beyond ownership. If the contract unexpectedly receives Ether (e.g., through selfdestruct from another contract), these funds can be withdrawn by the owner, which may not be an intended use of funds sent to the contract.",
+        "code": "function withdraw() onlyOwner public { uint256 etherBalance = this.balance; owner.transfer(etherBalance); }",
+        "file_name": "0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.sol"
+    }
+]

@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x04ce99ba020bdac42fc42330da489afd6515a862.code
+Start time: 18/08/2022 21:53:39
+Building CFG...
+CFG generation time (secs): 3.37
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 1955)  7a3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2051)  803:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 2271)  8df:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 2369)  941:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawALTokenss(address)
+	( 2480)  9b0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2871)  b37:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 2970)  b9a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3527)  dc7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VEXTOXTEAM()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.94
+End time: 18/08/2022 21:53:48

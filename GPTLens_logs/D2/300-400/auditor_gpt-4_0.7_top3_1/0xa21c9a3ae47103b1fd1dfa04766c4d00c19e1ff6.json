@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "purchase",
+        "code": "function purchase(uint256 _tokenId) public payable {\n    address oldOwner = movieIndexToOwner[_tokenId];\n    address newOwner = msg.sender;\n    uint256 sellingPrice = movieIndexToPrice[_tokenId];\n    require(oldOwner != newOwner);\n    require(_addressNotNull(newOwner));\n    require(msg.value >= sellingPrice);\n    uint256 payment = uint256(SafeMath.div(SafeMath.mul(sellingPrice, 80), 100));\n    uint256 purchaseExcess = SafeMath.sub(msg.value, sellingPrice);\n    movieIndexToPrice[_tokenId] = SafeMath.div(SafeMath.mul(sellingPrice, 150), 80);\n    _transfer(oldOwner, newOwner, _tokenId);\n    if (oldOwner != address(this)) {\n        oldOwner.transfer(payment);\n    }\n    TokenSold(_tokenId, sellingPrice, movieIndexToPrice[_tokenId], oldOwner, newOwner, movies[_tokenId].name);\n    msg.sender.transfer(purchaseExcess);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'purchase' transfers Ether to external addresses ('oldOwner' and 'msg.sender') while the state is not yet fully updated. This could allow a malicious actor to re-enter the contract and manipulate state (e.g., buy the token again at the same price) before the transaction completes.",
+        "file_name": "0xa21c9a3ae47103b1fd1dfa04766c4d00c19e1ff6.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint256 _tokenId) private {\n    ownershipTokenCount[_to]++;\n    movieIndexToOwner[_tokenId] = _to;\n    if (_from != address(0)) {\n        ownershipTokenCount[_from]--;\n        delete movieIndexToApproved[_tokenId];\n    }\n    Transfer(_from, _to, _tokenId);\n}",
+        "vulnerability": "Missing Input Validation",
+        "reason": "The '_transfer' function does not validate whether the '_to' address is a valid recipient nor does it ensure that '_from' is the legitimate owner of '_tokenId'. This oversight could lead to unauthorized token transfers.",
+        "file_name": "0xa21c9a3ae47103b1fd1dfa04766c4d00c19e1ff6.sol"
+    },
+    {
+        "function_name": "setCOO",
+        "code": "function setCOO(address _newCOO) public onlyCEO {\n    require(_newCOO != address(0));\n    cooAddress = _newCOO;\n}",
+        "vulnerability": "Authorization Flaw",
+        "reason": "The 'setCOO' function allows the CEO to change the COO address without any checks beyond a non-zero address. This might allow a compromised CEO account to unilaterally change the COO to a malicious address, which could lead to further unauthorized actions within the contract, given that COO has significant permissions.",
+        "file_name": "0xa21c9a3ae47103b1fd1dfa04766c4d00c19e1ff6.sol"
+    }
+]

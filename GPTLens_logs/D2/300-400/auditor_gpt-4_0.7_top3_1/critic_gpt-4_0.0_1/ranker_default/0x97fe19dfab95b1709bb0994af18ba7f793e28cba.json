@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is incorrect as it confuses reentrancy with the order of operations. The vulnerability described is more related to the order of setting the blacklist status rather than a classic reentrancy attack, which typically involves external calls that allow re-entry into the function. The function does not make any external calls before updating the state, which is the usual context for reentrancy vulnerabilities. Therefore, the correctness is low. The severity and profitability are also low because the function does not allow for token extraction or Ether theft through reentrancy.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The function `getTokens` does not set the `blacklist[investor]` to true before distributing tokens, which can potentially allow an attacker to call this function multiple times in a single transaction before the blacklist condition is updated. This could lead to excessive token distribution to a single address.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x97fe19dfab95b1709bb0994af18ba7f793e28cba.sol",
+        "final_score": 1.5
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "criticism": "The reasoning is incorrect as the function is explicitly protected by the 'onlyOwner' modifier, which restricts the execution of the function to the owner of the contract. This is a common pattern for administrative functions in smart contracts. The vulnerability described does not exist because the function is intended to allow the owner to withdraw Ether, and there is no indication that additional checks are necessary based on the provided code. Therefore, the correctness, severity, and profitability scores are very low.",
+        "correctness": 1,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The `withdraw` function allows the contract owner to withdraw all Ether stored in the contract without any checks on the state of the contract or other conditions that might need to be met before such a withdrawal is safe. This could lead to potential issues if the contract is supposed to hold Ether as a part of its logic.",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0x97fe19dfab95b1709bb0994af18ba7f793e28cba.sol",
+        "final_score": 1.0
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning is partially correct in identifying a potential race condition, but it misinterprets the function's logic. The function does indeed check if the current allowance is not zero and the new value is not zero, and returns false in such cases, which prevents overwriting an existing allowance without first setting it to zero. This is a protective measure against the classic ERC-20 race condition vulnerability. Therefore, the vulnerability described does not exist, leading to low scores in correctness, severity, and profitability.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "In the `approve` function, there's a race condition vulnerability where if the `_value` is not 0 and the current allowance is not 0, the function returns false without updating the allowance. This check can lead to a front-running attack where an attacker can utilize the approved tokens before the sender has the chance to set the amount to zero, and then re-approve a new amount.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0x97fe19dfab95b1709bb0994af18ba7f793e28cba.sol",
+        "final_score": 0.5
+    }
+]

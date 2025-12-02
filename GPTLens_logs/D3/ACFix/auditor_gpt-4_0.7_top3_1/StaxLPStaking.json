@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "notifyRewardAmount",
+        "code": "function notifyRewardAmount(address _rewardsToken, uint256 _amount) external updateReward(address(0)) { require(msg.sender == rewardDistributor, 'not distributor'); require(_amount > 0, 'No reward'); require(rewardData[_rewardsToken].lastUpdateTime != 0, 'unknown reward token'); _notifyReward(_rewardsToken, _amount); IERC20(_rewardsToken).safeTransferFrom(msg.sender, address(this), _amount); emit RewardAdded(_rewardsToken, _amount); }",
+        "vulnerability": "Centralization and privilege escalation",
+        "reason": "The function 'notifyRewardAmount' allows only the 'rewardDistributor' to notify new reward amounts. If the 'rewardDistributor' account gets compromised or acts maliciously, it can manipulate reward distributions.",
+        "file_name": "StaxLPStaking.sol"
+    },
+    {
+        "function_name": "migrateWithdraw",
+        "code": "function migrateWithdraw(address staker, uint256 amount) external onlyMigrator { _withdrawFor(staker, msg.sender, amount, true, staker); }",
+        "vulnerability": "Unauthorized access",
+        "reason": "The function 'migrateWithdraw' is only protected by the 'onlyMigrator' modifier, which checks if the caller is the migrator. If the migrator address is compromised or set to a malicious address by the owner, it can withdraw any amount of funds from any user's stake.",
+        "file_name": "StaxLPStaking.sol"
+    },
+    {
+        "function_name": "setMigrator",
+        "code": "function setMigrator(address _migrator) external onlyOwner { migrator = _migrator; emit MigratorSet(_migrator); }",
+        "vulnerability": "Centralization risk",
+        "reason": "The function 'setMigrator' allows the contract owner to set any address as the migrator. This poses a centralization risk because the owner can set a malicious address, which can then exploit the 'migrateWithdraw' function.",
+        "file_name": "StaxLPStaking.sol"
+    }
+]

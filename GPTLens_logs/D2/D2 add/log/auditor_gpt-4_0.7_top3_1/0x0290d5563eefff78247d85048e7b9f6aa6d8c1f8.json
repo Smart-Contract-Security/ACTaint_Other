@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "random",
+        "code": "function random(uint8 seed) internal returns(uint8) { randomSeed = block.timestamp; return uint8(uint256(keccak256(randomSeed, block.difficulty))%seed)+1; }",
+        "vulnerability": "Predictable RNG",
+        "reason": "The function 'random' uses block.timestamp and block.difficulty as inputs to the keccak256 hash function to generate a random number. These inputs are publicly viewable on the blockchain, making the random number predictable and susceptible to manipulation by miners or attackers who can influence the block timestamp or difficulty.",
+        "file_name": "0x0290d5563eefff78247d85048e7b9f6aa6d8c1f8.sol"
+    },
+    {
+        "function_name": "toLotteryPool",
+        "code": "function toLotteryPool(uint amount) public onlyCFO { require(SpoolAmount >= amount); SpoolAmount -= amount; }",
+        "vulnerability": "Unchecked Send",
+        "reason": "The function 'toLotteryPool' reduces 'SpoolAmount' without actually transferring the funds immediately. There is no check to ensure that the funds are successfully transferred out of the contract, leading to a situation where the bookkeeping within the contract does not reflect the actual Ether balance, possibly allowing double spending or accounting errors.",
+        "file_name": "0x0290d5563eefff78247d85048e7b9f6aa6d8c1f8.sol"
+    },
+    {
+        "function_name": "openLottery",
+        "code": "function openLottery(uint8 _viewId) public returns(uint8,uint8) { uint8 viewId = _viewId; require(viewId < 7); uint256 currentTerm = CLotteries.length - 1; CLottery storage clottery = CLotteries[currentTerm]; if (currentGene == 0 && clottery.openBlock > 0 && clottery.isReward == false) { OpenLottery(viewId, clottery.luckyGenes[viewId], currentTerm, 0, 0); return (clottery.luckyGenes[viewId],1); } if (lastBlockNumber == block.number) { OpenLottery(viewId, clottery.luckyGenes[viewId], currentTerm, 0, 0); return (clottery.luckyGenes[viewId],2); } if (currentGene == 0 && clottery.isReward == true) { CLottery memory _clottery; _clottery.luckyGenes = [0,0,0,0,0,0,0]; _clottery.totalAmount = uint256(0); _clottery.isReward = false; _clottery.openBlock = uint256(0); currentTerm = CLotteries.push(_clottery) - 1; } if (this._isCarousal(currentTerm)) { revert(); } uint8 luckyNum = 0; if (currentGene == 6) { if (bonusPool.balance <= SpoolAmount) { OpenLottery(viewId, clottery.luckyGenes[viewId], currentTerm, 0, 0); return (clottery.luckyGenes[viewId],3); } luckyNum = random(8); CLotteries[currentTerm].luckyGenes[currentGene] = luckyNum; OpenLottery(currentGene, luckyNum, currentTerm, block.number, bonusPool.balance); currentGene = 0; CLotteries[currentTerm].openBlock = block.number; CLotteries[currentTerm].totalAmount = bonusPool.balance; lastBlockNumber = block.number; } else { luckyNum = random(12); CLotteries[currentTerm].luckyGenes[currentGene] = luckyNum; OpenLottery(currentGene, luckyNum, currentTerm, 0, 0); currentGene ++; lastBlockNumber = block.number; } return (luckyNum,0); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'openLottery' function interacts with external contracts (via random and potentially other state changes) while its internal state (like 'currentGene' and 'lastBlockNumber') is not yet finalized, making it vulnerable to reentrancy attacks. An attacker might call this function again reentrantly in a way that exploits the state inconsistencies.",
+        "file_name": "0x0290d5563eefff78247d85048e7b9f6aa6d8c1f8.sol"
+    }
+]

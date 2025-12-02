@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "contribute_toTheGame",
+        "code": "function contribute_toTheGame() returns(bool) {\n    uint amount = msg.value;\n    if (amount < 1 / 2 ether) {\n        msg.sender.send(msg.value);\n        return false;\n    }\n    if (amount > 25 ether) {\n        msg.sender.send(msg.value - 25 ether);\n        amount = 25 ether;\n    }\n    if (regeneration + SIX_HOURS < block.timestamp) {\n        if (totalplayers == 1) {\n            playersAddresses[playersAddresses.length - 1].send(jackpot);\n        } else if (totalplayers == 2) {\n            playersAddresses[playersAddresses.length - 1].send(jackpot * 70 / 100);\n            playersAddresses[playersAddresses.length - 2].send(jackpot * 30 / 100);\n        } else if (totalplayers >= 3) {\n            playersAddresses[playersAddresses.length - 1].send(jackpot * 70 / 100);\n            playersAddresses[playersAddresses.length - 2].send(jackpot * 20 / 100);\n            playersAddresses[playersAddresses.length - 3].send(jackpot * 10 / 100);\n        }\n        jackpot = 0;\n        first_player = msg.sender;\n        regeneration = block.timestamp;\n        playersAddresses.push(msg.sender);\n        playersAmounts.push(amount * 2);\n        totalplayers += 1;\n        amountInvested += amount;\n        jackpot += amount;\n        first_player.send(amount * 3 / 100);\n        collectedFee += amount * 3 / 100;\n        round += 1;\n    } else {\n        regeneration = block.timestamp;\n        playersAddresses.push(msg.sender);\n        playersAmounts.push(amount * 2);\n        totalplayers += 1;\n        amountInvested += amount;\n        jackpot += (amount * 5 / 100);\n        first_player.send(amount * 3 / 100);\n        collectedFee += amount * 3 / 100;\n        while (playersAmounts[lastPlayerPaid] < (address(this).balance - jackpot - collectedFee) && lastPlayerPaid <= totalplayers) {\n            playersAddresses[lastPlayerPaid].send(playersAmounts[lastPlayerPaid]);\n            amountAlreadyPaidBack += playersAmounts[lastPlayerPaid];\n            lastPlayerPaid += 1;\n        }\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'contribute_toTheGame' potentially allows reentrancy attacks due to the use of the `.send()` method within it before updating the state variables. This can allow an attacker to repeatedly call the function and withdraw more funds than they should be able to.",
+        "file_name": "0xb5aff01f3e820735fac9abb594dc9993cb9e5bd2.sol"
+    },
+    {
+        "function_name": "restart",
+        "code": "function restart() {\n    if (msg.sender == mainPlayer) {\n        mainPlayer.send(address(this).balance);\n        selfdestruct(mainPlayer);\n    }\n}",
+        "vulnerability": "Unchecked send",
+        "reason": "In the 'restart' function, there is an unchecked `.send()` call. If the send fails (for instance, if the gas limit is too low or the recipient contract throws an exception), the function will continue executing and will proceed to self-destruct the contract. This could lead to loss of contract balance without any trace.",
+        "file_name": "0xb5aff01f3e820735fac9abb594dc9993cb9e5bd2.sol"
+    },
+    {
+        "function_name": "function()",
+        "code": "function() {\n    contribute_toTheGame();\n}",
+        "vulnerability": "Fallback function allows ether transfer",
+        "reason": "The fallback function in this contract directly calls 'contribute_toTheGame()', which means that any ether sent to the contract will automatically trigger the contribute logic. This can be abused in various ways, including initiating functions with no gas cost understanding by the sender, potentially leading to unexpected behavior or financial loss.",
+        "file_name": "0xb5aff01f3e820735fac9abb594dc9993cb9e5bd2.sol"
+    }
+]

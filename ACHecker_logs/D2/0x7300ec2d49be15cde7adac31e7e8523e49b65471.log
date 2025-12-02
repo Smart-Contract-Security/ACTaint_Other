@@ -1,0 +1,45 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x7300ec2d49be15cde7adac31e7e8523e49b65471.code
+Start time: 23/08/2022 08:31:47
+Building CFG...
+CFG generation time (secs): 3.31
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function FundICO(uint256)
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function BuyUpgrade(uint256)
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function GetGlobalProduction()
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function HasBooster(address)
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function UpgradeRig(uint8,uint16)
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function GetMinerData(address)
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function BuyBooster()
+	( 6784) 1a80:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+Violated access control check in function UpgradeRigETH(uint8,uint256)
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {94} in function StartNewMiner()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 21.43
+End time: 23/08/2022 08:32:12

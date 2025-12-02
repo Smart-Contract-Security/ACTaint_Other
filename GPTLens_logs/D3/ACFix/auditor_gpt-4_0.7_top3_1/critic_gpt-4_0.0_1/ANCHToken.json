@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "changeOwner",
+        "vulnerability": "Ownership Takeover",
+        "criticism": "The reasoning is correct in identifying the risk associated with the 'changeOwner' function if the owner's account is compromised. However, this is a common pattern in smart contracts to allow ownership transfer, and the function is protected by the 'onlyOwner' modifier, meaning only the current owner can execute it. The severity is moderate because if the owner's account is compromised, it could indeed lead to severe consequences. However, the profitability is low because it requires compromising the owner's account, which is not directly exploitable through the contract itself.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The 'changeOwner' function allows the current owner to change ownership of the contract to any address. This poses a severe risk if the owner's account is compromised, as an attacker could transfer ownership and gain full control over the contract functionalities.",
+        "code": "function changeOwner(address newOwner) public onlyOwner { _owner = newOwner; }",
+        "file_name": "ANCHToken.sol"
+    },
+    {
+        "function_name": "_mint",
+        "vulnerability": "Unchecked Minting",
+        "criticism": "The reasoning correctly identifies a potential issue with unchecked minting. However, since the function is internal, it relies on the external functions that call it to perform necessary checks, including total supply constraints. The severity is moderate because unchecked minting could lead to inflation, but the correctness is lower because the responsibility for checks might be handled elsewhere in the contract. Profitability is low as it requires access to functions that can call this internal function, which typically would be restricted.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The '_mint' function is used internally to mint new tokens. However, the function does not check whether the total supply ('_tTotal') exceeds the maximum allowable supply, potentially leading to unchecked minting and inflation of the token supply.",
+        "code": "function _mint(address account, uint256 ramount, uint256 tamount) internal { _rOwned[account] = ramount; emit Transfer(address(0), account, tamount); }",
+        "file_name": "ANCHToken.sol"
+    },
+    {
+        "function_name": "_tokenSellTransferReward",
+        "vulnerability": "Front-running",
+        "criticism": "The reasoning about front-running in the '_tokenSellTransferReward' function is plausible as it involves reward calculations based on transaction amounts that could be observed and manipulated by watching the mempool. However, the actual impact and feasibility of such an attack depend on various factors like network latency and the specifics of the reward mechanism. The severity and profitability could be moderate if the rewards are significant and the token has substantial value.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The '_tokenSellTransferReward' function processes transfers and rewards based on transaction amounts. A malicious actor could watch the transaction pool (mempool) to front-run this function by quickly purchasing or selling tokens to manipulate reward distribution or impact token pricing unfavorably.",
+        "code": "function _tokenSellTransferReward( address sender, address recipient, uint256 tAmount ) private { uint256 currentRate = _getRate(); uint256 rAmount = tAmount.mul(currentRate); _rOwned[sender] = _rOwned[sender].sub(rAmount); _rOwned[recipient] = _rOwned[recipient].add(rAmount); emit Transfer(sender, recipient, tAmount); if(tAmount >= minTxnAmount) { uint256 rewardAmount = tAmount.mul(rewardRate).div(percent); if(balanceOf(address(this)) >= rewardAmount) { uint256 rRewardAmount = rewardAmount.mul(currentRate); _rOwned[address(this)] = _rOwned[address(this)].sub(rRewardAmount); _rOwned[sender] = _rOwned[sender].add(rRewardAmount); txReward[sender] = txReward[sender].add(rewardAmount); emit Transfer(address(this), sender, rewardAmount); } } }",
+        "file_name": "ANCHToken.sol"
+    }
+]

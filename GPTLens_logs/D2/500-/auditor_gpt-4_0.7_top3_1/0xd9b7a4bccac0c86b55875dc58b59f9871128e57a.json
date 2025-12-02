@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function is susceptible to a reentrancy vulnerability because it emits an event before updating the sender's and receiver's balances. An attacker could potentially exploit this by recursively calling the function from within the 'Transfer' event, leading to unexpected behavior or draining of tokens.",
+        "file_name": "0xd9b7a4bccac0c86b55875dc58b59f9871128e57a.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function is vulnerable to a race condition. If the user attempts to change the approval by setting a new value, the function only checks for the new value not being zero and the current approval not being zero but does not reset the allowance in a single transaction. This could be exploited by an attacker who may utilize the race condition to transfer more tokens than intended by the user.",
+        "file_name": "0xd9b7a4bccac0c86b55875dc58b59f9871128e57a.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unchecked Send",
+        "reason": "The 'withdraw' function transfers ether to the owner without checking the success of the 'transfer' method. In case the send fails (for instance, if the contract's fallback function runs out of gas), the transaction will not revert, potentially leading to loss of ether or unintended behavior.",
+        "file_name": "0xd9b7a4bccac0c86b55875dc58b59f9871128e57a.sol"
+    }
+]

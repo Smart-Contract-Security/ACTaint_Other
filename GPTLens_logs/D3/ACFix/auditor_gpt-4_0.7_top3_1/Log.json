@@ -1,0 +1,9 @@
+[
+    {
+        "function_name": "Log",
+        "code": "function Log( address _contract, address _caller, string memory _logName, bytes memory _data ) public { emit LogEvent(_contract, _caller, _logName, _data); }",
+        "vulnerability": "Unrestricted Access",
+        "reason": "The function Log is declared as public, allowing any external entity to call it unrestrictedly. This can lead to misuse of the logging function, where an attacker could spam the event log with irrelevant or malicious entries, potentially causing denial of service by filling up logs or storage, and it could lead to increased transaction costs for storing these logs on the blockchain.",
+        "file_name": "Log.sol"
+    }
+]

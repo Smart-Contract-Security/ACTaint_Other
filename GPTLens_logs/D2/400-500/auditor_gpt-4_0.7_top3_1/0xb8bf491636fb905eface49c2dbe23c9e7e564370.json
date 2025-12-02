@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require (_to != 0x0); require (balanceOf[_from] >= _value); require (balanceOf[_to].add(_value) >= balanceOf[_to]); require(!frozenAccount[_from]); require(!frozenAccount[_to]); balanceOf[_from] = balanceOf[_from].sub(_value); balanceOf[_to] = balanceOf[_from].add(_value); Transfer(_from, _to, _value); }",
+        "vulnerability": "Incorrect Update of Balance",
+        "reason": "In the _transfer function, there's a typo in the line 'balanceOf[_to] = balanceOf[_from].add(_value);' which should instead be 'balanceOf[_to] = balanceOf[_to].add(_value);'. Due to this typo, the balance of the receiver (_to) is set incorrectly, based on the sender's (_from) balance post-deduction and then added to the transfer amount, which could lead to incorrect balance assignments and potential fund theft or loss.",
+        "file_name": "0xb8bf491636fb905eface49c2dbe23c9e7e564370.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) public { require(this.balance >= amount.mul(sellPrice)); _transfer(msg.sender, this, amount); msg.sender.transfer(amount * sellPrice); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The sell function transfers Ether to a user after transferring tokens to the contract. This ordering can lead to reentrancy attacks where the external call to 'msg.sender.transfer' can be used by an attacker to re-enter the contract and manipulate or drain funds repeatedly before the original sell operation completes. This could lead to unexpected behaviors and loss of funds.",
+        "file_name": "0xb8bf491636fb905eface49c2dbe23c9e7e564370.sol"
+    },
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] = balanceOf[target].add(mintedAmount); totalSupply = totalSupply.add(mintedAmount); Transfer(0, this, mintedAmount); Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Lack of Event Emission for Minting",
+        "reason": "The mintToken function does not emit an event that specifically indicates the minting action, making it hard to track minting events separately from regular transfers. Although it uses the Transfer event, distinguishing these from regular transfers can be non-trivial in external systems or services monitoring token activities, potentially leading to obscured audit trails and security implications.",
+        "file_name": "0xb8bf491636fb905eface49c2dbe23c9e7e564370.sol"
+    }
+]

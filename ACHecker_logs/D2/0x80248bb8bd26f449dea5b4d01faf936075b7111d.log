@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x80248bb8bd26f449dea5b4d01faf936075b7111d.code
+Start time: 25/08/2022 08:56:33
+Building CFG...
+CFG generation time (secs): 0.18
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function multiMint(address[],uint256[])
+	( 2008)  7d8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function lastMint()
+
+Violated access control check in function lastMint()
+	( 3204)  c84:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function lastMint()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 13.12
+End time: 25/08/2022 08:56:46

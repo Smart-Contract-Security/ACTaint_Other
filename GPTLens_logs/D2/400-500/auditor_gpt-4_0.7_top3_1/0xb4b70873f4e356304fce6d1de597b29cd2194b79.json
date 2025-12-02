@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] = balanceOf[target].add(mintedAmount); totalSupply = totalSupply.add(mintedAmount); emit Transfer(0, this, mintedAmount); emit Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Unbounded Minting",
+        "reason": "The mintToken function allows the owner to indefinitely mint new tokens for any account, which could lead to hyperinflation and devaluation of the token. This function does not have any checks to limit the amount of tokens that can be minted, which can be exploited by a malicious owner.",
+        "file_name": "0xb4b70873f4e356304fce6d1de597b29cd2194b79.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { owner = newOwner; }",
+        "vulnerability": "Ownership Takeover",
+        "reason": "The transferOwnership function allows the current owner to transfer control of the contract to a new owner. If the current owner's account is compromised, the attacker can transfer ownership to themselves and gain full control over the contract functionalities including minting tokens, freezing accounts, and adjusting token prices.",
+        "file_name": "0xb4b70873f4e356304fce6d1de597b29cd2194b79.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(balanceOf[_from] >= _value); require(_value <= allowance[_from][msg.sender]); balanceOf[_from] = balanceOf[_from].sub(_value); allowance[_from][msg.sender] = allowance[_from][msg.sender].sub(_value); totalSupply = totalSupply.sub(_value); emit Burn(_from, _value); return true; }",
+        "vulnerability": "Improper Authorization",
+        "reason": "The burnFrom function allows an address with a sufficient allowance to burn tokens from another account. If a user mistakenly grants a high allowance to a malicious entity, this function can be exploited to destroy a significant portion of the user's tokens, potentially leading to financial loss for the token holder.",
+        "file_name": "0xb4b70873f4e356304fce6d1de597b29cd2194b79.sol"
+    }
+]

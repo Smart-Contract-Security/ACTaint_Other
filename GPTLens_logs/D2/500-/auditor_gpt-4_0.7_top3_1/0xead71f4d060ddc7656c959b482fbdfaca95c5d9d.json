@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] += mintedAmount; totalSupply += mintedAmount; Transfer(0, this, mintedAmount); Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The mintToken function does not have checks to prevent overflow, which could allow the owner to mint an arbitrary amount of tokens, potentially leading to hyperinflation.",
+        "file_name": "0xead71f4d060ddc7656c959b482fbdfaca95c5d9d.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(balanceOf[_from] >= _value); require(_value <= allowance[_from][msg.sender]); balanceOf[_from] -= _value; allowance[_from][msg.sender] -= _value; totalSupply -= _value; Burn(_from, _value); return true; }",
+        "vulnerability": "Unchecked Underflow",
+        "reason": "The burnFrom function reduces the balance and the allowance without ensuring that the subtraction would not result in an underflow. This could be exploited to make the balance or allowance of an account underflow, leading to unintended high values.",
+        "file_name": "0xead71f4d060ddc7656c959b482fbdfaca95c5d9d.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) public { require(this.balance >= amount * sellPrice); _transfer(msg.sender, this, amount); msg.sender.transfer(amount * sellPrice); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The sell function transfers Ether to the msg.sender after calling an internal transfer function. If the msg.sender is a contract, it could make a recursive call back to sell during its payable fallback, leading to unexpected behavior or draining of contract Ether.",
+        "file_name": "0xead71f4d060ddc7656c959b482fbdfaca95c5d9d.sol"
+    }
+]

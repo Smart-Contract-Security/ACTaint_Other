@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { if(msg.sender.balance < minBalanceForAccounts) sell((minBalanceForAccounts - msg.sender.balance) / sellPrice); _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function is vulnerable to a reentrancy attack due to the 'sell' function call that happens within it. The 'sell' function uses the 'transfer' method from the Ethereum protocol to send Ether. If the recipient of the Ether is a contract, it could call back into this contract before the first execution of the 'sell' function is finished, potentially leading to unexpected behavior or drained Ether.",
+        "file_name": "0x48d88985ff756ac81eb6f2d06414533d69f75f40.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(!frozenAccount[_from]); require(_to != 0x0); initialize(_from); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value > balanceOf[_to]); uint previousBalances = balanceOf[_from] + balanceOf[_to]; balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); assert(balanceOf[_from] + balanceOf[_to] == previousBalances); initialize(_to); }",
+        "vulnerability": "Reentrancy",
+        "reason": "In '_transfer' function, calling 'initialize' both before and after updating balances creates a risk of reentrancy. If an attacker's contract receives the tokens and is then re-initialized, it can potentially manipulate the state (like balances or initialization status) in unexpected ways during the second call to 'initialize'. This can lead to discrepancies in the balance management, possibly allowing double spending or other exploits.",
+        "file_name": "0x48d88985ff756ac81eb6f2d06414533d69f75f40.sol"
+    },
+    {
+        "function_name": "initialize",
+        "code": "function initialize(address _address) internal returns (bool success) { if (totalSupply < maxSupply && !initialized[_address]) { initialized[_address] = true ; balanceOf[_address] = airdropAmount; totalSupply += airdropAmount; } return true; }",
+        "vulnerability": "Improper Initialization Logic",
+        "reason": "The 'initialize' function automatically credits 'airdropAmount' of tokens to users who have not been initialized yet. This logic is not protected against multiple calls in different transactions, meaning a user could potentially receive multiple airdrops by interacting with the contract in a specific way, such as calling any function that triggers 'initialize'. This could lead to an unexpected increase in token supply.",
+        "file_name": "0x48d88985ff756ac81eb6f2d06414533d69f75f40.sol"
+    }
+]

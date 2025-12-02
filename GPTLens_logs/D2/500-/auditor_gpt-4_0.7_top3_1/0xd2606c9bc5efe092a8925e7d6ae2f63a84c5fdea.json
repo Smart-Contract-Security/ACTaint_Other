@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "purchaseVideoGameItem",
+        "code": "function purchaseVideoGameItem(uint _videoGameItemId) public payable {\n    require(msg.value >= videoGameItems[_videoGameItemId].currentPrice);\n    require(isPaused == false);\n    CryptoVideoGames parentContract = CryptoVideoGames(cryptoVideoGames);\n    uint256 currentPrice = videoGameItems[_videoGameItemId].currentPrice;\n    uint256 excess = msg.value - currentPrice;\n    uint256 devFee = (currentPrice / 10);\n    uint256 parentOwnerFee = (currentPrice / 10);\n    address parentOwner = parentContract.getVideoGameOwner(videoGameItems[_videoGameItemId].parentVideoGame);\n    address newOwner = msg.sender;\n    uint256 commissionOwner = currentPrice - devFee - parentOwnerFee;\n    videoGameItems[_videoGameItemId].ownerAddress.transfer(commissionOwner);\n    devFeeAddress.transfer(devFee);\n    parentOwner.transfer(parentOwnerFee);\n    newOwner.transfer(excess);\n    videoGameItems[_videoGameItemId].ownerAddress = newOwner;\n    videoGameItems[_videoGameItemId].currentPrice = mul(videoGameItems[_videoGameItemId].currentPrice, 2);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'purchaseVideoGameItem' is vulnerable to reentrancy attacks because it updates the state (new owner and new price) after making external calls (transfers). An attacker could potentially call this function recursively through a fallback function in the external call to 'transfer', changing the state while the original transaction is still ongoing.",
+        "file_name": "0xd2606c9bc5efe092a8925e7d6ae2f63a84c5fdea.sol"
+    },
+    {
+        "function_name": "modifyCurrentVideoGameItemPrice",
+        "code": "function modifyCurrentVideoGameItemPrice(uint _videoGameItemId, uint256 _newPrice) public {\n    require(_newPrice > 0);\n    require(videoGameItems[_videoGameItemId].ownerAddress == msg.sender);\n    require(_newPrice < videoGameItems[_videoGameItemId].currentPrice);\n    videoGameItems[_videoGameItemId].currentPrice = _newPrice;\n}",
+        "vulnerability": "Price Manipulation",
+        "reason": "The function 'modifyCurrentVideoGameItemPrice' allows the current item owner to set a new price that is less than the current price without any lower limit, as long as it is greater than 0. This can be exploited by a malicious owner to drastically reduce the price, buy it through another account, and reset it back, manipulating the market.",
+        "file_name": "0xd2606c9bc5efe092a8925e7d6ae2f63a84c5fdea.sol"
+    },
+    {
+        "function_name": "addVideoGameItem",
+        "code": "function addVideoGameItem(string videoGameItemName, address ownerAddress, uint256 currentPrice, uint parentVideoGame) public onlyContractCreator {\n    videoGameItems.push(VideoGameItem(videoGameItemName,ownerAddress,currentPrice, parentVideoGame));\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'addVideoGameItem' function lacks validation for the 'ownerAddress' parameter, which means any address including zero address can be set as the owner. This can lead to items being added with no valid owner or potentially malicious addresses, causing disruptions or misuse in the game ecosystem.",
+        "file_name": "0xd2606c9bc5efe092a8925e7d6ae2f63a84c5fdea.sol"
+    }
+]

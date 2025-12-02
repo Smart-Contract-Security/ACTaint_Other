@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'withdraw' uses 'msg.sender' to check the balance in 'Deposits' which is incorrect because 'msg.sender' will always be the owner (as it is guarded by 'onlyOwner'). This means the owner can potentially withdraw funds that belong to other users, misrepresenting the balance check.",
+        "file_name": "0xd81fe2c11edd560c4d44fdd4f651f3608452beed.sol"
+    },
+    {
+        "function_name": "init",
+        "code": "function init() payable open { Owner = msg.sender; minDeposit = 1 ether; Locked = false; deposit(); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'init' function calls 'deposit()' internally without ensuring that the contract is not in a reentrant state. Since 'deposit()' is a public function that handles Ether, this could potentially allow reentrancy attacks where an attacker can repeatedly call 'init' to execute 'deposit()' multiple times in a single transaction, leading to issues like draining Ether under certain conditions.",
+        "file_name": "0xd81fe2c11edd560c4d44fdd4f651f3608452beed.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Denial of Service",
+        "reason": "The 'kill' function can permanently disable the contract by using 'selfdestruct', and it only requires that the contract's balance is 0. An attacker who can manipulate the balance (possibly by exploiting other vulnerabilities such as in 'withdraw') could trigger this function, removing the contract from the blockchain and causing loss of service for legitimate users.",
+        "file_name": "0xd81fe2c11edd560c4d44fdd4f651f3608452beed.sol"
+    }
+]

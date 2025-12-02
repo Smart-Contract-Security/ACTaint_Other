@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "participate_in_arbits_presale_crypto",
+        "vulnerability": "Integer Underflow/Overflow",
+        "criticism": "The reasoning provided is incorrect. The function uses SafeMath operations for all arithmetic operations, which inherently protect against integer underflow and overflow by reverting the transaction if such a condition occurs. Therefore, the vulnerability of integer underflow/overflow does not exist in this context. The severity and profitability are both low because the function is safeguarded by SafeMath, preventing any potential exploitation.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function participate_in_arbits_presale_crypto calculates new arbits to add based on the received ETH amount without proper checks against extreme values which could lead to integer underflows or overflows when calculating subject_tokens_to_add using SafeMath operations. This can result in incorrect arbits allocations which can affect the token economics or even deplete the presale allocation unexpectedly.",
+        "code": "function participate_in_arbits_presale_crypto() public payable presale_open use_count { ( address p1, uint256 p2, uint256 p3, uint256 p4, bool p5, uint8 p6 ) = db.get_participant(msg.sender); participant memory subject = participant(p1, p2, p3, p4, p5, p6); require(subject.num_of_pro_rata_tokens_alloted > 0); uint256 subject_tokens_to_add_at_iconiq_price = msg.value.mul(db.get_presale_iconiq_arbits_per_ether()).div(1 ether); uint256 subject_tokens_to_add_at_reg_price = msg.value.mul(db.get_presale_arbits_per_ether()).div(1 ether); uint256 amount_of_pro_rata_tokens_subject_can_get = subject.num_of_pro_rata_tokens_alloted; uint256 subject_tokens_to_add = 0; if (amount_of_pro_rata_tokens_subject_can_get >= subject.arbits.add(subject_tokens_to_add_at_iconiq_price)) { subject_tokens_to_add = subject_tokens_to_add_at_iconiq_price; } else { if (subject.arbits < amount_of_pro_rata_tokens_subject_can_get) { uint256 delta = amount_of_pro_rata_tokens_subject_can_get.sub(subject.arbits); subject_tokens_to_add = delta.add( subject_tokens_to_add_at_iconiq_price .sub(delta) .mul(db.get_presale_arbits_per_ether()) .div(db.get_presale_iconiq_arbits_per_ether()) ); } else { subject_tokens_to_add = subject_tokens_to_add_at_reg_price; } } if (subject.arbits_kyc_whitelist) { subject_tokens_to_add = subject_tokens_to_add .mul(db.get_pre_kyc_iconiq_bonus_numerator()) .div(db.get_pre_kyc_iconiq_bonus_denominator()); } require(db.get_presale_arbits_total() >= db.get_presale_arbits_sold().add(subject_tokens_to_add)); require(db.get_arbits_max_contribution() >= subject_tokens_to_add); require(db.get_arbits_min_contribution() <= subject_tokens_to_add); db.add_presale_arbits_sold(subject_tokens_to_add); db.add_arbits(msg.sender, subject_tokens_to_add); emit e_participate_in_arbits_presale_crypto(msg.sender, msg.value); }",
+        "file_name": "0xc609b80c81d690b2ec39f70a5638fff8902a1d89.sol"
+    },
+    {
+        "function_name": "withdraw_some_amount",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is partially correct. The function does indeed not check the result of the transfer() call, which can lead to unhandled failures. However, since Solidity 0.4.22, transfer() reverts the transaction if it fails, which means the funds will not be lost but the transaction will fail. The severity is moderate because it could disrupt the intended flow of the function but does not lead to loss of funds. The profitability is low as there is no direct way for an attacker to profit from this vulnerability.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The function withdraw_some_amount forwards all specified 'amount' of ETH to 'withdraw_to' address without checking if the call to transfer() was successful. This may lead to loss of funds if the transfer fails (e.g., if the recipient is a contract that throws an exception or the contract itself does not have enough balance).",
+        "code": "function withdraw_some_amount(address withdraw_to, uint256 amount) public only_owner { withdraw_to.transfer(amount); emit e_withdraw_some_amount(withdraw_to, amount); }",
+        "file_name": "0xc609b80c81d690b2ec39f70a5638fff8902a1d89.sol"
+    },
+    {
+        "function_name": "kill_and_withdraw",
+        "vulnerability": "Unchecked Selfdestruct",
+        "criticism": "The reasoning is correct in identifying the potential risks associated with the selfdestruct operation. However, the severity is high because it can lead to the permanent loss of the contract and its funds without any recovery option. The profitability is also high for an attacker if they can manipulate the destination address or if the owner mistakenly uses an incorrect address. This vulnerability should be addressed with appropriate checks or safeguards.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function kill_and_withdraw allows contract destruction and forwarding of remaining contract balance to any address by the owner. There are no checks on the state or balance of the contract, nor restrictions on the withdraw_to address, which can lead to unintended loss or redirection of funds.",
+        "code": "function kill_and_withdraw(address withdraw_to) public only_owner { emit e_kill_and_withdraw(withdraw_to); selfdestruct(withdraw_to); }",
+        "file_name": "0xc609b80c81d690b2ec39f70a5638fff8902a1d89.sol"
+    }
+]

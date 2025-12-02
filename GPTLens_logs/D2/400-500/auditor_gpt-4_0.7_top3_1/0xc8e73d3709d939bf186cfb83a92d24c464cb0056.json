@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "This function is vulnerable to an integer overflow attack. The 'totalDistributed' and 'balances[_to]' variables are incremented by '_amount' without proper validation that this addition won't exceed the maximum uint256 value. If '_amount' is large enough, it could cause these variables to wrap around and reset to smaller values, potentially allowing an attacker to manipulate the token distribution process.",
+        "file_name": "0xc8e73d3709d939bf186cfb83a92d24c464cb0056.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race Condition",
+        "reason": "This function contains a race condition vulnerability known as the 'approve/transferFrom' attack. An attacker could exploit this by first setting an allowance, then changing it before it\u2019s used. The condition 'if (_value != 0 && allowed[msg.sender][_spender] != 0)' checks for re-approval only if the new value and the old value are non-zero. This check is susceptible to a race condition where an attacker might be able to transfer the initially approved amount and then the newly approved amount.",
+        "file_name": "0xc8e73d3709d939bf186cfb83a92d24c464cb0056.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Denial of Service",
+        "reason": "This function allows the contract owner to withdraw all the Ether stored in the contract. However, if the 'owner.transfer(etherBalance)' call fails (for example, if the owner account is a contract with a fallback function that uses more than the stipulated gas), the Ether will remain locked in the contract indefinitely. This could lead to a Denial of Service (DoS) condition where no further withdrawals could be made.",
+        "file_name": "0xc8e73d3709d939bf186cfb83a92d24c464cb0056.sol"
+    }
+]

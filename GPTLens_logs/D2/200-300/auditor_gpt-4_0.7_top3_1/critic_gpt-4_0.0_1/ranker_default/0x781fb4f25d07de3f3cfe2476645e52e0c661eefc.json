@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Unchecked Distribution",
+        "criticism": "The reasoning is correct in identifying a logical error where the distribution check is placed after the return statement, making it unreachable. This is a severe issue as it could allow the contract to issue more tokens than the total supply, leading to inflation of the token supply. The profitability is moderate because an attacker could potentially exploit this to receive more tokens than intended.",
+        "correctness": 9,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'distr' function incorrectly places the check to finish distribution after the return statement. This means that the condition to stop distribution will never be reached, potentially allowing the contract to issue more tokens than the total supply.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "file_name": "0x781fb4f25d07de3f3cfe2476645e52e0c661eefc.sol",
+        "final_score": 7.5
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the order of operations. However, the severity is overstated because the function does not directly update the balance before the blacklist check, which could mitigate the risk. The profitability is also low because exploiting this would require specific conditions where the recursive calls happen before the blacklist update, which is less likely due to the use of the blacklist flag.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks. Although there is a 'blacklist' check, it occurs after tokens are distributed. An attacker can call 'getTokens' recursively before they are blacklisted in the first call, potentially allowing them to drain more tokens than intended.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x781fb4f25d07de3f3cfe2476645e52e0c661eefc.sol",
+        "final_score": 3.75
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Arbitrary Burning",
+        "criticism": "The reasoning is incorrect as the function does not allow arbitrary burning; it only allows the owner to burn tokens from their own balance. This is a controlled feature, not a vulnerability. The severity and profitability are both low because this feature is intended and controlled by the owner, and does not allow an external attacker to burn tokens arbitrarily.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'burn' function allows the owner to burn tokens from their balance, reducing the totalSupply and totalDistributed. This could be misused by the contract owner to manipulate token economics or potentially render the token useless by burning all circulating supply.",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "file_name": "0x781fb4f25d07de3f3cfe2476645e52e0c661eefc.sol",
+        "final_score": 1.25
+    }
+]

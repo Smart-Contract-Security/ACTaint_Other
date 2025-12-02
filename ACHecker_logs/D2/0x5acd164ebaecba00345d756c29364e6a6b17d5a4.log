@@ -1,0 +1,43 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5acd164ebaecba00345d756c29364e6a6b17d5a4.code
+Start time: 21/08/2022 13:10:16
+Building CFG...
+CFG generation time (secs): 0.38
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function approve(address,uint256)
+	( 4801) 12c1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function removeSpriteFromSale(uint256)
+	( 9500) 251c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function listSpriteForSale(uint256,uint256)
+	(10123) 278b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function transfer(address,uint256)
+	(12512) 30e0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function disapprove(address,uint256)
+	(16029) 3e9d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 12.28
+End time: 21/08/2022 13:10:29

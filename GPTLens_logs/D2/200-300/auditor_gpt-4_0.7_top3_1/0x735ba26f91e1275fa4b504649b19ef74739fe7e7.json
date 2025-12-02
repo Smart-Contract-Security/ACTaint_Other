@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "reveal",
+        "code": "function reveal() public inState(State.Reveal) returns (bool success) { bytes memory signature = commitment[msg.sender].signature; require(signature.length != 0); bytes32 r; bytes32 s; uint8 v; assembly { r := mload(add(signature,0x20)) s := mload(add(signature,0x40)) v := byte(0, mload(add(signature, 96))) } if (v < 27) v += 27; if(ecrecover(isSolved.msgHash, v, r, s) == msg.sender) { success = true; if(winner.timestamp == 0 || commitment[msg.sender].timestamp < winner.timestamp) { winner.winner = msg.sender; winner.timestamp = commitment[msg.sender].timestamp; } } delete commitment[msg.sender]; return success; }",
+        "vulnerability": "Signature Replay Attack",
+        "reason": "The 'reveal' function does not ensure that the signature used for revealing a solution is unique or has not been used before. This vulnerability allows an attacker to reuse a previously successful signature to claim a reward multiple times or potentially interfere with the legitimate winner's reward.",
+        "file_name": "0x735ba26f91e1275fa4b504649b19ef74739fe7e7.sol"
+    },
+    {
+        "function_name": "authenticate",
+        "code": "function authenticate(bytes _publicKey) public inState(State.Commit) { bytes memory keyHash = getHash(_publicKey); bytes32 hash1; bytes32 hash2; assembly { hash1 := mload(add(keyHash,0x20)) hash2 := mload(add(keyHash,0x40)) } bytes32 r = proof_of_public_key.half1 ^ hash1; bytes32 s = proof_of_public_key.half2 ^ hash2; bytes32 msgHash = keccak256(\"\\x19Ethereum Signed Message:\\n64\", _publicKey); address signer = address(keccak256(_publicKey)); if(ecrecover(msgHash, 27, r, s) == signer || ecrecover(msgHash, 28, r, s) == signer ) { isSolved.timestamp = now; isSolved.publicKey = _publicKey; isSolved.msgHash = msgHash; require(reveal() == true); } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'authenticate' function makes a critical call to 'reveal' within its execution without checking the result of this call. This can lead to unexpected behavior if the 'reveal' function does not execute as intended, potentially locking state transitions or impacting the integrity of the contract's intended logic flow.",
+        "file_name": "0x735ba26f91e1275fa4b504649b19ef74739fe7e7.sol"
+    },
+    {
+        "function_name": "reward",
+        "code": "function reward() public inState(State.Payout) { selfdestruct(winner.winner); }",
+        "vulnerability": "Selfdestruct Vulnerability",
+        "reason": "The 'reward' function uses the 'selfdestruct' operation which sends all contract balance to the address specified and destroys the contract. This function can be manipulated by an attacker if they can control the winner address, or if there is a flaw in determining the winner, causing unexpected behavior or loss of funds.",
+        "file_name": "0x735ba26f91e1275fa4b504649b19ef74739fe7e7.sol"
+    }
+]

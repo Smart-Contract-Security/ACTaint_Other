@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setDelegator",
+        "code": "function setDelegator(uint option, address newDelegator) external onlyOwner { delegators[option] = newDelegator; }",
+        "vulnerability": "Unauthorized Delegation",
+        "reason": "This function allows the owner to set any address as a delegator for any option. If the owner account is compromised, an attacker could set a malicious address as the delegator, potentially redirecting funds or manipulating the delegation process.",
+        "file_name": "QBridgeHandler.sol"
+    },
+    {
+        "function_name": "executeProposal",
+        "code": "function executeProposal(bytes32 resourceID, bytes calldata data) external override onlyBridge { uint option; uint amount; address recipientAddress; (option, amount, recipientAddress) = abi.decode(data, (uint, uint, address)); address tokenAddress = resourceIDToTokenContractAddress[resourceID]; require(contractWhitelist[tokenAddress], 'provided tokenAddress is not whitelisted'); if (burnList[tokenAddress]) { address delegatorAddress = delegators[option]; if (delegatorAddress == address(0)) { QBridgeToken(tokenAddress).mint(recipientAddress, amount); } else { QBridgeToken(tokenAddress).mint(delegatorAddress, amount); IQBridgeDelegator(delegatorAddress).delegate(tokenAddress, recipientAddress, option, amount); } } else if (tokenAddress == ETH) { SafeToken.safeTransferETH(recipientAddress, amount.sub(withdrawalFees[resourceID])); } else { tokenAddress.safeTransfer(recipientAddress, amount.sub(withdrawalFees[resourceID])); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows for potential reentrancy attacks because it interacts with external contracts (QBridgeToken, IQBridgeDelegator) by calling 'mint' and 'delegate' methods within the same transaction. An attacker could exploit this by creating a malicious delegator contract that calls back into any of this contract's functions (including itself), leading to unexpected behavior or draining of funds.",
+        "file_name": "QBridgeHandler.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address tokenAddress, address recipient, uint amount) external override onlyBridge { if (tokenAddress == ETH) SafeToken.safeTransferETH(recipient, amount); else tokenAddress.safeTransfer(recipient, amount); }",
+        "vulnerability": "No Validation on Withdraw Amount",
+        "reason": "The withdraw function lacks any checks on the amount to be withdrawn. This could lead to unintended draining of contract funds if there is a mistake or malicious intent in the amount specified, especially since the function is restricted to only be called by the bridge, which could itself be compromised.",
+        "file_name": "QBridgeHandler.sol"
+    }
+]

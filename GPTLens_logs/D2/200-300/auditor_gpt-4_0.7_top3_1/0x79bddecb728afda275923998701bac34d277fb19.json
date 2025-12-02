@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "removeOwnership",
+        "code": "function removeOwnership(address _dac) public onlyOwner {\n    require(_dac == 0xdac);\n    owner = 0x0;\n    newOwnerCandidate = 0x0;\n    OwnershipRemoved();\n}",
+        "vulnerability": "Hardcoded address check",
+        "reason": "The function uses a hardcoded check `require(_dac == 0xdac);` which is prone to errors and restricts flexibility. It should ideally reference a variable or a modifiable parameter rather than a hardcoded address.",
+        "file_name": "0x79bddecb728afda275923998701bac34d277fb19.sol"
+    },
+    {
+        "function_name": "donate",
+        "code": "function donate(uint64 idGiver, uint64 idReceiver) payable {\n    if (idGiver == 0) {\n        idGiver = addGiver(\"\", \"\", 259200, ILiquidPledgingPlugin(0x0));\n    }\n    PledgeAdmin storage sender = findAdmin(idGiver);\n    checkAdminOwner(sender);\n    require(sender.adminType == PledgeAdminType.Giver);\n    uint amount = msg.value;\n    require(amount > 0);\n    vault.transfer(amount);\n    uint64 idPledge = findOrCreatePledge(\n        idGiver, new uint64[](0), 0, 0, 0, PledgeState.Pledged\n    );\n    Pledge storage nTo = findPledge(idPledge);\n    nTo.amount += amount;\n    Transfer(0, idPledge, amount);\n    transfer(idGiver, idPledge, amount, idReceiver);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The `donate` function transfers Ether to an external contract `vault` before updating the state (`nTo.amount += amount;`). This can lead to reentrancy attacks where the state may not be updated if the external call leads to a re-entry into this function.",
+        "file_name": "0x79bddecb728afda275923998701bac34d277fb19.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer( uint64 idSender, uint64 idPledge, uint amount, uint64 idReceiver ){\n    idPledge = normalizePledge(idPledge);\n    Pledge storage p = findPledge(idPledge);\n    PledgeAdmin storage receiver = findAdmin(idReceiver);\n    PledgeAdmin storage sender = findAdmin(idSender);\n    checkAdminOwner(sender);\n    require(p.pledgeState == PledgeState.Pledged);\n    if (p.owner == idSender) {\n        ... // Code for transferring ownership\n    } else {\n        uint senderDIdx = getDelegateIdx(p, idSender);\n        ... // Code for undelegating or reassigning pledge\n    }\n    assert(false);\n}",
+        "vulnerability": "Unchecked delegate index",
+        "reason": "This function does not check if `senderDIdx` (delegate index) exceeds the bounds of delegation array which can lead to out-of-bounds errors or incorrect logic execution when manipulating array elements based on unvalidated indices.",
+        "file_name": "0x79bddecb728afda275923998701bac34d277fb19.sol"
+    }
+]

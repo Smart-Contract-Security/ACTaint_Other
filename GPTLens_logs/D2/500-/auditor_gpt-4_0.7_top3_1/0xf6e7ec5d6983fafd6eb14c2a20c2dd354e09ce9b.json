@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fallback",
+        "code": "function() public payable { uint reward = totalSupply / 10000; require(balances[owner] >= reward && !beggars[msg.sender]); balances[owner] -= reward; balances[msg.sender] += reward; beggars[msg.sender] = true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows the caller to receive a portion of the total supply as a reward. However, after updating the recipient's balance, the sender's (owner's) balance is reduced, and the recipient is marked as a beggar. Since the function is payable and state updates occur after the transfer, it is vulnerable to reentrancy attacks. An attacker could recursively call the fallback function within the same transaction before the first execution finishes, leading to multiple undeserved rewards and potentially draining the owner\u2019s token balance.",
+        "file_name": "0xf6e7ec5d6983fafd6eb14c2a20c2dd354e09ce9b.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address _token) public returns (bool _status) { require(msg.sender == owner); if (_token == address(0)) { owner.transfer(this.balance); } else { Token ERC20 = Token(_token); ERC20.transfer(owner, ERC20.balanceOf(this)); } return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In this function, the smart contract interacts with an external ERC20 token contract without checking the return value of the 'transfer' function call. This means the function assumes the transfer was successful without any actual confirmation, which can lead to loss of funds or incorrect balance tracking if the external call fails or behaves unexpectedly.",
+        "file_name": "0xf6e7ec5d6983fafd6eb14c2a20c2dd354e09ce9b.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function() public payable { uint reward = totalSupply / 10000; require(balances[owner] >= reward && !beggars[msg.sender]); balances[owner] -= reward; balances[msg.sender] += reward; beggars[msg.sender] = true; }",
+        "vulnerability": "DoS with Unexpected Revert",
+        "reason": "This function does not allow a recipient to receive a reward more than once (tracked via the 'beggars' mapping). However, if the owner's balance does not have enough tokens to cover the reward, the transaction will revert due to the 'require' statement. This could be exploited by an attacker who manages to repeatedly trigger this condition, preventing legitimate users from receiving their rewards and effectively causing a denial of service.",
+        "file_name": "0xf6e7ec5d6983fafd6eb14c2a20c2dd354e09ce9b.sol"
+    }
+]

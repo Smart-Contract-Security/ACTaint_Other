@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawTo",
+        "code": "function withdrawTo(address to, uint amount) public onlyOwner { if (WithdrawalEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'withdrawTo' allows reentrancy attacks because it calls 'to.transfer(amount)' before updating the state 'Deposits[msg.sender]'. An attacker could potentially re-enter the contract during the 'transfer' call and withdraw more funds than they have deposited, leading to a loss of funds.",
+        "file_name": "0xd71a90c6903c698b643ac007a7a279f34e444dc3.sol"
+    },
+    {
+        "function_name": "TimeLockr",
+        "code": "function TimeLockr() payable open { Owner = msg.sender; minDeposit = 0.5 ether; Locked = false; deposit(); }",
+        "vulnerability": "Constructor naming mistake",
+        "reason": "The function 'TimeLockr' is intended to be a constructor but is misnamed and does not match the contract name 'TimeLocker'. This means it can be called by anyone after deployment, allowing malicious users to reset ownership and other critical variables, leading to potential ownership takeover or unintended behavior.",
+        "file_name": "0xd71a90c6903c698b643ac007a7a279f34e444dc3.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address to) public onlyOwner { Owner = to; }",
+        "vulnerability": "Ownership takeover",
+        "reason": "The function 'transferOwnership' does not check if the new owner address 'to' is a zero address. This oversight can result in the contract having no owner (if set to zero address), which will lock out administrative functions and could lead to a denial of service or loss of control over the contract.",
+        "file_name": "0xd71a90c6903c698b643ac007a7a279f34e444dc3.sol"
+    }
+]

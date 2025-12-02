@@ -1,0 +1,38 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.code
+Start time: 31/08/2022 20:16:30
+Building CFG...
+CFG generation time (secs): 7.72
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 3830)  ef6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function LUVIToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4064)  fe0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function LUVIToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 4825) 12d9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function LUVIToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 5994) 176a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function LUVIToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6576) 19b0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function LUVIToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 9.90
+End time: 31/08/2022 20:16:47

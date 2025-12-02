@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { if(msg.sender.balance < minBalanceForAccounts) sell((minBalanceForAccounts - msg.sender.balance) / sellPrice); _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transfer' calls 'sell' function which performs a 'transfer' of ether. If the 'sell' function is called with an untrusted contract as a receiver, it may lead to reentrancy where the external contract calls back into 'transfer' leading to unexpected behavior or draining of funds.",
+        "file_name": "0xfcd674a2f572ffddc0b51bf87b60d8440427b95f.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(!frozenAccount[_from]); require(_to != 0x0); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); initialize(_from); reward(_from); initialize(_to); balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); }",
+        "vulnerability": "Unchecked External Calls",
+        "reason": "The '_transfer' function makes calls to 'initialize' and 'reward', both of which modify state and can result in unexpected state changes if these functions fail or behave unexpectedly. Moreover, if the 'initialize' or 'reward' functions have bugs or vulnerabilities, it can propagate to '_transfer' affecting token balances.",
+        "file_name": "0xfcd674a2f572ffddc0b51bf87b60d8440427b95f.sol"
+    },
+    {
+        "function_name": "TokenERC20",
+        "code": "function TokenERC20( uint256 initialSupply, string tokenName, string tokenSymbol ) public { initialSupply = maxSupply - totalairdrop; balanceOf[msg.sender] = initialSupply; totalSupply = initialSupply; initialized[msg.sender] = true; name = '\u6e2c\u8a6614'; symbol = '\u6e2c\u8a6614'; }",
+        "vulnerability": "Improper Initialization",
+        "reason": "In the constructor 'TokenERC20', the 'initialSupply' is set to 'maxSupply - totalairdrop' without validating whether 'totalairdrop' is less than or equal to 'maxSupply'. This could result in underflow setting 'initialSupply' to a very high value, leading to unintended token minting.",
+        "file_name": "0xfcd674a2f572ffddc0b51bf87b60d8440427b95f.sol"
+    }
+]

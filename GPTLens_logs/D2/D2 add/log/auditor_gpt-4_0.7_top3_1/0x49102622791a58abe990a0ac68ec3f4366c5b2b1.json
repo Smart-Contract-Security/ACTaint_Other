@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address _to, uint256 _value) public { require(states[msg.sender] != State.Lock); require(balances[msg.sender] >= _value.add(withdraw_fee)); balances[msg.sender] = balances[msg.sender].sub(_value.add(withdraw_fee)); _to.transfer(_value); owner.transfer(withdraw_fee); emit onEventWithdraw(msg.sender, _to, _value.div(100000000000000)); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function transfers ether to an address (_to) and to the owner without first updating the sender's balance to reflect the deduction. This ordering allows for a possible reentrancy attack if the _to address is a contract that calls back into any functions of this contract that modify balances or states.",
+        "file_name": "0x49102622791a58abe990a0ac68ec3f4366c5b2b1.sol"
+    },
+    {
+        "function_name": "report",
+        "code": "function report(address _from, address _to, bytes _sign) public { require(_to == msg.sender); require(states[_from] == State.Normal); require(balances[_to] >= report_lock); require(states[_to] == State.Normal); signs[_from] = _sign; tos[_from] = _to; states[_from] = State.Report; states[_to] = State.Lock; emit onEventReport(_from, _to); }",
+        "vulnerability": "Denial of Service",
+        "reason": "In the 'report' function, the state of _to (reporter) is set to State.Lock without any checks or conditions to revert this state. This can lead to a denial of service as a malicious user can continuously call 'report' to lock any user\u2019s account indefinitely by fulfilling the conditions and providing sufficient balance for 'report_lock', preventing them from performing operations like 'withdraw'.",
+        "file_name": "0x49102622791a58abe990a0ac68ec3f4366c5b2b1.sol"
+    },
+    {
+        "function_name": "withdrawloss",
+        "code": "function withdrawloss(address _from, address _to) public { require(_to == msg.sender); require(tos[_from] == _to); require(states[_from] == State.Verify); require(states[_to] == State.Normal); require(now >= verifytimes[_from] + 5 days); require(balances[_from] >= withdraw_fee_lost); emit onEventWithdrawLost(_from, _to, balances[_from].div(100000000000000)); owner.transfer(withdraw_fee_lost); balances[_to] = balances[_to].add(balances[_from]).sub(withdraw_fee_lost); balances[_from] = 0; states[_from] = State.Normal; verifytimes[_from] = 0; tos[_from] = 0; }",
+        "vulnerability": "Improper Authorization",
+        "reason": "The 'withdrawloss' function lacks proper authorization checks for the caller to be eligible to withdraw funds from another user\u2019s balance (_from). It only checks if _to (intended recipient) matches msg.sender and other conditions such as state and timing, but it does not securely authenticate that the original owner intended for such a transaction, making it susceptible to unauthorized fund withdrawal if the conditions are met or manipulated.",
+        "file_name": "0x49102622791a58abe990a0ac68ec3f4366c5b2b1.sol"
+    }
+]

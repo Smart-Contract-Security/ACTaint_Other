@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.code
+Start time: 31/08/2022 11:52:09
+Building CFG...
+CFG generation time (secs): 1.66
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawAltcoinTokens(address)
+	( 2940)  b7c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdraw()
+	( 4506) 119a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4738) 1282:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 5196) 144c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 5304) 14b8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5593) 15d9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5791) 169f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6931) 1b13:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ENTS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.23
+End time: 31/08/2022 11:52:16

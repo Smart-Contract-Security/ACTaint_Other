@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5e2eb68a31229b469e34999c467b017222677183.code
+Start time: 21/08/2022 15:32:17
+Building CFG...
+CFG generation time (secs): 0.32
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw(bytes32,uint256)
+	( 2046)  7fe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function challenge(bytes32,string)
+
+Violated access control check in function exit(bytes32)
+	( 2932)  b74:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function challenge(bytes32,string)
+
+Violated access control check in function deposit(bytes32,uint256)
+	( 3326)  cfe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function challenge(bytes32,string)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 17.00
+End time: 21/08/2022 15:32:35

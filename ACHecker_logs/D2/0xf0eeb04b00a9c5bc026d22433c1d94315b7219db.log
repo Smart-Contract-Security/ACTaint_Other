@@ -1,0 +1,67 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xf0eeb04b00a9c5bc026d22433c1d94315b7219db.code
+Start time: 31/08/2022 22:25:24
+Building CFG...
+CFG generation time (secs): 60.20
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	( 1774)  6ee:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setPrices(uint256,uint256)
+	( 1824)  720:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function destruct()
+	( 2300)  8fc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function AirDrop(address[],uint256[])
+	( 2495)  9bf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function mintToken(address,uint256)
+	( 2728)  aa8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setTokenName(string)
+	( 3605)  e15:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setTokenSymbol(string)
+	( 3732)  e94:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setMinBalance(uint256)
+	( 3798)  ed6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function freezeAccount(address,bool)
+	( 4279) 10b7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 4419) 1143:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 9305b0f8
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function 9305b0f8
+Needed to protect following instruction in function destruct()
+( 2318)  90e:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 86.91
+End time: 31/08/2022 22:27:51

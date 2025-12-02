@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distributeTokens",
+        "code": "function distributeTokens(address _to, uint256 _value) returns (bool success) { _value = _value * 1000000000000000000; if (balances[msg.sender] >= _value && _value > 0) { balances[msg.sender] -= _value; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } else { return false; } }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function 'distributeTokens' multiplies the input '_value' by a very large number (10^18). If '_value' is also large, this multiplication can result in an integer overflow, setting '_value' to a much smaller number or zero, which could allow unintended high volume of token distribution or circumvent logic checks.",
+        "file_name": "0xb5c0e43a6330b9eb904ec57ea24d70269ae4652e.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns (bool success) { allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); if (!_spender.call(bytes4(bytes32(sha3('receiveApproval(address,uint256,address,bytes)'))), msg.sender, _value, this, _extraData)) { throw; } return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'approveAndCall' function calls an external contract ('_spender') which could be malicious. This external call is made before the state changes are fully completed (approval is set but might be manipulated by the external contract). The external contract could call back into this contract leading to reentrancy attacks.",
+        "file_name": "0xb5c0e43a6330b9eb904ec57ea24d70269ae4652e.sol"
+    },
+    {
+        "function_name": "destroycontract",
+        "code": "function destroycontract(address _to) { selfdestruct(_to); }",
+        "vulnerability": "Unauthorized Contract Self-Destruction",
+        "reason": "The function 'destroycontract' allows destroying the contract and sending all remaining Ether to an arbitrary address. This function lacks access control, meaning any user can trigger it, potentially causing unexpected loss of contract functionality and assets.",
+        "file_name": "0xb5c0e43a6330b9eb904ec57ea24d70269ae4652e.sol"
+    }
+]

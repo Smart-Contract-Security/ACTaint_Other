@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.code
+Start time: 28/08/2022 03:12:44
+Building CFG...
+CFG generation time (secs): 1.77
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 4176) 1050:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4419) 1143:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 4877) 130d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 4985) 1379:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5286) 14a6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5484) 156c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 6612) 19d4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 7194) 1c1a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function AlphaChainConstructor()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.15
+End time: 28/08/2022 03:12:51

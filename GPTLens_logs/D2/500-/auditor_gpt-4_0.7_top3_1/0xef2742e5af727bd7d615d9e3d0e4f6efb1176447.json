@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "bid",
+        "code": "function bid(uint256 _girlId, uint256 _myGirl) external payable { Auction storage auction = girlIdToAuction[_girlId]; require(auction.startingPriceWei > 0); require(!auction.isCombine || (auction.isCombine && _girlId > 0)); uint256 price = _getAuctionPrice(auction); require(msg.value >= price); bool isCombine = auction.isCombine; if (isCombine) { Girl storage sourceGirl1 = girls[_girlId]; Girl storage sourceGirl2 = girls[_myGirl]; require(sourceGirl1.combinesLeft > 0); require(sourceGirl2.combinesLeft > 0); require(sourceGirl1.combineCooledDown < now); require(sourceGirl2.combineCooledDown < now); } address seller = auction.seller; delete girlIdToAuction[_girlId]; if (price > 0) { uint256 cut = price * (OWNERS_AUCTION_CUT / 10000); seller.transfer(price - cut); } msg.sender.transfer(msg.value - price); if (isCombine) { _combineGirls(sourceGirl1, sourceGirl2, _girlId, _myGirl, msg.sender); } else { _transfer(seller, msg.sender, _girlId); } AuctionCompleted(_girlId, price, msg.sender); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'bid' function transfers ether to users via the 'seller.transfer(price - cut)' and 'msg.sender.transfer(msg.value - price)' calls before updating the state that affects the checks and effects pattern. This allows a malicious contract to call 'bid' again during the transfer, potentially leading to reentrancy attacks where the internal state (such as 'girlIdToAuction') can be manipulated in unexpected ways between calls.",
+        "file_name": "0xef2742e5af727bd7d615d9e3d0e4f6efb1176447.sol"
+    },
+    {
+        "function_name": "withdrawBalance",
+        "code": "function withdrawBalance() external onlyOwner { owner.transfer(this.balance); }",
+        "vulnerability": "Unlimited Gas to External Call",
+        "reason": "The 'withdrawBalance' function sends all contract balance to the owner without setting a gas limit on the transfer, using 'owner.transfer(this.balance)'. This could potentially consume all gas if the owner is a contract executing expensive operations in its fallback function, leading to out-of-gas errors and making the funds stuck without a way to be withdrawn if the gas cost exceeds the block gas limit.",
+        "file_name": "0xef2742e5af727bd7d615d9e3d0e4f6efb1176447.sol"
+    },
+    {
+        "function_name": "createPromoGirl",
+        "code": "function createPromoGirl(uint256 _dna) external onlyOwner { require(promoCreatedCount < MAX_PROMO_GIRLS); promoCreatedCount++; _createGirl(0, 0, 0, _dna, owner); }",
+        "vulnerability": "Arbitrary Jump with Function Pointers",
+        "reason": "The 'createPromoGirl' function interacts with an external contract 'DnaMixer' via the 'dnaMixer.mixDna' function call in '_createGirl'. If the address of 'DnaMixer' is not set or is set incorrectly (either maliciously or by mistake), this could lead to calling an arbitrary function in another contract that matches the expected function signature, potentially leading to unexpected behavior or security vulnerabilities if that function manipulates contract state or has other side effects.",
+        "file_name": "0xef2742e5af727bd7d615d9e3d0e4f6efb1176447.sol"
+    }
+]

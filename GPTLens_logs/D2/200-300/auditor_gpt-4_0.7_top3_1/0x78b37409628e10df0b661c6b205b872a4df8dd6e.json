@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferByUser",
+        "code": "function transferByUser ( address _token, address _to, uint _value, uint _salt, bytes _signature ) external addressValid(_to) note initialized onlyAdmin { bytes32 actionHash = _getTransferActionHash(_token, _to, _value, _salt); if(actionCompleted[actionHash]) { emit LogError(\"Account::transferByUser\", \"ACTION_ALREADY_PERFORMED\"); return; } if(ERC20(_token).balanceOf(this) < _value){ emit LogError(\"Account::transferByUser\", \"INSUFFICIENT_BALANCE_IN_ACCOUNT\"); return; } address signer = _recoverSigner(actionHash, _signature); if(!isUser[signer]) { emit LogError(\"Account::transferByUser\", \"SIGNER_NOT_AUTHORIZED_WITH_ACCOUNT\"); return; } actionCompleted[actionHash] = true; if (_token == address(weth9)) { weth9.withdraw(_value); _to.transfer(_value); } else { require(ERC20(_token).transfer(_to, _value), \"Account::transferByUser TOKEN_TRANSFER_FAILED\"); } emit LogTransferByUser(_token, _to, _value, signer); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows for a reentrancy attack because it calls an external contract (ERC20(_token).transfer(_to, _value)) which could be malicious and re-enter the contract, potentially leading to unexpected behaviors or drains of funds. The function does not employ the check-effects-interactions pattern effectively, particularly because state changes (actionCompleted[actionHash] = true) happen before the external call.",
+        "file_name": "0x78b37409628e10df0b661c6b205b872a4df8dd6e.sol"
+    },
+    {
+        "function_name": "changeImpl",
+        "code": "function changeImpl ( address _to, uint _salt, bytes _signature ) external note addressValid(_to) initialized onlyAdmin { bytes32 actionHash = _getUserActionHash(_to, \"CHANGE_ACCOUNT_IMPLEMENTATION\", _salt); if(actionCompleted[actionHash]) { emit LogError(\"Account::changeImpl\", \"ACTION_ALREADY_PERFORMED\"); return; } address signer = _recoverSigner(actionHash, _signature); if(!isUser[signer]) { emit LogError(\"Account::changeImpl\", \"SIGNER_NOT_AUTHORIZED_WITH_ACCOUNT\"); return; } actionCompleted[actionHash] = true; address oldImpl = masterCopy; this.changeMasterCopy(_to); emit LogImplChanged(_to, oldImpl); }",
+        "vulnerability": "Unauthorized Change of Implementation",
+        "reason": "The function 'changeImpl' allows to change the contract's master copy based on the signature verification but does not adequately ensure that the signer is authorized to perform this action as it only checks 'isUser[signer]' without verifying if the signer has administrative privileges. This could allow any user to change the contract implementation if they can craft or obtain a valid signature.",
+        "file_name": "0x78b37409628e10df0b661c6b205b872a4df8dd6e.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint wad) public { require(balanceOf[msg.sender] >= wad); balanceOf[msg.sender] -= wad; msg.sender.transfer(wad); Withdrawal(msg.sender, wad); }",
+        "vulnerability": "Unbounded withdrawal",
+        "reason": "The withdraw function allows users to transfer any amount of Ether as specified by 'wad' from the contract to their address without any additional checks or limitations beyond the current balance check. This could potentially lead to unexpected draining of all contract funds if not properly managed or if there are errors in the balance management logic elsewhere in the contract.",
+        "file_name": "0x78b37409628e10df0b661c6b205b872a4df8dd6e.sol"
+    }
+]

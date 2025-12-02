@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintTokens",
+        "code": "function mintTokens(uint256 _mintedAmount) public onlyOwner {\n    balanceOf[owner] = balanceOf[owner].add(_mintedAmount);\n    totalSupply = totalSupply.add(_mintedAmount);\n    Transfer(0, owner, _mintedAmount);\n}",
+        "vulnerability": "Unbounded Minting",
+        "reason": "The mintTokens function allows the owner to mint an arbitrary amount of tokens, potentially diluting the value of existing tokens. There is no limit or check on the amount being minted, which could lead to hyperinflation or abuse by the owner.",
+        "file_name": "0x2ef27bf41236bd859a95209e17a43fbd26851f92.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {\n    if (balanceOf[_from] >= _amount && allowed[_from][msg.sender] >= _amount && _amount > 0 && balanceOf[_to].add(_amount) > balanceOf[_to]) {\n        balanceOf[_from] = balanceOf[_from].sub(_amount);\n        allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount);\n        balanceOf[_to] = balanceOf[_to].add(_amount);\n        return true;\n    } else {\n        return false;\n    }\n}",
+        "vulnerability": "Missing Event Emission",
+        "reason": "The transferFrom function does not emit a Transfer event upon successful transfer. This omission can lead to off-chain systems being unaware of changes in state that depend on these events for accurate reflection of the token balances and flow.",
+        "file_name": "0x2ef27bf41236bd859a95209e17a43fbd26851f92.sol"
+    },
+    {
+        "function_name": "blacklistAccount",
+        "code": "function blacklistAccount(address _target, bool _isBlacklisted) public onlyOwner {\n    isblacklistedAccount[_target] = _isBlacklisted;\n}",
+        "vulnerability": "Arbitrary Blacklisting",
+        "reason": "The blacklistAccount function allows the owner to blacklist any account arbitrarily. This could be used to freeze assets and restrict access to funds without the consent or any wrongdoing by the token holder, leading to centralization and misuse of power.",
+        "file_name": "0x2ef27bf41236bd859a95209e17a43fbd26851f92.sol"
+    }
+]

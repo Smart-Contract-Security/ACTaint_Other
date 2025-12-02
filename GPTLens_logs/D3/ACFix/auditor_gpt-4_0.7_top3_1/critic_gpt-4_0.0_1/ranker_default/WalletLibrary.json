@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "execute",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a reentrancy vulnerability due to the external call made to an arbitrary address without state changes being finalized first. This could indeed allow an attacker to re-enter the contract and manipulate or drain funds, especially if the external call is to a malicious contract designed to exploit this. The severity is high because it can lead to significant loss of funds or unexpected contract behavior. The profitability for an attacker is also high, as they can potentially drain funds or disrupt the contract operations.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "This function allows for a reentrancy attack because it makes an external call (_to.call.value(_value)(_data)) to an arbitrary address without ensuring that the state changes have been made before the external call. An attacker can exploit this by creating a fallback function that calls back into the execute function or other functions modifying the state, which can lead to unexpected behaviors or draining of funds.",
+        "code": "function execute(address _to, uint _value, bytes _data) external onlyowner returns (bytes32 o_hash) {\n    if ((_data.length == 0 && underLimit(_value)) || m_required == 1) {\n        address created;\n        if (_to == 0) {\n            created = create(_value, _data);\n        } else {\n            if (!_to.call.value(_value)(_data)) throw;\n        }\n        SingleTransact(msg.sender, _value, _to, _data, created);\n    } else {\n        o_hash = sha3(msg.data, block.number);\n        if (m_txs[o_hash].to == 0 && m_txs[o_hash].value == 0 && m_txs[o_hash].data.length == 0) {\n            m_txs[o_hash].to = _to;\n            m_txs[o_hash].value = _value;\n            m_txs[o_hash].data = _data;\n        }\n        if (!confirm(o_hash)) {\n            ConfirmationNeeded(o_hash, msg.sender, _value, _to, _data);\n        }\n    }\n}",
+        "file_name": "WalletLibrary.sol",
+        "final_score": 8.0
+    },
+    {
+        "function_name": "addOwner",
+        "vulnerability": "Denial of Service by Block Gas Limit",
+        "criticism": "The reasoning is plausible but somewhat speculative. The 'reorganizeOwners' function could indeed become gas-intensive if the number of owners grows large. However, without specific details on the implementation of 'reorganizeOwners', it's difficult to definitively say whether it would exceed the block gas limit. The potential for a DoS condition exists but is contingent on the complexity of the 'reorganizeOwners' function. Therefore, the correctness is moderate, and the severity and profitability are lower due to the uncertainty and the non-malicious nature of the issue.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 0,
+        "reason": "The function reorganizes owners if the maximum number of owners is reached before adding a new one. However, if the number of owners is very high, close to 'c_maxOwners', the reorganizeOwners function may require more gas than the block gas limit allows. This could effectively block the addition of new owners and potentially block other functionalities related to owner management, leading to a Denial of Service (DoS) condition.",
+        "code": "function addOwner(address _owner) onlymanyowners(sha3(msg.data)) external {\n    if (isOwner(_owner)) return;\n    clearPending();\n    if (m_numOwners >= c_maxOwners) reorganizeOwners();\n    if (m_numOwners >= c_maxOwners) return;\n    m_numOwners++;\n    m_owners[m_numOwners] = uint(_owner);\n    m_ownerIndex[uint(_owner)] = m_numOwners;\n    OwnerAdded(_owner);\n}",
+        "file_name": "WalletLibrary.sol",
+        "final_score": 4.0
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Unchecked Send",
+        "criticism": "The reasoning is partially correct. The use of 'suicide(_to)' does indeed send all remaining contract balance to an address, but the criticism about the fallback function requiring more gas or reverting is not applicable to 'suicide'. The 'suicide' function (also known as 'selfdestruct') sends ether and ignores the gas stipend or any code in the recipient's fallback function. Therefore, the severity and profitability are lower than suggested because the ether will be sent regardless of the recipient contract's fallback behavior.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The 'kill' function directly forwards all remaining contract balance to an address without any checks. Using 'suicide(_to)' sends ether to the address '_to', but if the recipient is a contract, it could fail if the contract's fallback function requires more gas than provided or has been set to revert. This might lock the funds in the contract permanently, causing loss of funds.",
+        "code": "function kill(address _to) onlymanyowners(sha3(msg.data)) external {\n    suicide(_to);\n}",
+        "file_name": "WalletLibrary.sol",
+        "final_score": 3.5
+    }
+]

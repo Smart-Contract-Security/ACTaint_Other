@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The function does not reset the allowance to zero before setting it to a new value which could be exploited in the race condition scenario. An attacker can call transferFrom before the allowance is reset but after it has been granted again.",
+        "file_name": "0x5da354ebda60d93dab822b10fe0925489f0b9db7.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Unbounded Loop",
+        "reason": "The function getTokens does not limit the amount of Ether sent which could result in a situation where the loop in adminClaimAirdropMultiple keeps distributing tokens exceeding the totalSupply limit due to multiple calls in a single transaction.",
+        "file_name": "0x5da354ebda60d93dab822b10fe0925489f0b9db7.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "DoS with Unexpected Revert",
+        "reason": "In the withdraw function, if the transfer of ether fails for any reason (for example, the owner account is a contract which runs out of gas), the entire transaction is reverted. This can lead to denial of service as legitimate withdrawals by the owner may be consistently reverted under certain conditions.",
+        "file_name": "0x5da354ebda60d93dab822b10fe0925489f0b9db7.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "delegate_2x",
+        "code": "function delegate_2x(address callee, uint256[] uints,address[] addresses,bytes32[] b) public { if (callee.delegatecall(bytes4(keccak256(\"x(address,uint256,address,uint256,bytes32,bytes32)\")), addresses[0], uints[0], addresses[2], uints[2], b[0], b[2] )) { (callee.delegatecall(bytes4(keccak256(\"x(address,uint256,address,uint256,bytes32,bytes32)\")), addresses[1], uints[1], addresses[3], uints[3], b[1], b[3] )); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'delegate_2x' uses delegatecall to call an external contract, potentially allowing the callee to re-enter and modify state before the initial delegatecall is completed. Specifically, if the first delegatecall invocation modifies contract state that affects the second delegatecall, the integrity of the execution can be compromised. This is a classic reentrancy attack vector, where the external callee contract might be malicious and designed to take advantage of the reentry.",
+        "file_name": "0x8ddf7bbe1df74e09e9475272447ac3c5ae0beb15.sol"
+    },
+    {
+        "function_name": "delegate_2x",
+        "code": "function delegate_2x(address callee, uint256[] uints,address[] addresses,bytes32[] b) public { if (callee.delegatecall(bytes4(keccak256(\"x(address,uint256,address,uint256,bytes32,bytes32)\")), addresses[0], uints[0], addresses[2], uints[2], b[0], b[2] )) { (callee.delegatecall(bytes4(keccak256(\"x(address,uint256,address,uint256,bytes32,bytes32)\")), addresses[1], uints[1], addresses[3], uints[3], b[1], b[3] )); } }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'delegate_2x' does not check the return value of the second delegatecall. In Solidity, delegatecall returns a boolean value indicating success or failure. Ignoring this return value can lead to unexpected behavior if the second delegatecall fails but the contract continues execution as if it succeeded. This can lead to state inconsistency or errors in subsequent contract logic.",
+        "file_name": "0x8ddf7bbe1df74e09e9475272447ac3c5ae0beb15.sol"
+    },
+    {
+        "function_name": "testcall",
+        "code": "function testcall(address callee) public { bytes32[] memory b = new bytes32[](4); address[] memory addrs = new address[](6); uint256[] memory ints = new uint256[](12); bytes32 somebytes; ints[0]=1; ints[1]=2; ints[2]=3; ints[3]=4; b[0]=somebytes; b[1]=somebytes; b[2]=somebytes; b[3]=somebytes; addrs[0]=0xdc04977a2078c8ffdf086d618d1f961b6c54111; addrs[1]=0xdc04977a2078c8ffdf086d618d1f961b6c54222; addrs[2]=0xdc04977a2078c8ffdf086d618d1f961b6c54333; addrs[3]=0xdc04977a2078c8ffdf086d618d1f961b6c54444; delegate_2x(callee, ints, addrs,b); }",
+        "vulnerability": "Hardcoded addresses",
+        "reason": "The function 'testcall' contains hardcoded addresses, which can be problematic for a few reasons: it reduces flexibility since addresses can't be updated without modifying the contract code, it could potentially expose the contract to risks if these addresses are compromised, and it does not follow best practices for maintainable and upgradable smart contracts.",
+        "file_name": "0x8ddf7bbe1df74e09e9475272447ac3c5ae0beb15.sol"
+    }
+]

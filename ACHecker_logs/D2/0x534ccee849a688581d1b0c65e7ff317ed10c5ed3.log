@@ -1,0 +1,29 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x534ccee849a688581d1b0c65e7ff317ed10c5ed3.code
+Start time: 21/08/2022 06:52:18
+Building CFG...
+CFG generation time (secs): 25.80
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function approve(address,uint256)
+	( 2584)  a18:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function claimNametagToken(address,bytes32)
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 4965) 1365:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function claimNametagToken(address,bytes32)
+
+Violated access control check in function safeTransferFrom(address,address,uint256)
+	( 4965) 1365:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function claimNametagToken(address,bytes32)
+
+Violated access control check in function safeTransferFrom(address,address,uint256,bytes)
+	( 4965) 1365:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function claimNametagToken(address,bytes32)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 70.19
+End time: 21/08/2022 06:53:54

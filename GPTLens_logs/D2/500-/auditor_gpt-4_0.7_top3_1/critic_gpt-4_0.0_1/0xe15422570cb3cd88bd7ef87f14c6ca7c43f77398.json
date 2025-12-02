@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "refund",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a reentrancy vulnerability due to the recursive call to 'refund()' before the ether transfer with 'msg.sender.send(weiValue)'. This could indeed allow a malicious contract to drain the contract's balance by repeatedly entering the refund function. The severity is high because it can lead to significant financial loss, and the profitability is also high as an attacker can directly benefit from this vulnerability.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'refund' function recursively calls itself before sending ether to the caller with 'msg.sender.send(weiValue)'. This recursive call can result in a reentrancy attack, where a malicious contract could repeatedly enter the refund function, draining the contract's balance.",
+        "code": "function refund() private {\n    uint256 weiValue = this.balance;\n    if (weiValue == 0) throw;\n    uint256 weiRefunded;\n    weiRefunded = safeAdd(weiRefunded, weiValue);\n    refund();\n    if (!msg.sender.send(weiValue)) throw;\n}",
+        "file_name": "0xe15422570cb3cd88bd7ef87f14c6ca7c43f77398.sol"
+    },
+    {
+        "function_name": "claim_bounty",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The reasoning correctly identifies the risk of not checking the return value of the 'proxyPayment' external call. However, the severity and profitability are overstated. While it can lead to inconsistent state or logic errors, exploiting this for profit or causing severe damage depends on additional factors not present in the given code. Therefore, the severity and profitability should be moderate.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'proxyPayment' function is called on an external contract 'token' without checking the return value. If the call fails, the contract execution will continue, potentially leading to inconsistent state or logic errors. This unchecked external call can be exploited by causing the external call to fail, influencing the contract's control flow.",
+        "code": "function claim_bounty(){\n    if (bought_tokens) return;\n    if (kill_switch) throw;\n    bought_tokens = true;\n    time_bought = now + 1 days;\n    token.proxyPayment.value(this.balance - bounty)(address(this));\n    if(this.balance > ETH_to_end) {\n        msg.sender.transfer(bounty);\n    } else {\n        time_bought = now + 1 days * 9;\n        if(this.balance > ETH_to_end) {\n            msg.sender.transfer(bounty);\n        }\n    }\n}",
+        "file_name": "0xe15422570cb3cd88bd7ef87f14c6ca7c43f77398.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning is correct in identifying a DoS vulnerability due to the use of 'throw' in the 'token.transfer' call. If this call fails, it reverts the entire transaction, which can be exploited to deny service. However, the profitability is low as the attacker does not gain financially from merely causing a denial of service. The severity is moderate because it affects the availability of the service.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 1,
+        "reason": "In the 'withdraw' function, if the 'token.transfer' call fails, it will cause the whole transaction to revert due to the 'throw'. This can be used by an attacker to deny service to other legitimate users by making the transfer always fail (e.g., by depleting the token balance or other means), thus preventing withdrawal of funds.",
+        "code": "function withdraw(){\n    if (!bought_tokens) {\n        uint256 eth_amount = balances[msg.sender];\n        balances[msg.sender] = 0;\n        msg.sender.transfer(eth_amount);\n    } else {\n        uint256 ZBR_amount = balances[msg.sender] * ZBR_per_eth;\n        balances[msg.sender] = 0;\n        uint256 fee = 0;\n        if (!checked_in[msg.sender]) {\n            fee = ZBR_amount / 100;\n            if(!token.transfer(developer_address, fee)) throw;\n        }\n        if(!token.transfer(msg.sender, ZBR_amount - fee)) throw;\n    }\n}",
+        "file_name": "0xe15422570cb3cd88bd7ef87f14c6ca7c43f77398.sol"
+    }
+]

@@ -1,0 +1,38 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.code
+Start time: 20/08/2022 11:52:11
+Building CFG...
+CFG generation time (secs): 9.85
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 1972)  7b4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BLACKCOIS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2068)  814:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BLACKCOIS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2373)  945:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BLACKCOIS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 2955)  b8b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BLACKCOIS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3294)  cde:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function BLACKCOIS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 8.69
+End time: 20/08/2022 11:52:29

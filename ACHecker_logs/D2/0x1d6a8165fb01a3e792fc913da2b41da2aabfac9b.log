@@ -1,0 +1,73 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x1d6a8165fb01a3e792fc913da2b41da2aabfac9b.code
+Start time: 19/08/2022 16:22:50
+Building CFG...
+CFG generation time (secs): 23.68
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	( 1623)  657:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function disableWhitelist(address[])
++--Attacker can make changes to AC item {4} in function enableWhitelist(address[])
+
+Violated access control check in function withdraw()
+	( 2446)  98e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2542)  9ee:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function disableWhitelist(address[])
+	( 2765)  acd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function airdrop(address[])
+	( 2976)  ba0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 3207)  c87:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function enableWhitelist(address[])
+	( 3309)  ced:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distributeAmounts(address[],uint256[])
+	( 3426)  d62:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function getTokens()
+	( 1623)  657:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function disableWhitelist(address[])
++--Attacker can make changes to AC item {4} in function enableWhitelist(address[])
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 4135) 1027:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 4474) 117a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distribution(address[],uint256)
+	( 4560) 11d0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function StoriqaCash()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 23.89
+End time: 19/08/2022 16:23:37

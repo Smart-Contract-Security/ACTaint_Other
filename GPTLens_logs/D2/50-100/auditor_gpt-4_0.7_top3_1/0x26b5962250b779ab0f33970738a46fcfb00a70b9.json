@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "LottoCount",
+        "code": "function LottoCount() public payable { owner = msg.sender; ticketPrice = 0.101 * 10**18; minimumBounty = 1 * 10**18; maxTickets = 10; _direction = 0; lottoIndex = 1; lastTicketTime = 0; numtickets = 0; totalBounty = msg.value; require(totalBounty >= minimumBounty); }",
+        "vulnerability": "Initialization vulnerability",
+        "reason": "The function 'LottoCount' is used to initialize the contract's state but it is not restricted to be called only once or by a privileged user (like the owner). This allows any user to reset the contract state including critical parameters like 'owner', 'lottoIndex', and 'totalBounty' at any time. This can disrupt the flow of the lottery, lead to loss of funds, or unintended changes in ownership.",
+        "file_name": "0x26b5962250b779ab0f33970738a46fcfb00a70b9.sol"
+    },
+    {
+        "function_name": "shutdown",
+        "code": "function shutdown() onlyOwner public { suicide(msg.sender); }",
+        "vulnerability": "Use of deprecated function",
+        "reason": "The function 'shutdown' uses the 'suicide' function which has been deprecated and replaced by 'selfdestruct' in newer versions of Solidity. The use of deprecated functions can lead to unpredictable behavior in future compiler versions and might be exploited if the function behaves differently than expected.",
+        "file_name": "0x26b5962250b779ab0f33970738a46fcfb00a70b9.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { lottoIndex += 1; numtickets = 0; totalBounty = 0; owner.transfer(this.balance); }",
+        "vulnerability": "Unchecked send",
+        "reason": "The function 'withdraw' transfers ether to the owner using 'owner.transfer(this.balance)'. This function call does not check the return value which could lead to a denial of service (DoS) if the transfer fails (e.g., if the owner is a contract that throws an exception). This could lock funds within the contract indefinitely if the owner cannot receive funds and there's no alternative withdrawal mechanism.",
+        "file_name": "0x26b5962250b779ab0f33970738a46fcfb00a70b9.sol"
+    }
+]

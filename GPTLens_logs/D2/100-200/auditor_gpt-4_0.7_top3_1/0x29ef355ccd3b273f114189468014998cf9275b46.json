@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initialize",
+        "code": "function initialize( ERC20Interface _mana, address _owner ) public initializer { manaToken = _mana; price = 100000000000000000000; allowed[_owner] = true; transferOwnership(_owner); }",
+        "vulnerability": "Improper access control",
+        "reason": "The 'initialize' function should ideally be restricted to be called only once to setup the contract owned by the deployer. However, the 'initialized' variable that prevents re-initialization can be bypassed if called within the context of a constructor of a contract creating an instance of this contract. Since 'isConstructor' checks 'extcodesize', which will be zero during construction phase, additional contracts can call this method during their construction phase which may lead to re-initialization and potential takeover of the contract ownership.",
+        "file_name": "0x29ef355ccd3b273f114189468014998cf9275b46.sol"
+    },
+    {
+        "function_name": "setAllowed",
+        "code": "function setAllowed(address _account, bool _allowed) external onlyOwner { require(_account != msg.sender, \"You can not manage your role\"); allowed[_account] = _allowed; emit Allow(msg.sender, _account, _allowed); }",
+        "vulnerability": "Arbitrary access control manipulation",
+        "reason": "The function 'setAllowed' allows the owner to arbitrarily set the access control rights of any account except themselves, which can be used to lock out legitimate users or enable malicious ones. There is no check or constraint on who the owner can allow or disallow, other than the owner cannot alter their own permissions, which may lead to security risks if misused.",
+        "file_name": "0x29ef355ccd3b273f114189468014998cf9275b46.sol"
+    },
+    {
+        "function_name": "registerUsername",
+        "code": "function registerUsername( address _beneficiary, string calldata _username, string calldata _metadata ) external onlyAllowed { _registerUsername(_beneficiary, _username, _metadata); }",
+        "vulnerability": "Username reusability",
+        "reason": "This function allows a user to register a username that was previously owned by another user but was deleted (set to zero address in the 'usernames' mapping). The function does not ensure uniqueness for a non-empty username, thereby allowing potential impersonation or confusion if a username is reused by different users at different times.",
+        "file_name": "0x29ef355ccd3b273f114189468014998cf9275b46.sol"
+    }
+]

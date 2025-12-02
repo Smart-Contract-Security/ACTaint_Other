@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initialBattle",
+        "code": "function initialBattle(uint id1,uint total1,uint id2,uint total2) onlyWit() public returns (uint wid){ uint darklord; if(total1.mul(2)>5000){ darklord=total1.mul(2); }else{ darklord=5000; } uint256 threshold = dataCalc(total1.add(total2),darklord); uint256 i = uint256(sha256(abi.encodePacked(block.timestamp, block.number-i-1))) % 100 +1; if(i <= threshold){ wid = 0; winnerAdd.push(msg.sender); }else{ wid = 1; } battleresults.push(Battlelog(id1,id2,wid,msg.sender)); _delWit(msg.sender); }",
+        "vulnerability": "Use of block.timestamp and block.number",
+        "reason": "The function initialBattle is using block.timestamp and block.number to calculate a pseudorandom number. Both block.timestamp and block.number can potentially be influenced by miners, which makes this method of generating randomness susceptible to manipulation. This could allow an attacker, especially if they are miners, to game the system by ensuring certain outcomes from the battle.",
+        "file_name": "0xf28b3a07338cece75502f768626f56bcf1931a41.sol"
+    },
+    {
+        "function_name": "initialBM",
+        "code": "function initialBM(uint id1,uint total1,uint id2,uint total2,uint id3,uint total3,uint id4,uint total4) onlyWit() public returns (uint wid){ uint teamETH; uint teamTron; teamETH=total1+total2; teamTron=total3+total4; uint256 threshold = dataCalc(teamETH,teamTron); uint256 i = uint256(sha256(abi.encodePacked(block.timestamp, block.number-i-1))) % 100 +1; if(i <= threshold){ wid = 0; winnerAdd.push(msg.sender); }else{ wid = 1; } bmbattleresults.push(BMBattlelog(id1,id2,id3,id4,wid,msg.sender)); _delWit(msg.sender); }",
+        "vulnerability": "Use of block.timestamp and block.number",
+        "reason": "Similar to the initialBattle function, initialBM also uses block.timestamp and block.number for randomness which is insecure and can be manipulated by miners. This can be exploited to affect the outcome of battles in a way favorable to the attacker.",
+        "file_name": "0xf28b3a07338cece75502f768626f56bcf1931a41.sol"
+    },
+    {
+        "function_name": "clearwit",
+        "code": "function clearwit(address _inwitness) public{ if(_inwitness==msg.sender){ delete inwitness[_inwitness]; } }",
+        "vulnerability": "Access control flaw",
+        "reason": "The function clearwit allows any user to remove themselves from the inwitness mapping if they are the caller of the function. This could lead to a situation where witnesses could deregister themselves to evade any kind of responsibility or tracking after performing potentially malicious actions within the contract.",
+        "file_name": "0xf28b3a07338cece75502f768626f56bcf1931a41.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "kickTheCoin",
+        "code": "function kickTheCoin() public payable onlyDuringNormalOperations() {\n    require(msg.value == costToKickTheCoin);\n    if (hasWinner()) {\n        storeWinnerShare();\n        initGame();\n    }\n    kickerCount += 1;\n    processKick();\n    lastPlayerToKickTheCoin = msg.sender;\n    targetBlockNumber = block.number + numberOfBlocksPerKick;\n    LatestKicker(gameIndex, msg.sender, currentValue, targetBlockNumber);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function kickTheCoin allows for potentially recursive calls due to the external call to processKick and the event emissions, which can lead to reentrancy attacks. This is particularly dangerous given that state changes (e.g., updating lastPlayerToKickTheCoin and kickerCount) occur before these calls, and the contract's balance might be manipulated or its state changed in unexpected ways during reentrancy.",
+        "file_name": "0x7f3e7af72b565d508ce63abbfdefd0161390c9ed.sol"
+    },
+    {
+        "function_name": "clear",
+        "code": "function clear() public {\n    if (isSundown && sundownGraceTargetBlock != 0 && sundownGraceTargetBlock < block.number) {\n        houseAddress.transfer(this.balance);\n    }\n}",
+        "vulnerability": "Unexpected Ether Transfer",
+        "reason": "The clear function directly transfers all contract balance to the houseAddress without restrictions on the caller's identity. This means that any user can trigger the transfer if the conditions related to sundown are met, leading to potential loss or theft of funds stored in the contract.",
+        "file_name": "0x7f3e7af72b565d508ce63abbfdefd0161390c9ed.sol"
+    },
+    {
+        "function_name": "airDrop",
+        "code": "function airDrop(address player) public payable onlyBy(airDroper) {\n    player.transfer(1);\n    if (msg.value > 1) {\n        msg.sender.transfer(msg.value - 1);\n    }\n}",
+        "vulnerability": "Denial of Service (DoS) via Block Gas Limit",
+        "reason": "The airDrop function sends a fixed amount (1 wei) to a player and refunds the excess amount to the sender. However, if the player's fallback function consumes a high amount of gas or fails, the entire airDrop transaction reverts. This can lead to denial of service, where legitimate operations such as transferring funds out of the contract are consistently reverted due to out-of-gas errors or malicious fallback functions in the recipient's contract.",
+        "file_name": "0x7f3e7af72b565d508ce63abbfdefd0161390c9ed.sol"
+    }
+]

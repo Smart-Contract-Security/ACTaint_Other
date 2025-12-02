@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "sell",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a classic reentrancy vulnerability due to the state changes occurring after the ether transfer. This is a severe issue as it can allow attackers to drain funds or manipulate contract state. The profitability is also high, as reentrancy can be exploited to repeatedly withdraw funds or cause other financial damage.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'sell' function allows users to transfer tokens back to the contract in exchange for ether. It updates the contract state to reflect the new token balance and price after sending ether to the user. However, it does not follow the checks-effects-interactions pattern, and the transfer of ether (msg.sender.transfer(revenue)) happens before all state changes are finalized. This opens up the possibility of a reentrancy attack where a malicious contract could call back into 'sell' or other functions to manipulate state or drain funds in an unintended way.",
+        "code": "function sell(uint256 amountToken) public returns (uint256 revenue){\n    revenue = amountToken * tokenFactor / sellPrice;\n    require( revenue >= minimumPayout );\n    uint256 newPrice = _newPrice(balanceOf[this] + amountToken);\n    require( newPrice < sellPrice );\n    _transfer(msg.sender, this, amountToken);\n    _setPrices( newPrice );\n    msg.sender.transfer(revenue);\n    return revenue;\n}",
+        "file_name": "0xa86914a1402f3cdcb27084e08a47445e8ab1bbab.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "transferOwnership",
+        "vulnerability": "Risky ownership transfer",
+        "criticism": "The reasoning correctly identifies the potential risk associated with the 'ownershipTransferAllowed' flag being controlled by the owner. However, the severity is not as high as it might seem because the owner already has control over the contract and would be the one to exploit this, not an external attacker. The profitability is also low because it requires ownership access, which is not something an external attacker would typically have.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The ownership transfer is only protected by the 'ownershipTransferAllowed' boolean flag. This flag can be set by the current owner, allowing or disallowing ownership transfer at will. An attacker who gains control over the owner's account could enable this flag and then transfer ownership to another address, which could lead to loss of control over the smart contract.",
+        "code": "function transferOwnership(address newOwner) public onlyOwner {\n    require( newOwner != 0x0 );\n    require( ownershipTransferAllowed );\n    owner = newOwner;\n    ownershipTransferAllowed = false;\n}",
+        "file_name": "0xa86914a1402f3cdcb27084e08a47445e8ab1bbab.sol",
+        "final_score": 4.25
+    },
+    {
+        "function_name": "save",
+        "vulnerability": "Unchecked transfer",
+        "criticism": "The reasoning is partially correct in identifying a risk with the transfer not checking the contract's balance. However, the severity and profitability are overstated. Solidity's transfer method automatically reverts if there are insufficient funds, preventing underflow and the draining of ether not present in the contract. Therefore, while the criticism of not checking balances is valid, the impact is not as severe as suggested.",
+        "correctness": 5,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "The 'save' function allows the owner to transfer ether from the contract to the owner's address. It does not check the contract's balance before performing the transfer, which could result in an underflow if the contract balance is less than the amount being transferred. This could allow the owner to unintentionally drain all ether from the contract.",
+        "code": "function save(uint256 amount) public onlyOwner {\n    require( amount >= minimumPayout );\n    owner.transfer( amount);\n}",
+        "file_name": "0xa86914a1402f3cdcb27084e08a47445e8ab1bbab.sol",
+        "final_score": 3.0
+    }
+]

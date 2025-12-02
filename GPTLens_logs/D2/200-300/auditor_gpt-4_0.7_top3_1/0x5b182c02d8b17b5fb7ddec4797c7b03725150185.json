@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Missing return value check",
+        "reason": "The 'transferFrom' function does not check the return values of 'safeSub' and 'safeAdd'. While these functions include safeguards (require statements), it is a common best practice in Solidity to check return values to ensure that operations such as subtraction and addition have completed successfully. Not checking these can lead to unexpected behavior if the internal require statements fail silently.",
+        "file_name": "0x5b182c02d8b17b5fb7ddec4797c7b03725150185.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address spender, uint tokens) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); return true; }",
+        "vulnerability": "Lack of checks for changing allowance",
+        "reason": "The function 'approve' allows a user to set a new allowance for a spender without checking if an allowance already exists. This can lead to a race condition known as the 'approve/transferFrom attack'. An attacker can exploit the race condition by calling 'transferFrom' after the owner calls 'approve' but before the owner sets the allowance to a new value. This allows the attacker to potentially transfer more tokens than intended by the owner.",
+        "file_name": "0x5b182c02d8b17b5fb7ddec4797c7b03725150185.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Ownership hijacking",
+        "reason": "The 'transferOwnership' function allows the current owner to set a new owner, but it does not require the new owner to accept ownership, nor does it validate the new owner address before assigning it. This can lead to accidental or malicious changes in ownership, especially if the new owner address is incorrect or malicious. This can result in the current owner losing control of the contract without recourse.",
+        "file_name": "0x5b182c02d8b17b5fb7ddec4797c7b03725150185.sol"
+    }
+]

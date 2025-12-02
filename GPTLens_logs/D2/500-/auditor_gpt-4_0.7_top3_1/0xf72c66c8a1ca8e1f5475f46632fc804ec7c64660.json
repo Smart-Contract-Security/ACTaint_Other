@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "claim",
+        "code": "function claim(address verifier, uint verifiedAttributes, uint expires, uint8 v, bytes32 r, bytes32 s) public onlyValidAuthority(verifier) onlyAuthoritativeAuthority(verifier, msg.sender) { if (verificationFee > 0) { if(!chargeVerificationFee(msg.sender, verifier)) { revert(); } } bytes32 hash = sha256(this, msg.sender, verifiedAttributes, expires); bytes memory prefix = \"\\x19Ethereum Signed Message:\\n32\"; bytes32 prefixedHash = keccak256(prefix, hash); if (!((ecrecover(prefixedHash, v, r, s) == verifier) && block.number <= expires)) { revert(); } KYC memory kyc = KYC({ verified: true, verifiedBy: verifier, verifiedAt: block.number, verifiedAttributes: verifiedAttributes }); records[msg.sender] = kyc; }",
+        "vulnerability": "Replay Attack",
+        "reason": "The function 'claim' does not include a mechanism to prevent the reuse of the same signature in multiple transactions, such as a nonce. This could allow an attacker to replay a previously valid transaction, leading to unauthorized actions such as the verification of attributes multiple times.",
+        "file_name": "0xf72c66c8a1ca8e1f5475f46632fc804ec7c64660.sol"
+    },
+    {
+        "function_name": "withdrawFee",
+        "code": "function withdrawFee() public onlyValidAuthority(msg.sender) { require(paymentContractAddress != 0x0); uint balance = verificationFeeBalances[msg.sender]; require(balance > 0); verificationFeeBalances[msg.sender] = 0; if (!ERC20(paymentContractAddress).transfer(msg.sender, balance)) { revert(); } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'withdrawFee' transfers funds to an external address using the ERC20 'transfer' function without checking the return value for success. If the transfer fails (e.g., due to lack of balance or a throw in the ERC20 contract), the state update 'verificationFeeBalances[msg.sender] = 0;' will still occur, leading to potential loss of funds as the balance is set to zero regardless of the transfer outcome.",
+        "file_name": "0xf72c66c8a1ca8e1f5475f46632fc804ec7c64660.sol"
+    },
+    {
+        "function_name": "isValidAuthority",
+        "code": "function isValidAuthority(address authorityAddress) private view returns (bool) { Authority authority = Authority(authorityContractAddress); return authority.isValidAuthority(authorityAddress, block.number); }",
+        "vulnerability": "Block Number Dependency",
+        "reason": "The function 'isValidAuthority' relies on the current block number to determine the validity of an authority. This dependence can lead to situations where transactions might be valid in one block but not in another, potentially causing inconsistencies and race conditions in the validation logic.",
+        "file_name": "0xf72c66c8a1ca8e1f5475f46632fc804ec7c64660.sol"
+    }
+]

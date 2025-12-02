@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "bid",
+        "code": "function bid (uint256 _roundNumber, string _message) payable public { require(!isContract(msg.sender)); require(bytes(_message).length <= maxMessageChars); require(msg.value > 0); if (_roundNumber == currentRoundNumber && !roundExpired()) { require(msg.value > lastBidAmount); }else if (_roundNumber == (currentRoundNumber+1) && roundExpired()) { var lastRoundPotBalance = this.balance.sub(msg.value); uint256 devFee = lastRoundPotBalance.mul(devFeePercent).div(100); owner.transfer(devFee); uint256 winnings = lastRoundPotBalance.sub(devFee).mul(100 - rolloverPercent).div(100); king.transfer(winnings); roundToKing[currentRoundNumber] = king; roundToWinnings[currentRoundNumber] = winnings; roundToFinalBid[currentRoundNumber] = lastBidAmount; roundToFinalMessage[currentRoundNumber] = kingsMessage; currentBidNumber = 0; currentRoundNumber++; if (nextBidExpireBlockLength != 0) { bidExpireBlockLength = nextBidExpireBlockLength; nextBidExpireBlockLength = 0; } }else { require(false); } king = msg.sender; kingsMessage = _message; lastBidAmount = msg.value; lastBidBlock = block.number; NewKing(currentRoundNumber, king, kingsMessage, lastBidAmount, currentBidNumber, lastBidBlock); currentBidNumber++; }",
+        "vulnerability": "Reentrancy vulnerability",
+        "reason": "In the 'bid' function, the call to 'owner.transfer(devFee)' and 'king.transfer(winnings)' can potentially allow reentrancy. If the 'owner' or 'king' addresses are malicious contracts, they could execute the 'bid' function again as part of the fallback function, leading to unexpected behavior or draining of contract funds.",
+        "file_name": "0xd7aa0cdb7cc9a406884bb4b3bc727b836ef3422f.sol"
+    },
+    {
+        "function_name": "setOwner",
+        "code": "function setOwner (address _owner) onlyOwner() public { owner = _owner; }",
+        "vulnerability": "Ownership takeover",
+        "reason": "The 'setOwner' function allows the current owner to change the ownership of the contract to any other address. If the owner's private key is compromised, the attacker can easily take over the entire contract by changing the owner to an address they control.",
+        "file_name": "0xd7aa0cdb7cc9a406884bb4b3bc727b836ef3422f.sol"
+    },
+    {
+        "function_name": "bid",
+        "code": "function bid (uint256 _roundNumber, string _message) payable public { require(!isContract(msg.sender)); require(bytes(_message).length <= maxMessageChars); require(msg.value > 0); if (_roundNumber == currentRoundNumber && !roundExpired()) { require(msg.value > lastBidAmount); }else if (_roundNumber == (currentRoundNumber+1) && roundExpired()) { var lastRoundPotBalance = this.balance.sub(msg.value); uint256 devFee = lastRoundPotBalance.mul(devFeePercent).div(100); owner.transfer(devFee); uint256 winnings = lastRoundPotBalance.sub(devFee).mul(100 - rolloverPercent).div(100); king.transfer(winnings); roundToKing[currentRoundNumber] = king; roundToWinnings[currentRoundNumber] = winnings; roundToFinalBid[currentRoundNumber] = lastBidAmount; roundToFinalMessage[currentRoundNumber] = kingsMessage; currentBidNumber = 0; currentRoundNumber++; if (nextBidExpireBlockLength != 0) { bidExpireBlockLength = nextBidExpireBlockLength; nextBidExpireBlockLength = 0; } }else { require(false); } king = msg.sender; kingsMessage = _message; lastBidAmount = msg.value; lastBidBlock = block.number; NewKing(currentRoundNumber, king, kingsMessage, lastBidAmount, currentBidNumber, lastBidBlock); currentBidNumber++; }",
+        "vulnerability": "Integer overflow",
+        "reason": "In the 'bid' function, there is a risk of integer overflow when calculating 'devFee' and 'winnings' especially if 'lastRoundPotBalance' becomes very large. This could lead to incorrect calculations of the fees or winnings, potentially skewing the distribution of funds in favor of an attacker or causing logical errors in the state of the contract.",
+        "file_name": "0xd7aa0cdb7cc9a406884bb4b3bc727b836ef3422f.sol"
+    }
+]

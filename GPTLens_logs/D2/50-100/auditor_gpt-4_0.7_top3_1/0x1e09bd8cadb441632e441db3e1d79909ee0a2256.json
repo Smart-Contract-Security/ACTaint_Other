@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address _target, uint256 _mintedAmount) onlyAdmin supplyLock public { balances[_target] = SafeMath.add(balances[_target], _mintedAmount); totalSupply = SafeMath.add(totalSupply, _mintedAmount); Transfer(0, this, _mintedAmount); Transfer(this, _target, _mintedAmount); }",
+        "vulnerability": "Arbitrary minting",
+        "reason": "The 'mintToken' function allows the admin to mint an arbitrary amount of tokens and assign them to any address. This can lead to inflation and devaluation of the token, and potentially enable malicious activities such as dumping on the market. There are no checks in place to limit the amount or frequency of minting, making this a critical vulnerability.",
+        "file_name": "0x1e09bd8cadb441632e441db3e1d79909ee0a2256.sol"
+    },
+    {
+        "function_name": "burnToken",
+        "code": "function burnToken(address _target, uint256 _burnedAmount) onlyAdmin supplyLock public { balances[_target] = SafeMath.sub(balances[_target], _burnedAmount); totalSupply = SafeMath.sub(totalSupply, _burnedAmount); Burned(_target, _burnedAmount); }",
+        "vulnerability": "Arbitrary burning",
+        "reason": "Similar to the minting issue, the 'burnToken' function allows the admin to arbitrarily burn tokens from any account. This can be used maliciously to reduce the token holdings of other addresses without their consent. This function should have safeguards or require explicit approval from the token holder before being executed.",
+        "file_name": "0x1e09bd8cadb441632e441db3e1d79909ee0a2256.sol"
+    },
+    {
+        "function_name": "transferAdminship",
+        "code": "function transferAdminship(address _newAdmin) onlyAdmin public { admin = _newAdmin; TransferAdminship(admin); }",
+        "vulnerability": "Admin takeover",
+        "reason": "The 'transferAdminship' function allows the current admin to transfer administrative rights to another address without any checks or constraints. If the admin account is compromised, this function can be exploited by an attacker to gain full control of the contract by setting themselves as the new admin. This could lead to irreversible damages such as uncontrolled minting or burning tokens, locking transfers, or freezing accounts.",
+        "file_name": "0x1e09bd8cadb441632e441db3e1d79909ee0a2256.sol"
+    }
+]

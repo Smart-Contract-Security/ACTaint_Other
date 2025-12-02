@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "addAccount",
+        "vulnerability": "Unchecked Push to Array",
+        "criticism": "The reasoning is valid as the function does not check for duplicates before adding a new account to the 'accounts' array. This could indeed lead to unexpected behavior and increased gas costs due to redundant entries. However, the severity is moderate because it primarily affects performance and usability rather than security directly. Profitability is low as exploiting this vulnerability does not yield direct financial gain.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The function 'addAccount' pushes new accounts to the 'accounts' array without checking for duplicates. This can lead to a situation where the same account is added multiple times, potentially causing unexpected behavior in other functions that iterate through the 'accounts' array, such as 'accountsOwnedBy'. This can also lead to increased gas costs when dealing with the array due to its unchecked growth.",
+        "code": "function addAccount(address account, address owner) external accountManagerOnly {\n    ownerFor[account] = owner;\n    accounts.push(account);\n    emit AccountCreated(account, owner);\n}",
+        "file_name": "Registry.sol"
+    },
+    {
+        "function_name": "setAddress",
+        "vulnerability": "Potential Arbitrary Key Overwrite",
+        "criticism": "The reasoning correctly identifies a potential vulnerability where an admin can overwrite existing keys with new addresses. This could compromise the integrity of the system if malicious admins redirect address lookups. The severity is high due to the potential impact on system integrity. However, profitability is moderate as it depends on the specific use case of the overwritten keys and the potential for financial gain.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 4,
+        "reason": "The function 'setAddress' allows an admin to set a new address for any key in the mapping 'addressFor'. However, it does not prevent overwriting existing keys with new addresses unless the key is being set to a zero address, which results in the key's deletion. Malicious admins could abuse this to redirect sensitive address lookups to addresses they control, affecting the integrity of the system.",
+        "code": "function setAddress(string calldata id, address _address) external adminOnly {\n    if (addressFor[id] == address(0)) {\n        if (_address == address(0)) revert Errors.ZeroAddress();\n        keys.push(id);\n    } else if (_address == address(0)) removeKey(id);\n    addressFor[id] = _address;\n}",
+        "file_name": "Registry.sol"
+    },
+    {
+        "function_name": "updateLToken",
+        "vulnerability": "Unchecked LToken Update",
+        "criticism": "The reasoning is accurate in pointing out the lack of error handling when the old LToken address is not found in the array. This could lead to incorrect assumptions about the update's success, potentially causing financial losses. The severity is high due to the financial implications. Profitability is low for external attackers as this function is internal and not directly exploitable, but could be a concern if combined with other vulnerabilities.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "The 'updateLToken' function updates the 'lTokens' array to replace an old LToken address with a new one. However, if the old LToken address is not found in the array, the function completes without any indication of failure. This lack of error handling can lead to a false assumption that the LToken has been successfully updated, which might not be the case, potentially leading to financial losses or incorrect token management.",
+        "code": "function updateLToken(address lToken, address newLToken) internal {\n    uint len = lTokens.length;\n    for(uint i; i < len; ++i) {\n        if(lTokens[i] == lToken) {\n            lTokens[i] = newLToken;\n            break;\n        }\n    }\n}",
+        "file_name": "Registry.sol"
+    }
+]

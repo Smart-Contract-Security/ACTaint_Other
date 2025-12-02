@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external {\n    if (msg.value>=howManyEtherInWeiToBecomeOwner) {\n        owner.transfer(msg.value);\n        owner.transfer(this.balance);\n        owner=_newowner;\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' transfers the balance of the contract to the current owner before changing the owner state to the new owner. This transfer can potentially be exploited by a reentrant call. If the current owner is a contract, it can call back into any function of this contract including changeOwner again, which could lead to unintended behavior like changing the owner again or draining the contract funds in unpredictable ways.",
+        "file_name": "0xfda2e0437f974c9312ca6740c07181178f645fa9.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external {\n    if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) {\n        selfdestruct(owner);\n    }\n}",
+        "vulnerability": "Dangerous permissions",
+        "reason": "The 'killContract' function allows any user to permanently disable the contract by sending a specified amount of Ether (500 Ether). This threshold might be met by a wealthy attacker, leading to destruction of the contract and loss of accessibility for legitimate users. Additionally, the ability for non-owner users to destroy the contract poses significant security risks.",
+        "file_name": "0xfda2e0437f974c9312ca6740c07181178f645fa9.sol"
+    },
+    {
+        "function_name": "mintTo",
+        "code": "function mintTo(address _to, uint256 _value) public returns (bool) {\n    balances[_to] += _value;\n    Transfer(msg.sender, _to, _value);\n    return true;\n}",
+        "vulnerability": "Unauthorized token minting",
+        "reason": "The 'mintTo' function allows any caller to mint new tokens to any address without any checks or restrictions on who can call it or limits on the amount of tokens that can be minted. This can lead to an unlimited issuance of tokens, diluting the value for existing token holders and potentially leading to abuse in token distribution.",
+        "file_name": "0xfda2e0437f974c9312ca6740c07181178f645fa9.sol"
+    }
+]

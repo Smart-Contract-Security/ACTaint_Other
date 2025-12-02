@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "setCroupier",
+        "vulnerability": "Single Point of Failure",
+        "criticism": "The reasoning is valid in pointing out the risks associated with the single control point in the 'setCroupier' function. If the croupier's account is compromised, it could indeed lead to manipulated game outcomes or unauthorized fund transfers. The severity is high due to potential game manipulation, but profitability is also high if the attacker can control the croupier account to direct funds or manipulate game outcomes.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function 'setCroupier' allows an admin to change the croupier address. This creates a single point of failure, as the integrity of the game relies solely on the security of the croupier's private key. If the croupier\u2019s account is compromised or maliciously controlled, it could be used to manipulate game outcomes or drain the contract funds through fraudulent activities.",
+        "code": "function setCroupier(address newCroupier) external onlyAdmin { croupier = newCroupier; }",
+        "file_name": "0x07829cca2f215ced7aa41e51921f6dd42c906190.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Unauthorized Self-Destruct",
+        "criticism": "The reasoning correctly identifies the risk associated with the 'kill' function, which could lead to the destruction of the contract and loss of funds if an admin account is compromised. This is a severe vulnerability as it could result in total loss of the contract's balance. However, the profitability is moderate because it depends on the attacker gaining admin access, which might not be straightforward.",
+        "correctness": 8,
+        "severity": 9,
+        "profitability": 5,
+        "reason": "The 'kill' function allows an admin to destroy the contract by calling selfdestruct, which sends all remaining Ether stored in the contract to the specified owner address. However, if an attacker gains control over an admin account or if there's any mishandling or leak of admin privileges, they could destroy the contract, leading to loss of funds and disruption of the service.",
+        "code": "function kill(address _owner) external onlyAdmin { require (lockedInBets == 0, \"All games should be processed (settled or refunded) before self-destruct.\"); selfdestruct(_owner); }",
+        "file_name": "0x07829cca2f215ced7aa41e51921f6dd42c906190.sol",
+        "final_score": 7.5
+    },
+    {
+        "function_name": "placeGame",
+        "vulnerability": "Risk of Overflow",
+        "criticism": "The reasoning provided is accurate in highlighting the potential for overflow in the 'lockedInBets' and 'lockedInviteProfits' variables due to their uint128 type. This could indeed lead to insolvency if the contract cannot cover the bets, which is a severe issue. However, the profitability for an attacker is low, as exploiting this requires influencing the contract's state to trigger an overflow, which is non-trivial without additional vulnerabilities.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "In the function 'placeGame', the smart contract updates the 'lockedInBets' and 'lockedInviteProfits' which are declared as uint128. The addition operation performed on these variables can overflow without detection. Since Solidity 0.4.24 does not automatically check for overflows, this can lead to situations where the actual amount locked in bets or invite profits becomes less than expected, potentially leading to insolvency of the contract when paying out winnings.",
+        "code": "function placeGame( uint rollUnder, uint commitLastBlock, uint commit, bytes32 r, bytes32 s, address inviter ) external payable { Game storage bet = bets[commit]; require (bet.player == address(0), \"Game should be in a 'clean' state.\"); require (msg.sender != inviter, \"Player and inviter should be different\"); uint amount = msg.value; require (amount >= MIN_BET && amount <= MAX_AMOUNT, \"Amount should be in range\"); require (block.number <= commitLastBlock, \"Commit has expired\"); bytes memory prefix = \"\\x19Ethereum Signed Message:\\n32\"; bytes32 signatureHash = keccak256(abi.encodePacked(prefix,commit)); require (croupier == ecrecover(signatureHash, 27, r, s), \"Invalid signature\"); require (rollUnder >= MIN_ROLL_UNDER && rollUnder <= MAX_ROLL_UNDER, \"Roll under should be within range.\"); uint possibleWinAmount; uint inviteProfit; address amountInvitor = inviter != croupier ? inviter : 0; (possibleWinAmount,inviteProfit) = getDiceWinAmount(amount, rollUnder, amountInvitor); require (possibleWinAmount <= amount + maxProfit, \"maxProfit limit violation.\"); lockedInBets += uint128(possibleWinAmount); lockedInviteProfits += uint128(inviteProfit); require ((lockedInBets + lockedInviteProfits) <= address(this).balance, \"Cannot afford to lose this bet.\"); emit Commit(commit); bet.amount = amount; bet.rollUnder = uint8(rollUnder); bet.placeBlockNumber = uint40(block.number); bet.player = msg.sender; bet.finished = false; if (inviter != croupier) { bet.inviter = inviter; } }",
+        "file_name": "0x07829cca2f215ced7aa41e51921f6dd42c906190.sol",
+        "final_score": 6.25
+    }
+]

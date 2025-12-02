@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "participate_in_arbits_presale_crypto",
+        "code": "function participate_in_arbits_presale_crypto() public payable presale_open use_count { ( address p1, uint256 p2, uint256 p3, uint256 p4, bool p5, uint8 p6 ) = db.get_participant(msg.sender); participant memory subject = participant(p1, p2, p3, p4, p5, p6); uint256 subject_tokens_to_add = msg.value.mul(db.get_presale_arbits_per_ether()).div(1 ether); if (subject.arbits_kyc_whitelist) { subject_tokens_to_add = subject_tokens_to_add.mul(db.get_pre_kyc_bonus_numerator()).div(db.get_pre_kyc_bonus_denominator()); } require(db.get_presale_arbits_total() >= db.get_presale_arbits_sold().add(subject_tokens_to_add)); require(db.get_arbits_max_contribution() >= subject_tokens_to_add); require(db.get_arbits_min_contribution() <= subject_tokens_to_add); db.add_presale_arbits_sold(subject_tokens_to_add); db.add_arbits(msg.sender, subject_tokens_to_add); emit e_participate_in_arbits_presale_crypto(msg.sender, msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'participate_in_arbits_presale_crypto' is vulnerable to reentrancy attacks as it calls external contracts (via db.get and db.add functions) before it updates its own state. This could allow an attacker to recursively call the function, draining the contract's funds or causing other unexpected behaviors.",
+        "file_name": "0xa3cd2dd81c0115d801282f1711e9656ae2770566.sol"
+    },
+    {
+        "function_name": "kill_and_withdraw",
+        "code": "function kill_and_withdraw(address withdraw_to) public only_owner { emit e_kill_and_withdraw(withdraw_to); selfdestruct(withdraw_to); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'kill_and_withdraw' allows an owner to kill the contract and redirect all funds to any address. This poses a severe security risk if the ownership is compromised or mishandled, leading to potential loss of all contract funds.",
+        "file_name": "0xa3cd2dd81c0115d801282f1711e9656ae2770566.sol"
+    },
+    {
+        "function_name": "set_presale_arbits_per_ether",
+        "code": "function set_presale_arbits_per_ether(uint256 _v) public only_owner { db.set_presale_arbits_per_ether(_v); }",
+        "vulnerability": "Unchecked Input",
+        "reason": "The function 'set_presale_arbits_per_ether' does not validate the input parameter '_v'. An owner can potentially set this to an undesirably high or low value, which can disrupt the presale by setting an unrealistic number of arbits per ether.",
+        "file_name": "0xa3cd2dd81c0115d801282f1711e9656ae2770566.sol"
+    }
+]

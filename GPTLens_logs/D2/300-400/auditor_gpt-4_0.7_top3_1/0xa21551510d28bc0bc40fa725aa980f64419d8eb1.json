@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The distr function assumes that all arithmetic operations and the Transfer event will always succeed without checking the return value. In Solidity, certain operations such as .add() can fail (e.g., due to integer overflow), but this function does not handle such a scenario, potentially leading to incorrect balance updates or token distribution.",
+        "file_name": "0xa21551510d28bc0bc40fa725aa980f64419d8eb1.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The getTokens function updates the state after calling the distr function, which makes external calls and transfers tokens. This could potentially lead to reentrancy attacks where the state may not be correctly updated if the distr function is re-entered, leading to issues like double spending.",
+        "file_name": "0xa21551510d28bc0bc40fa725aa980f64419d8eb1.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) { allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); require(_spender.call(bytes4(bytes32(keccak256(\"receiveApproval(address,uint256,address,bytes)\"))), msg.sender, _value, this, _extraData)); return true; }",
+        "vulnerability": "Arbitrary Code Execution",
+        "reason": "The approveAndCall function allows for arbitrary code execution within the call to _spender. This could potentially allow an attacker to execute unintended code in the context of the contract if the _spender address is malicious. This poses a significant security risk by allowing potentially untrusted contracts to influence the execution flow.",
+        "file_name": "0xa21551510d28bc0bc40fa725aa980f64419d8eb1.sol"
+    }
+]

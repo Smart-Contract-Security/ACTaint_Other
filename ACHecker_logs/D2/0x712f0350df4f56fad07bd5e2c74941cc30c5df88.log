@@ -1,0 +1,61 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x712f0350df4f56fad07bd5e2c74941cc30c5df88.code
+Start time: 23/08/2022 01:30:17
+Building CFG...
+CFG generation time (secs): 0.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function 1146015e
+	( 3137)  c41:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 12035ca6
+	( 3238)  ca6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 20250264
+	( 3339)  d0b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 599cbe29
+	( 3516)  dbc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 5e0b4cb6
+	( 3749)  ea5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 676ffb53
+	( 3860)  f14:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 695e333d
+	( 4131) 1023:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 7055410b
+	( 4371) 1113:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {11} in function fd1243dd
+
+Violated access control check in function 71533b88
+	( 4784) 12b0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 7a16cbe3
+	( 5103) 13ef:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function 81824d53
+	( 5224) 1468:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+Violated access control check in function fd1243dd
+	( 6415) 190f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function bcb7f880
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 4.57
+End time: 23/08/2022 01:30:22

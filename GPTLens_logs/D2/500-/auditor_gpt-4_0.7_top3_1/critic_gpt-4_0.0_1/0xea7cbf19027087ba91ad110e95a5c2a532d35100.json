@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "refund",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is mostly correct in identifying a reentrancy vulnerability due to the call to msg.sender.send(weiValue) before updating the state variable weiRefunded. However, the criticism of an infinite loop due to the recursive call to refund() is incorrect because the function will throw an error if weiValue is zero, preventing further execution. The severity is high due to potential loss of funds, but profitability is moderate as it requires specific conditions to exploit.",
+        "correctness": 6,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The refund function is susceptible to a reentrancy attack because it calls msg.sender.send(weiValue) before setting weiRefunded, potentially allowing an attacker to re-enter and drain the contract if the fallback function of the attacker's contract calls refund again. Additionally, the recursive call to refund() before actually sending ether creates an infinite loop, leading to out-of-gas errors, making this function unusable.",
+        "code": "function refund() private { uint256 weiValue = this.balance; if (weiValue == 0) throw; uint256 weiRefunded; weiRefunded = safeAdd(weiRefunded, weiValue); refund(); if (!msg.sender.send(weiValue)) throw; }",
+        "file_name": "0xea7cbf19027087ba91ad110e95a5c2a532d35100.sol"
+    },
+    {
+        "function_name": "claim_bounty",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The reasoning correctly identifies the lack of return value checking on the external call to token.proxyPayment, which could indeed lead to unexpected behavior. The mention of state manipulation post-external call is also valid, highlighting potential reentrancy issues. However, the severity is somewhat overstated as the function's logic does not inherently lead to loss of funds directly from this issue alone. Profitability is low as exploiting this would require specific conditions.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The function claim_bounty makes an external call to token.proxyPayment without checking the return value. This external call could fail silently, leading to unexpected behavior in the contract. Additionally, the function manipulates the state after the external call (setting 'bought_tokens' and 'time_bought'), which violates the checks-effects-interactions pattern and can lead to reentrancy issues.",
+        "code": "function claim_bounty(){ if (bought_tokens) return; if (kill_switch) throw; bought_tokens = true; time_bought = now + 1 days; token.proxyPayment.value(this.balance - bounty)(address(this)); if(this.balance > ETH_to_end) { msg.sender.transfer(bounty); } else { time_bought = now + 1 days * 9; if(this.balance > ETH_to_end) { msg.sender.transfer(bounty); } } }",
+        "file_name": "0xea7cbf19027087ba91ad110e95a5c2a532d35100.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS via unchecked external call",
+        "criticism": "The reasoning is accurate in pointing out the potential for denial of service due to unchecked external calls in the withdraw function. The use of 'throw' does indeed revert state changes but does not handle the failure gracefully, potentially locking funds. The mention of reentrancy is slightly misplaced as the state is modified before the external calls, but the main issue is indeed the DoS potential. Severity is moderate, but profitability is low as it mainly disrupts service rather than providing a direct profit avenue.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 2,
+        "reason": "In the function withdraw, the external calls to token.transfer are not checked for failure except through a 'throw' statement, which can lead to denial of service if the external call fails. This failure could be maliciously induced or accidental, but either way, it can prevent legitimate operations of the contract. Also, the function modifies state before these external calls, which can be exploited in reentrancy attacks.",
+        "code": "function withdraw(){ if (!bought_tokens) { uint256 eth_amount = balances[msg.sender]; balances[msg.sender] = 0; msg.sender.transfer(eth_amount); } else { uint256 ZBR_amount = balances[msg.sender] * ZBR_per_eth; balances[msg.sender] = 0; uint256 fee = 0; if (!checked_in[msg.sender]) { fee = ZBR_amount / 100; if(!token.transfer(developer_address, fee)) throw; } if(!token.transfer(msg.sender, ZBR_amount - fee)) throw; } }",
+        "file_name": "0xea7cbf19027087ba91ad110e95a5c2a532d35100.sol"
+    }
+]

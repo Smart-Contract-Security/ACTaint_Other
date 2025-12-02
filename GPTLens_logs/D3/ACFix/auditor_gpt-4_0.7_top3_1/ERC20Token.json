@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address account, uint256 amount) external onlyMinter whenNotPaused notBlacklisted(account) { require(amount != 0, 'Invalid amount'); _mint(account, amount); emit Mint(account, amount); }",
+        "vulnerability": "Unbounded Minting",
+        "reason": "The function allows a minter to mint tokens to any account without any cap on the amount. This can lead to inflation and devaluation of the token if abused by a malicious or compromised minter.",
+        "file_name": "ERC20Token.sol"
+    },
+    {
+        "function_name": "setMinter",
+        "code": "function setMinter(address newMinter, address oldMinter) external onlyGovernor { require(newMinter != address(0), 'newMinter cannot be the zero address'); _revokeRole(MINTER_ROLE, oldMinter); _grantRole(MINTER_ROLE, newMinter); }",
+        "vulnerability": "Centralization Risk",
+        "reason": "The function allows the governor to change the minter arbitrarily without any checks beyond role ownership and non-zero address. This centralizes power significantly, allowing a single governor to potentially disrupt the token economy by changing minters to malicious or compromised accounts.",
+        "file_name": "ERC20Token.sol"
+    },
+    {
+        "function_name": "addBlackList",
+        "code": "function addBlackList(address evilUser) public onlyGuardian { require(evilUser != address(0), 'Invalid address'); isBlackListed[evilUser] = true; emit AddedBlackList(evilUser); }",
+        "vulnerability": "Arbitrary Address Blacklisting",
+        "reason": "This function allows a guardian to blacklist any address, preventing them from participating in token transfers, minting, or burning. If misused, either intentionally or through a compromised guardian account, legitimate users could be censored or excluded from the network.",
+        "file_name": "ERC20Token.sol"
+    }
+]

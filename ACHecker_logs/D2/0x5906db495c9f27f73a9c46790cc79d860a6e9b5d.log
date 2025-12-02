@@ -1,0 +1,43 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5906db495c9f27f73a9c46790cc79d860a6e9b5d.code
+Start time: 21/08/2022 11:28:30
+Building CFG...
+CFG generation time (secs): 0.07
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function submitEvidence(uint256,string)
+	( 4122) 101a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function payArbitrationFeeByReceiver(uint256)
++--Attacker can make changes to AC item {0} in function payArbitrationFeeBySender(uint256)
++--Attacker can make changes to AC item {0} in function createTransaction(uint256,address,string)
+
+Violated access control check in function payArbitrationFeeByReceiver(uint256)
+	( 2531)  9e3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function payArbitrationFeeByReceiver(uint256)
++--Attacker can make changes to AC item {0} in function payArbitrationFeeBySender(uint256)
++--Attacker can make changes to AC item {0} in function createTransaction(uint256,address,string)
+
+Violated access control check in function payArbitrationFeeBySender(uint256)
+	( 3363)  d23:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function payArbitrationFeeByReceiver(uint256)
++--Attacker can make changes to AC item {0} in function payArbitrationFeeBySender(uint256)
++--Attacker can make changes to AC item {0} in function createTransaction(uint256,address,string)
+
+Violated access control check in function pay(uint256,uint256)
+	( 5481) 1569:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function payArbitrationFeeByReceiver(uint256)
++--Attacker can make changes to AC item {0} in function payArbitrationFeeBySender(uint256)
++--Attacker can make changes to AC item {0} in function createTransaction(uint256,address,string)
+
+Violated access control check in function reimburse(uint256,uint256)
+	( 6700) 1a2c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function payArbitrationFeeByReceiver(uint256)
++--Attacker can make changes to AC item {0} in function payArbitrationFeeBySender(uint256)
++--Attacker can make changes to AC item {0} in function createTransaction(uint256,address,string)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 84.61
+End time: 21/08/2022 11:29:55

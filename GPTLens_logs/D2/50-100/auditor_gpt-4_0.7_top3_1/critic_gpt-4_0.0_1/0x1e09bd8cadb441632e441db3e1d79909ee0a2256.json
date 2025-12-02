@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "mintToken",
+        "vulnerability": "Arbitrary minting",
+        "criticism": "The reasoning is correct in identifying the potential for arbitrary minting by an admin, which can indeed lead to inflation and devaluation of the token. However, the severity of this vulnerability depends on the trust and integrity of the admin. Since the function is restricted to onlyAdmin and uses SafeMath for overflow protection, it is not as critical as suggested if the admin is trusted. The profitability for an external attacker is non-existent unless they gain admin access.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The 'mintToken' function allows the admin to mint an arbitrary amount of tokens and assign them to any address. This can lead to inflation and devaluation of the token, and potentially enable malicious activities such as dumping on the market. There are no checks in place to limit the amount or frequency of minting, making this a critical vulnerability.",
+        "code": "function mintToken(address _target, uint256 _mintedAmount) onlyAdmin supplyLock public { balances[_target] = SafeMath.add(balances[_target], _mintedAmount); totalSupply = SafeMath.add(totalSupply, _mintedAmount); Transfer(0, this, _mintedAmount); Transfer(this, _target, _mintedAmount); }",
+        "file_name": "0x1e09bd8cadb441632e441db3e1d79909ee0a2256.sol"
+    },
+    {
+        "function_name": "burnToken",
+        "vulnerability": "Arbitrary burning",
+        "criticism": "The reasoning correctly points out the risk of arbitrary burning by an admin. However, the severity is slightly overstated as the function is also protected by the onlyAdmin modifier, implying that only a trusted admin can execute this function. The risk exists if the admin is malicious or compromised. Profitability for an external attacker remains low unless they can compromise the admin account.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "Similar to the minting issue, the 'burnToken' function allows the admin to arbitrarily burn tokens from any account. This can be used maliciously to reduce the token holdings of other addresses without their consent. This function should have safeguards or require explicit approval from the token holder before being executed.",
+        "code": "function burnToken(address _target, uint256 _burnedAmount) onlyAdmin supplyLock public { balances[_target] = SafeMath.sub(balances[_target], _burnedAmount); totalSupply = SafeMath.sub(totalSupply, _burnedAmount); Burned(_target, _burnedAmount); }",
+        "file_name": "0x1e09bd8cadb441632e441db3e1d79909ee0a2256.sol"
+    },
+    {
+        "function_name": "transferAdminship",
+        "vulnerability": "Admin takeover",
+        "criticism": "The reasoning is valid as the function allows the admin to transfer control without constraints, making it susceptible to misuse if the admin account is compromised. This vulnerability is severe because it can lead to total control of the contract. However, the profitability is only high if the attacker can first gain access to the admin account, which itself might not be straightforward.",
+        "correctness": 7,
+        "severity": 8,
+        "profitability": 6,
+        "reason": "The 'transferAdminship' function allows the current admin to transfer administrative rights to another address without any checks or constraints. If the admin account is compromised, this function can be exploited by an attacker to gain full control of the contract by setting themselves as the new admin. This could lead to irreversible damages such as uncontrolled minting or burning tokens, locking transfers, or freezing accounts.",
+        "code": "function transferAdminship(address _newAdmin) onlyAdmin public { admin = _newAdmin; TransferAdminship(admin); }",
+        "file_name": "0x1e09bd8cadb441632e441db3e1d79909ee0a2256.sol"
+    }
+]

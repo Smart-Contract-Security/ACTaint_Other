@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "executeRuling",
+        "code": "function executeRuling(uint _transactionID, uint _ruling) internal { Transaction storage transaction = transactions[_transactionID]; require(_ruling <= AMOUNT_OF_CHOICES, \"Invalid ruling.\"); if (_ruling == SENDER_WINS) { transaction.sender.send(transaction.senderFee + transaction.amount); } else if (_ruling == RECEIVER_WINS) { transaction.receiver.send(transaction.receiverFee + transaction.amount); } else { uint split_amount = (transaction.senderFee + transaction.amount) / 2; transaction.sender.send(split_amount); transaction.receiver.send(split_amount); } transaction.amount = 0; transaction.senderFee = 0; transaction.receiverFee = 0; transaction.status = Status.Resolved; }",
+        "vulnerability": "Unchecked Send",
+        "reason": "The executeRuling function uses .send() to transfer funds which is known to fail silently (returns false) if the transaction runs out of gas or the call stack is too deep. Failing to check the return value of these sends could allow the function to continue execution even when the sends fail, leading to discrepancies in the contract state.",
+        "file_name": "0xe2dd8cce2c33a04215074adb4b5820b765d8ed9d.sol"
+    },
+    {
+        "function_name": "timeOutBySender",
+        "code": "function timeOutBySender(uint _transactionID) public { Transaction storage transaction = transactions[_transactionID]; require(transaction.status == Status.WaitingReceiver, \"The transaction is not waiting on the receiver.\"); require(now - transaction.lastInteraction >= feeTimeout, \"Timeout time has not passed yet.\"); executeRuling(_transactionID, SENDER_WINS); }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The timeOutBySender function calls executeRuling, which attempts to send all remaining funds to the sender. If the transaction's gas requirement exceeds available gas, this could cause the transaction to fail, preventing the resolution of disputes and potentially locking funds indefinitely.",
+        "file_name": "0xe2dd8cce2c33a04215074adb4b5820b765d8ed9d.sol"
+    },
+    {
+        "function_name": "raiseDispute",
+        "code": "function raiseDispute(uint _transactionID, uint _arbitrationCost) internal { Transaction storage transaction = transactions[_transactionID]; transaction.status = Status.DisputeCreated; transaction.disputeId = arbitrator.createDispute.value(_arbitrationCost)(AMOUNT_OF_CHOICES, arbitratorExtraData); disputeIDtoTransactionID[transaction.disputeId] = _transactionID; emit Dispute(arbitrator, transaction.disputeId, _transactionID, _transactionID); if (transaction.senderFee > _arbitrationCost) { uint extraFeeSender = transaction.senderFee - _arbitrationCost; transaction.senderFee = _arbitrationCost; transaction.sender.send(extraFeeSender); } if (transaction.receiverFee > _arbitrationCost) { uint extraFeeReceiver = transaction.receiverFee - _arbitrationCost; transaction.receiverFee = _arbitrationCost; transaction.receiver.send(extraFeeReceiver); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The raiseDispute function contains calls to .send() within its logic which are vulnerable to reentrancy attacks. Malicious actors could exploit this by making a fallback function that calls back into the contract, potentially leading to unexpected behavior like multiple dispute creations or fund withdrawals before the dispute resolution is complete.",
+        "file_name": "0xe2dd8cce2c33a04215074adb4b5820b765d8ed9d.sol"
+    }
+]

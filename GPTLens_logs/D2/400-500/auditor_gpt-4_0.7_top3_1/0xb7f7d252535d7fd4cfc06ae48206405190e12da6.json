@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address wallet, address buyer, uint256 tokenAmount) public onlyOwner { require(tokenBalances[wallet] >= tokenAmount); tokenBalances[buyer] = tokenBalances[buyer].add(tokenAmount); tokenBalances[wallet] = tokenBalances[wallet].sub(tokenAmount); Transfer(wallet, buyer, tokenAmount); totalSupply=totalSupply.sub(tokenAmount); }",
+        "vulnerability": "Inflation vulnerability",
+        "reason": "The 'mint' function, designed to transfer tokens from the 'wallet' to the 'buyer', unexpectedly reduces 'totalSupply' instead of increasing it. This leads to an incorrect representation of the total token supply, which could be exploited to inflate the token value artificially by reducing the apparent supply.",
+        "file_name": "0xb7f7d252535d7fd4cfc06ae48206405190e12da6.sol"
+    },
+    {
+        "function_name": "pullBack",
+        "code": "function pullBack(address wallet, address buyer, uint256 tokenAmount) public onlyOwner { require(tokenBalances[buyer]>=tokenAmount); tokenBalances[buyer] = tokenBalances[buyer].sub(tokenAmount); tokenBalances[wallet] = tokenBalances[wallet].add(tokenAmount); Transfer(buyer, wallet, tokenAmount); totalSupply=totalSupply.add(tokenAmount); }",
+        "vulnerability": "Unauthorized token creation",
+        "reason": "The 'pullBack' function allows the contract owner to forcibly transfer tokens from any account back to a specified wallet and improperly increases the 'totalSupply'. This unintended increase in total supply can be used by the owner to arbitrarily inflate the token supply, undermining the token's economic model and potentially diluting the value of existing tokens.",
+        "file_name": "0xb7f7d252535d7fd4cfc06ae48206405190e12da6.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { require(newOwner != address(0)); OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Ownership takeover",
+        "reason": "This function allows the current owner to transfer ownership of the contract to a new address. If the owner account is compromised, this functionality can be exploited by an attacker to take over the contract by setting themselves as the new owner, potentially leading to malicious control over all administrative functions.",
+        "file_name": "0xb7f7d252535d7fd4cfc06ae48206405190e12da6.sol"
+    }
+]

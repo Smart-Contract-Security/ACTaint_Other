@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "retrait_1",
+        "vulnerability": "Token Transfer Without Balance Check",
+        "criticism": "The reasoning provided is partially correct. The function does not explicitly check the balance before transferring tokens, which could indeed lead to failed transactions if the balance is insufficient. However, the severity of this issue depends on the implementation of the Token_1.transfer function. If the Token_1 contract adheres to the ERC-20 standard, it should inherently prevent transfers that exceed the balance, thus mitigating this issue. The profitability of exploiting this vulnerability is low, as it generally would not allow an attacker to gain tokens but could disrupt service.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The function retrait_1 does not check if the Token_1 contract has enough tokens to perform the transfer operation before executing it. This can lead to an underflow in the token contract if the token balance in the contract is less than the 'retraitStandard_1'. It can potentially allow users to withdraw tokens they are not entitled to, or disrupt the contract's ability to function by causing token transfer operations to fail.",
+        "code": "function retrait_1 () public { require( msg.sender == User_1 ); require( Token_1.transfer(User_1, retraitStandard_1) ); require( inData_1 == inData_2 ); require( inData_3 == inData_4 ); require( inData_5 == inData_6 ); }",
+        "file_name": "0x712f0350df4f56fad07bd5e2c74941cc30c5df88.sol",
+        "final_score": 3.5
+    },
+    {
+        "function_name": "retrait_2",
+        "vulnerability": "Token Transfer Without Balance Check",
+        "criticism": "Similar to retrait_1, the criticism applies here as well. The reasoning assumes a vulnerability without considering the behavior of the Token_2.transfer function. If Token_2.transfer is compliant with common token standards, it would handle insufficient balances by reverting the transaction. Therefore, while the observation about the lack of a balance check is correct, its impact might be overstated unless the token contract itself is flawed. The severity is moderate, and profitability remains low.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "Similar to the retrait_1 function, retrait_2 does not verify if there are sufficient tokens in the Token_2 contract to complete the transfer specified by 'retraitStandard_2'. This oversight can result in failed transfers if the balance is insufficient, potentially causing negative effects on the token's integrity and user's assets.",
+        "code": "function retrait_2 () public { require( msg.sender == User_2 ); require( Token_2.transfer(User_2, retraitStandard_2) ); require( inData_1 == inData_2 ); require( inData_3 == inData_4 ); require( inData_5 == inData_6 ); }",
+        "file_name": "0x712f0350df4f56fad07bd5e2c74941cc30c5df88.sol",
+        "final_score": 3.5
+    },
+    {
+        "function_name": "retrait_3",
+        "vulnerability": "Token Transfer Without Balance Check",
+        "criticism": "This function's analysis is consistent with the previous ones. The lack of a direct balance check before transferring tokens is noted, but the actual risk depends on the implementation of the Token_3.transfer method. If the method properly handles balance checks as per standard practices, the risk of actual token loss or unintended transfers is minimal. The reasoning does not account for these standard protections, thus the correctness is moderate, severity is low, and profitability is minimal.",
+        "correctness": 5,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "This function continues the pattern observed in previous retrait functions by not ensuring that the Token_3 contract contains adequate tokens for the 'retraitStandard_3' amount prior to initiating a transfer. This lack of validation can lead to transactions that fail due to insufficient balance, which affects the reliability and trustworthiness of the contract operations.",
+        "code": "function retrait_3 () public { require( msg.sender == User_3 ); require( Token_3.transfer(User_3, retraitStandard_3) ); require( inData_1 == inData_2 ); require( inData_3 == inData_4 ); require( inData_5 == inData_6 ); }",
+        "file_name": "0x712f0350df4f56fad07bd5e2c74941cc30c5df88.sol",
+        "final_score": 3.25
+    }
+]

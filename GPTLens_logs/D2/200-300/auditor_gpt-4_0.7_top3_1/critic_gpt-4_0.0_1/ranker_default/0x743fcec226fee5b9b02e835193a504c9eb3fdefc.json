@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "constuctor",
+        "vulnerability": "Typo in constructor",
+        "criticism": "The reasoning is accurate in identifying the typo in the function name, which prevents it from acting as a constructor. This indeed leaves the 'owner' variable uninitialized, potentially allowing unauthorized access to owner-restricted functions. The severity is high because it compromises the security of the entire contract. However, the profitability is moderate because exploiting this would depend on what functions the owner can call and their implications.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The function is meant to be a constructor and set the owner of the contract, but due to a typo ('constuctor' instead of 'constructor'), the function does not behave as a constructor. This mistake leaves the 'owner' variable uninitialized, allowing anyone to call functions restricted to the owner.",
+        "code": "function constuctor() public { owner = msg.sender; }",
+        "file_name": "0x743fcec226fee5b9b02e835193a504c9eb3fdefc.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "addNote",
+        "vulnerability": "Unrestricted growth of mapping",
+        "criticism": "The reasoning correctly identifies the potential for a DoS attack through unrestricted growth of the 'notes' mapping. However, the scenario where an attacker becomes the owner is less likely unless there are other vulnerabilities that allow ownership takeover. Therefore, while the vulnerability is correctly identified, its impact might be overestimated unless combined with other exploits. The severity is moderate, and profitability is low as it mainly leads to denial of service rather than direct financial gain.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'addNote' allows adding an unlimited number of notes to the 'notes' mapping by incrementing 'notesLength'. This can lead to a denial of service (DoS) attack where an attacker, if they become the owner due to the unprotected owner assignment, could fill the blockchain's storage by continuously adding notes, potentially making the contract unusable or increasing transaction costs for legitimate users.",
+        "code": "function addNote(bytes32 _productID, bytes20 _serialNumber, string _text, string _image) onlyOwner public returns (uint) { Note storage note = notes[notesLength]; note.productID = _productID; note.serialNumber = _serialNumber; note.text = _text; note.image = _image; emit noteInfo(_productID, _serialNumber, _text, _image); notesLength++; return notesLength; }",
+        "file_name": "0x743fcec226fee5b9b02e835193a504c9eb3fdefc.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "addComment",
+        "vulnerability": "Unrestricted public function",
+        "criticism": "The reasoning is correct in pointing out the lack of access control, which could lead to spam and blockchain bloat. However, the impact is primarily on usability and storage rather than security. The severity is therefore lower compared to vulnerabilities that compromise contract integrity or funds. Profitability is also low as the attacker gains no financial benefit from this action.",
+        "correctness": 8,
+        "severity": 3,
+        "profitability": 0,
+        "reason": "The function 'addComment' is a public function without any access control, allowing any user to add comments indefinitely. This could also lead to a DoS attack similar to 'addNote', as well as spam in the comments section, degrading the usability of the contract and bloating the blockchain.",
+        "code": "function addComment(bytes3 _rating, string _text) public returns (uint) { Comment storage comment = comments[commentsLength]; comment.rating = _rating; comment.text = _text; emit commentInfo(_rating, _text); commentsLength++; return commentsLength; }",
+        "file_name": "0x743fcec226fee5b9b02e835193a504c9eb3fdefc.sol",
+        "final_score": 4.75
+    }
+]

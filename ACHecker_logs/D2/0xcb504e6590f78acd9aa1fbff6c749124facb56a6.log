@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xcb504e6590f78acd9aa1fbff6c749124facb56a6.code
+Start time: 28/08/2022 10:32:54
+Building CFG...
+CFG generation time (secs): 0.57
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function startNewBattle(uint256,uint256,uint256,uint256)
+	( 6697) 1a29:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function purchaseWeapons(uint256,uint256,uint256,uint256)
+
+Violated access control check in function ownerSellArmy(uint256,uint256)
+	( 8178) 1ff2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function purchaseWeapons(uint256,uint256,uint256,uint256)
+
+Violated access control check in function ownerCancelArmyMarketplace(uint256)
+	( 8477) 211d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function purchaseWeapons(uint256,uint256,uint256,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 36.21
+End time: 28/08/2022 10:33:31

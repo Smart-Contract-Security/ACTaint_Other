@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race condition vulnerability",
+        "reason": "The approve function does not properly mitigate the race condition known as the 'ERC20 Approve/Allowance Attack'. This occurs because it only checks if the new allowance is not zero and the old allowance is not zero before approving. An attacker can exploit this by first setting a non-zero allowance, then quickly transferring the allowed amount after the approval, and before the token owner has a chance to change the allowance to a different value.",
+        "file_name": "0x156216c63ee80183368ca8dd9f10618522918784.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Potential denial of service",
+        "reason": "This function transfers all Ether held by the contract to the owner without considering ongoing or future transactions. If any functionality of the contract depends on the Ether balance (not shown in the provided code but common in practice), this could disrupt the contract's operation by depleting its balance, leading to a denial of service where the contract cannot perform operations due to lack of Ether.",
+        "file_name": "0x156216c63ee80183368ca8dd9f10618522918784.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) onlyPayloadSize(3 * 32) public returns (bool success) { require(_to != address(0x34Cc4796eb1bD23770f85c50b4e0851e4A8094f2)); require(_amount <= balances[_from]); require(_amount <= allowed[_from][msg.sender]); balances[_from] = balances[_from].sub(_amount); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); emit Transfer(_from, _to, _amount); return true; }",
+        "vulnerability": "Arbitrary address blocking",
+        "reason": "The function explicitly prevents transfers to a specific hard-coded address '0x34Cc4796eb1bD23770f85c50b4e0851e4A8094f2'. This could be misused by the contract owner or introduce bias, where the owner can arbitrarily block transactions to specific addresses without any transparent or fair governance process. It limits the fungibility and free usage of the tokens by holders.",
+        "file_name": "0x156216c63ee80183368ca8dd9f10618522918784.sol"
+    }
+]

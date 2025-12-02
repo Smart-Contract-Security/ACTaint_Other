@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferAdmin",
+        "code": "function transferAdmin(address _newAdminAddress1, address _newAdminAddress2) public onlyAdmin {\n    if(msg.sender == COO) {\n        CTO = _newAdminAddress1;\n        CFO = _newAdminAddress2;\n    }\n    if(msg.sender == CTO) {\n        COO = _newAdminAddress1;\n        CFO = _newAdminAddress2;\n    }\n    if(msg.sender == CFO) {\n        COO = _newAdminAddress1;\n        CTO = _newAdminAddress2;\n    }\n}",
+        "vulnerability": "Admin Role Takeover",
+        "reason": "This function allows the current COO, CTO, or CFO to change the other two admin roles without any consensus or additional checks. An attacker who gains control of one admin account can unilaterally change the other admin roles, potentially leading to a complete takeover of admin functionalities.",
+        "file_name": "0xbdaed67214641b7eda3bf8d7431c3ae5fc46f466.sol"
+    },
+    {
+        "function_name": "withdrawBalance",
+        "code": "function withdrawBalance() public payable onlyAdmin {\n    NewWithdraw(msg.sender, address(this).balance);\n    CFO.transfer(address(this).balance);\n}",
+        "vulnerability": "Potential Lock of Funds",
+        "reason": "The withdrawBalance function sends all the contract's balance to the CFO address, but it does this after emitting an event with the current balance. If the balance changes externally (due to a function call that receives Ether and executes in the same transaction) after the event emission but before the transfer, the CFO might not receive the full balance as expected, or worse, the transfer may fail due to insufficient balance, potentially locking funds in the contract.",
+        "file_name": "0xbdaed67214641b7eda3bf8d7431c3ae5fc46f466.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() external {\n    require(msg.sender == COO);\n    selfdestruct(msg.sender);\n}",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "The kill function can be called by the COO to destruct the contract, removing it from the blockchain and sending all remaining Ether to the COO's address. This could be used maliciously if the COO's account is compromised or if the COO acts with malicious intent, leading to loss of contract functionality and potentially loss of funds for other stakeholders.",
+        "file_name": "0xbdaed67214641b7eda3bf8d7431c3ae5fc46f466.sol"
+    }
+]

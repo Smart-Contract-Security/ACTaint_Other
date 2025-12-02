@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw_privatefund",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a reentrancy vulnerability due to the use of 'send' on potentially untrusted contract addresses, which could indeed execute malicious code in their fallback functions. The severity is high because it could lead to multiple unauthorized withdrawals, draining the contract funds. The profitability is also high for an attacker who can exploit this vulnerability to withdraw more funds than entitled.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The function 'withdraw_privatefund' is vulnerable to reentrancy attacks because it calls 'send' on untrusted addresses (the addresses of funders), which might execute malicious code in their fallback functions. If any of these addresses is a contract, they might call back into 'withdraw_privatefund' or other functions of this contract and potentially withdraw more funds than they should.",
+        "code": "function withdraw_privatefund(bool _withdraw_en) afterDeadline onlyCreator{\n    if (_withdraw_en){\n        beneficiary.send(amountRaised);\n        FundTransfer(beneficiary, amountRaised, false);\n    } else {\n        FundTransfer(0, 11, false);\n        for (uint i = 0; i < funders.length; ++i) {\n            funders[i].addr.send(funders[i].amount);\n            FundTransfer(funders[i].addr, funders[i].amount, false);\n        }\n    }\n}",
+        "file_name": "0x8526f3df4ab4093650b7cf734a839580ee29f6de.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "deadline_modify",
+        "vulnerability": "Arbitrary deadline modification",
+        "criticism": "The reasoning correctly identifies the potential for manipulation by the creator in extending the deadline, which could deceive funders. However, the severity and profitability are moderate because the impact depends on the nature of the funding project and the awareness of the funders. It's exploitable but might not always result in significant harm or profit, depending on the circumstances and the visibility of the changes to funders.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'deadline_modify' allows the creator to arbitrarily change the start time and duration of the funding period. This can be exploitable as the creator may prolong the deadline to an unexpected future date after observing poor funding, manipulating the contract's intended behavior and possibly deceiving funders.",
+        "code": "function deadline_modify(uint256 _start ,uint256 _duration) onlyCreator {\n    start = _start;\n    deadline = _start + _duration * 1 days;\n}",
+        "file_name": "0x8526f3df4ab4093650b7cf734a839580ee29f6de.sol",
+        "final_score": 5.75
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Unauthorized contract termination",
+        "criticism": "The reasoning is partially correct in identifying the risk of premature contract termination. However, the vulnerability description as 'unauthorized' is misleading because the function is restricted to the creator. The real issue is the lack of checks to ensure all obligations are met before destruction. The severity is high if funds are lost, but profitability for an attacker is non-existent as only the beneficiary (likely the creator) benefits.",
+        "correctness": 6,
+        "severity": 7,
+        "profitability": 0,
+        "reason": "The 'kill' function allows the creator to destroy the contract at any time and send all remaining Ethereum to the 'beneficiary'. There are no checks in place to ensure that all obligations (e.g., returning funds to funders if the deadline has passed without the withdrawal condition being met) are fulfilled before the contract is destroyed, potentially leading to loss of funds for contributors.",
+        "code": "function kill() {\n    suicide(beneficiary);\n}",
+        "file_name": "0x8526f3df4ab4093650b7cf734a839580ee29f6de.sol",
+        "final_score": 4.75
+    }
+]

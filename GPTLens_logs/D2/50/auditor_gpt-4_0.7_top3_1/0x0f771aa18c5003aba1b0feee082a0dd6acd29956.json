@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows the sender to become the new owner of the contract by sending an amount of ether equal to or greater than 'howManyEtherInWeiToBecomeOwner'. Although the function transfers the value sent to the current owner, since it uses 'owner.transfer(msg.value)' and 'owner.transfer(this.balance)', these calls could potentially be a target for reentrancy attacks. If the 'owner' address is a contract that has a fallback function designed to call back into this contract, it could lead to unexpected behavior or draining of contract funds.",
+        "file_name": "0x0f771aa18c5003aba1b0feee082a0dd6acd29956.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "This function allows the contract to be destroyed by either the owner or anyone who sends an amount of ether equal to or greater than 'howManyEtherInWeiToKillContract'. This could be exploited by attackers who wish to permanently disable the contract by sending the required ether, thus ceasing all functionality and potentially causing loss of funds or disruption of service.",
+        "file_name": "0x0f771aa18c5003aba1b0feee082a0dd6acd29956.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Unauthorized Access",
+        "reason": "This function allows anyone to change the token's name and symbol if they send a sufficient amount of ether (equal to or greater than 'howManyEtherInWeiToChangeSymbolName'). This could lead to misleading or fraudulent representations of the token, potentially fooling users and exchanges, and affecting the integrity and trustworthiness of the token.",
+        "file_name": "0x0f771aa18c5003aba1b0feee082a0dd6acd29956.sol"
+    }
+]

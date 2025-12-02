@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "ContractPlay",
+        "code": "function ContractPlay() { owner = msg.sender; }",
+        "vulnerability": "Deprecated constructor",
+        "reason": "Using the function name for the constructor is deprecated and could pose security risks if the contract bytecode is deployed under a different contract name, which could allow anyone to set themselves as the owner if the constructor is accidentally called.",
+        "file_name": "0xd934ee44c22fe8cf0f43bf66620b3001d9172904.sol"
+    },
+    {
+        "function_name": "remove",
+        "code": "function remove() onlyOwner { selfdestruct(owner); }",
+        "vulnerability": "Unprotected self-destruct",
+        "reason": "This function allows the owner to destroy the contract at any time. While the function is protected by an onlyOwner modifier, it can lead to loss of funds and/or unexpected behavior if the owner's account is compromised or malicious.",
+        "file_name": "0xd934ee44c22fe8cf0f43bf66620b3001d9172904.sol"
+    },
+    {
+        "function_name": "function()",
+        "code": "function() { throw; }",
+        "vulnerability": "Deprecated throw",
+        "reason": "The use of 'throw' for handling exceptions is deprecated and consumes all gas provided to the call. This could lock functionalities unintentionally and should be replaced with 'revert()' or require statements for better gas handling and clearer error messages.",
+        "file_name": "0xd934ee44c22fe8cf0f43bf66620b3001d9172904.sol"
+    }
+]

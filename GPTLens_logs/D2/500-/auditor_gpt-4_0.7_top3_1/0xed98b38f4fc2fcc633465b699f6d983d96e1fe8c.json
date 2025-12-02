@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initialize",
+        "code": "function initialize(address _address) internal returns (bool success) { if (totalSupply <= (maxSupply - airdropAmount) && !initialized[_address]) { initialized[_address] = true ; balanceOf[_address] += airdropAmount; totalSupply += airdropAmount; Airdrop(_address , airdropAmount); } return true; }",
+        "vulnerability": "Unchecked airdrop logic",
+        "reason": "The 'initialize' function fails to check if the '_address' passed is a valid address (not a contract or zero address) which can lead to accidental airdrops to invalid addresses. Moreover, this function is called within '_transfer', meaning that every transfer could potentially trigger an airdrop without the recipient's explicit consent or knowledge.",
+        "file_name": "0xed98b38f4fc2fcc633465b699f6d983d96e1fe8c.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(!frozenAccount[_from]); require(_to != 0x0); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); initialize(_from); reward(_from); initialize(_to); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The '_transfer' function calls 'initialize' and 'reward' functions that could potentially be used for reentrancy attacks. Since these internal calls occur after the state updates (transfer of balances), an attacker could exploit these calls to manipulate balances or perform unexpected actions in the middle of transfer execution.",
+        "file_name": "0xed98b38f4fc2fcc633465b699f6d983d96e1fe8c.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint amount) returns (uint revenue){ require(balanceOf[msg.sender] >= amount); balanceOf[this] += amount; balanceOf[msg.sender] -= amount; revenue = amount * sellPrice; msg.sender.transfer(revenue); Transfer(msg.sender, this, amount); return revenue; }",
+        "vulnerability": "DoS with (unexpected) revert",
+        "reason": "The 'sell' function directly transfers Ether to 'msg.sender' using 'msg.sender.transfer(revenue)'. If the call to transfer fails (for instance, if the sender is a contract that does not accept ether or the gas stipend is not enough), the entire transaction reverts, including legitimate state changes. This can be used to deny service by deliberately causing transactions to fail.",
+        "file_name": "0xed98b38f4fc2fcc633465b699f6d983d96e1fe8c.sol"
+    }
+]

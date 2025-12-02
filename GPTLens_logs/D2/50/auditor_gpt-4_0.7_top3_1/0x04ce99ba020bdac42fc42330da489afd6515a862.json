@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race condition (known as ERC-20 approve/allowance race condition)",
+        "reason": "This vulnerability arises due to the potential for a user to exploit the race condition between the approval and transferFrom functions. If a user first sets an allowance, and then resets it to a different value, a malicious actor could potentially call transferFrom after the approval but before the allowance reset, effectively transferring potentially unauthorized tokens. The approve function does not safely handle changing non-zero allowances without setting them to zero first\u2014which should be enforced to mitigate this issue.",
+        "file_name": "0x04ce99ba020bdac42fc42330da489afd6515a862.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Unchecked external calls",
+        "reason": "The distr function, which is private and only callable internally, automatically increments the balances and totalDistributed without proper checks on whether the distribution causes an overflow of the totalSupply. Although SafeMath is used, totalDistributed could exceed totalSupply due to the lack of checks after additions. This could lead to an inconsistent state where more tokens are distributed than actually exist.",
+        "file_name": "0x04ce99ba020bdac42fc42330da489afd6515a862.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "DoS with (unexpected) revert",
+        "reason": "This function transfers all Ether stored in the contract to the owner's address. If the transfer fails (for example, if the owner's fallback function reverts or runs out of gas), the entire withdraw function will revert. This could lock all the funds in the contract permanently, especially if the fallback function is designed to always revert or consume more gas than provided.",
+        "file_name": "0x04ce99ba020bdac42fc42330da489afd6515a862.sol"
+    }
+]

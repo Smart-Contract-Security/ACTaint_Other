@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function changeOwner is vulnerable to reentrancy attacks. The function transfers Ether to the previous owner with 'owner.transfer(msg.value)' and 'owner.transfer(this.balance)' before updating the state variable 'owner'. A malicious contract can be designed to call changeOwner again when it receives Ether, leading to unexpected behavior or draining of contract Ether.",
+        "file_name": "0x6fdfce60998725f4cfb4cc57505a3abdbb6d0646.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Authorization through payment",
+        "reason": "The function killContract allows any user to destroy the contract by sending a sufficient amount of Ether. This means that any external party can permanently disable the contract functionality by simply paying enough Ether, which can lead to loss of funds or denial of service for legitimate users.",
+        "file_name": "0x6fdfce60998725f4cfb4cc57505a3abdbb6d0646.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Authorization through payment",
+        "reason": "This function allows any external user to change the token's name and symbol by simply sending a sufficient amount of Ether. This can be exploited to mislead, confuse, or perform phishing attacks against token holders by changing these fundamental identifiers to resemble other well-known tokens.",
+        "file_name": "0x6fdfce60998725f4cfb4cc57505a3abdbb6d0646.sol"
+    }
+]

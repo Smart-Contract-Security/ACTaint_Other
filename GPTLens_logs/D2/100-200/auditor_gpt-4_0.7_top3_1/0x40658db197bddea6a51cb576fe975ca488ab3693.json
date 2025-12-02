@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "finalizeLottery",
+        "code": "function finalizeLottery(uint _steps) afterInitialization {\n    require(needsLotteryFinalization());\n    if (lotteries[id].nearestKnownBlock != lotteries[id].decidingBlock) {\n        walkTowardsBlock(_steps);\n    } else {\n        int winningTicket = lotteries[id].nearestKnownBlockHash % int(lotteries[id].numTickets);\n        address winner = lotteries[id].tickets[uint(winningTicket)];\n        lotteries[id].winningTicket = winningTicket;\n        lotteries[id].winner = winner;\n        lotteries[id].finalizationBlock = block.number;\n        lotteries[id].finalizer = tx.origin;\n        if (winner != 0) {\n            uint value = lotteries[id].jackpot;\n            bool successful = winner.call.gas(GAS_LIMIT_DEPOSIT).value(value)();\n            if (!successful) {\n                Escrow(escrow).deposit.value(value)(winner);\n            }\n        }\n        var _ = admin.call.gas(GAS_LIMIT_DEPOSIT).value(this.balance)();\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function uses a direct call to an external address (winner.call) to transfer funds and then proceeds to call another external contract (Escrow) if the initial transfer fails. These calls can lead to reentrancy attacks where the external contract being called can re-enter the current contract and execute state changes or drain funds.",
+        "file_name": "0x40658db197bddea6a51cb576fe975ca488ab3693.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "code": "function buyTickets(uint[] _tickets, uint _mark, uint _affiliate) payable afterInitialization {\n    if (lotteries[id].numTicketsSold == lotteries[id].numTickets) {\n        PurchaseFailed(msg.sender, _mark, Reason.TicketSaleClosed);\n        msg.sender.transfer(msg.value);\n        return;\n    }\n    require(_tickets.length > 0);\n    require(msg.value == _tickets.length * lotteries[id].ticketPrice);\n    for (uint i = 0; i < _tickets.length; i++) {\n        uint ticket = _tickets[i];\n        require(ticket >= 0);\n        require(ticket < lotteries[id].numTickets);\n        if (lotteries[id].tickets[ticket] != 0) {\n            PurchaseFailed(msg.sender, _mark, Reason.TicketAlreadySold);\n            msg.sender.transfer(msg.value);\n            return;\n        }\n    }\n    for (i = 0; i < _tickets.length; i++) {\n        ticket = _tickets[i];\n        lotteries[id].tickets[ticket] = msg.sender;\n        recentActivity[recentActivityIdx] = ticket;\n        recentActivityIdx += 1;\n        if (recentActivityIdx >= recentActivity.length) {\n            recentActivityIdx = 0;\n        }\n    }\n    lotteries[id].numTicketsSold += _tickets.length;\n    lastSaleTimestamp = block.timestamp;\n    address affiliateAddress = AffiliateNetwork(affiliateNetwork).affiliateAddresses(_affiliate);\n    if (affiliateAddress != 0) {\n        uint cut = lotteries[id].affiliateCut * _tickets.length;\n        var _ = affiliateAddress.call.gas(GAS_LIMIT_AFFILIATE).value(cut)();\n    }\n    PurchaseSuccessful(msg.sender, _mark);\n}",
+        "vulnerability": "External call after state change",
+        "reason": "This function updates the state (e.g., recentActivity, numTicketsSold) before making a call to an external contract (AffiliateNetwork). This can lead to inconsistencies and vulnerabilities where the external call could potentially interact back with the contract in a way that relies on the modified state.",
+        "file_name": "0x40658db197bddea6a51cb576fe975ca488ab3693.sol"
+    },
+    {
+        "function_name": "finalizeBlock",
+        "code": "function finalizeBlock() afterInitialization {\n    require(needsBlockFinalization());\n    int blockHeight = BTCRelay(btcRelay).getLastBlockHeight();\n    lotteries[id].decidingBlock = blockHeight + 54;\n}",
+        "vulnerability": "Unexpected external dependency",
+        "reason": "The function relies on an external contract (BTCRelay) to determine a crucial lottery parameter (decidingBlock). If the external contract behaves unexpectedly or maliciously, it could influence the outcome of the lottery, potentially benefiting certain participants unfairly.",
+        "file_name": "0x40658db197bddea6a51cb576fe975ca488ab3693.sol"
+    }
+]

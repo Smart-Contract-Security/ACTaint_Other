@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "RefundDeposit",
+        "code": "function RefundDeposit(address addr, uint amt) public { if(Depositors[addr] > 0) { if(msg.sender == Ho1der) { addr.send(amt); Available -= amt; Withdrew(addr, amt); } } }",
+        "vulnerability": "Lack of checks on amount to refund",
+        "reason": "The function does not check if the amount 'amt' to be refunded is less than or equal to the amount deposited by the address 'addr'. This can lead to negative balances in the contract's 'Available' state variable and allow more ETH to be withdrawn than was deposited.",
+        "file_name": "0xacb8a40073d0a7e041b29381debcafc2b538cd7c.sol"
+    },
+    {
+        "function_name": "RefundDeposit",
+        "code": "function RefundDeposit(address addr, uint amt) public { if(Depositors[addr] > 0) { if(msg.sender == Ho1der) { addr.send(amt); Available -= amt; Withdrew(addr, amt); } } }",
+        "vulnerability": "Reentrancy via direct ETH transfer",
+        "reason": "The function uses 'addr.send(amt)' for transferring ether, which is susceptible to reentrancy attacks. If the address 'addr' is a contract, it can execute fallback function upon receiving ETH and call RefundDeposit again leading to multiple unauthorized withdrawals.",
+        "file_name": "0xacb8a40073d0a7e041b29381debcafc2b538cd7c.sol"
+    },
+    {
+        "function_name": "Close",
+        "code": "function Close() public { if (msg.sender == Ho1der) { suicide(Ho1der); } }",
+        "vulnerability": "Use of deprecated 'suicide' function",
+        "reason": "The function uses the 'suicide' function which is deprecated and should be replaced with 'selfdestruct' for better clarity and understanding in the context of smart contracts. Using deprecated functions can lead to unintended behaviors and vulnerabilities in the smart contract.",
+        "file_name": "0xacb8a40073d0a7e041b29381debcafc2b538cd7c.sol"
+    }
+]

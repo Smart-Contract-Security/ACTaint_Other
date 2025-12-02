@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "deposit",
+        "code": "function deposit(uint _value, uint _forTime) public returns (bool success) { require(_forTime >= 1); require(now + _forTime * 1 hours >= depositLock[msg.sender]); if (erc20old) { ERC20Old(originalToken).transferFrom(msg.sender, address(this), _value); } else { require(ERC20(originalToken).transferFrom(msg.sender, address(this), _value)); } balances[msg.sender] = balances[msg.sender].add(_value); totalSupply_ = totalSupply_.add(_value); depositLock[msg.sender] = now + _forTime * 1 hours; return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'deposit' function updates the 'balances' and 'totalSupply_' after calling an external contract using 'transferFrom', which could lead to reentrancy attacks. An attacker might recursively call the 'deposit' function before the balance and deposit lock are updated, potentially leading to unexpected behavior or draining of tokens.",
+        "file_name": "0xd7a7afe4b20611f2c839ec5cd340f27fe08c949c.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw( uint _value, uint8 v, bytes32 r, bytes32 s, uint signatureValidUntilBlock ) public returns (bool success) { require(balanceOf(msg.sender) >= _value); if (now <= depositLock[msg.sender]) { require(block.number < signatureValidUntilBlock); require(isValidSignature(keccak256(msg.sender, address(this), signatureValidUntilBlock), v, r, s)); } balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply_ = totalSupply_.sub(_value); depositLock[msg.sender] = 0; if (erc20old) { ERC20Old(originalToken).transfer(msg.sender, _value); } else { require(ERC20(originalToken).transfer(msg.sender, _value)); } return true; }",
+        "vulnerability": "Block Timestamp Manipulation",
+        "reason": "The 'withdraw' function uses the 'now' keyword (alias for 'block.timestamp') for time lock calculation. An attacker can manipulate this by slightly adjusting the block timestamp as miners have some flexibility in setting it. This could allow withdrawing tokens earlier than intended.",
+        "file_name": "0xd7a7afe4b20611f2c839ec5cd340f27fe08c949c.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint _value) public { require(isSigner[_to] || isSigner[_from]); assert(msg.sender == TRANSFER_PROXY); balances[_to] = balances[_to].add(_value); depositLock[_to] = depositLock[_to] > now ? depositLock[_to] : now + 1 hours; balances[_from] = balances[_from].sub(_value); Transfer(_from, _to, _value); }",
+        "vulnerability": "Unauthorized Transfer",
+        "reason": "The 'transferFrom' function only requires that either the sender or receiver is a signer, and does not properly authenticate the actual caller of the function beyond checking a single condition. This could allow unauthorized transfer of tokens if an attacker compromises any signer account or if any signer is malicious.",
+        "file_name": "0xd7a7afe4b20611f2c839ec5cd340f27fe08c949c.sol"
+    }
+]

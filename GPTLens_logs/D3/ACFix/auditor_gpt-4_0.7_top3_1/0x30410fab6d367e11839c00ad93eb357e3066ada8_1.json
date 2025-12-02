@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "PlaceBet",
+        "code": "function PlaceBet(address house, uint256 odds, uint256 amount_gwei, bytes32 randomness, uint256 nonce, uint256 bet_placed_timestamp) payable external {\n    uint256 amount = amount_gwei * 1 gwei;\n    require(state.bet_counter < type(uint32).max);\n    require(houses[house].pause_block > block.number, \"House unavailable\");\n    require(players[msg.sender].creation_block > 0, \"Create player\");\n    require(odds > 1 && odds <= 1e6, \"Invalid odds\");\n    require(bet_placed_timestamp > houses[house].last_update_timestamp, \"House updated\");\n    require(amount <= players[msg.sender].balance + msg.value, \"Insufficient funds\");\n    players[msg.sender].balance = players[msg.sender].balance + msg.value - amount;\n    require(nonce > players[msg.sender].nonce && nonce <= players[msg.sender].nonce + 10, \"Nonce\");\n    require(amount >= houses[house].min_bet, \"Bet too low\");\n    require(amount * odds <= houses[house].max_loss, \"Exceeds max loss\");\n    require(amount * (odds - 1) <= houses[house].balance, \"Exceeds house balance\");\n    state.bet_counter++;\n    bets[state.bet_counter] = Bet({\n        house: house,\n        price_gwei: uint56(amount_gwei),\n        timestamp: uint32(block.timestamp),\n        player: msg.sender,\n        previous_house_bet: houses[house].last_bet,\n        next_house_bet: 0,\n        odds: uint32(odds),\n        randomness: keccak256(abi.encode(players[msg.sender].creation_block, nonce, msg.sender, randomness))\n    });\n    if(houses[house].first_bet == 0) {\n        houses[house].first_bet = state.bet_counter;\n    } else {\n        bets[houses[house].last_bet].next_house_bet = state.bet_counter;\n    }\n    houses[house].last_bet = state.bet_counter;\n    houses[house].bet_balance += amount * odds;\n    houses[house].balance -= (amount * odds) - amount;\n    houses[house].active_bets++;\n    if(houses[house].balance < houses[house].max_loss) {\n        houses[house].last_low_balance_timestamp = block.timestamp;\n    }\n    state.reserved_eth += msg.value;\n    state.last_bet_time = block.timestamp;\n    players[msg.sender].active_bets++;\n    players[msg.sender].nonce = nonce;\n    emit BetPlaced(house, state.bet_counter);\n}",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function PlaceBet updates the balance of a player before making a call to transfer funds. This poses a reentrancy risk where an attacker could potentially call back into the contract before the original call is completed, leading to unexpected behaviors or exploitation.",
+        "file_name": "0x30410fab6d367e11839c00ad93eb357e3066ada8_1.sol"
+    },
+    {
+        "function_name": "ForceBet",
+        "code": "function ForceBet(uint256 bet_id) external {\n    require(bets[bet_id].timestamp + 1 days < block.timestamp, \"< 24h old\");\n    _PlayerWin(bet_id);\n    _DeleteBet(bet_id);\n}",
+        "vulnerability": "Unauthorized access",
+        "reason": "The ForceBet function allows any external caller to force a win and delete a bet without any checks on the caller's identity or their relationship to the bet. This could allow attackers to arbitrarily close bets and potentially claim winnings without legitimate stakes.",
+        "file_name": "0x30410fab6d367e11839c00ad93eb357e3066ada8_1.sol"
+    },
+    {
+        "function_name": "BuyContract",
+        "code": "function BuyContract(uint256 new_price) external payable {\n    require(msg.value >= state.sale_price, \"Price\");\n    address owner = state.owner;\n    state.owner = msg.sender;\n    state.sale_price = new_price;\n    _VerifiedTransfer(owner, address(this).balance - state.reserved_eth);\n}",
+        "vulnerability": "Ownership takeover",
+        "reason": "The BuyContract function allows an external entity to take over ownership of the contract by sending a value higher than the current sale price. This could lead to a malicious party gaining control over the contract and manipulating its functions for personal gain.",
+        "file_name": "0x30410fab6d367e11839c00ad93eb357e3066ada8_1.sol"
+    }
+]

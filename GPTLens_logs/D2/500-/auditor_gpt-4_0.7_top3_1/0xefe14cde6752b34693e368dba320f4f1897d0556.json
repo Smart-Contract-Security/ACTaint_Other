@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' first transfers all the ETH supplied with the transaction and then the entire balance of the contract to the current owner before changing the owner state variable. The use of 'owner.transfer()' could be exploited by a malicious contract if the 'owner' is a contract. This contract could, in turn, call back into any function of GIFTO, potentially when the owner state is not yet updated, leading to reentrancy attacks.",
+        "file_name": "0xefe14cde6752b34693e368dba320f4f1897d0556.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "This function allows anyone who sends a certain threshold amount of ETH (500 ether) to trigger the 'selfdestruct' operation, regardless of their ownership or other authorization. This could be exploited by an attacker to destroy the contract even if they are not the owner, leading to potential loss or freezing of funds.",
+        "file_name": "0xefe14cde6752b34693e368dba320f4f1897d0556.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Unauthorized contract modification",
+        "reason": "The function allows anyone who sends sufficient ETH (400 ether) to change the token's name and symbol. This can be misused by attackers to confuse, mislead, or scam token holders by changing these identifying characteristics to mimic other well-known tokens.",
+        "file_name": "0xefe14cde6752b34693e368dba320f4f1897d0556.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawBalance",
+        "code": "function withdrawBalance() onlyOwner external { assert(owner.send(this.balance)); }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The withdrawal pattern using 'send' only provides 2300 gas stipend, which might not be enough if the fallback function of the owner's address performs more complex operations. This can lead to a situation where the transaction repeatedly fails, effectively blocking the withdrawal of funds.",
+        "file_name": "0xa667f7c9f8d9e7f54814f312ae42d08a31154889.sol"
+    },
+    {
+        "function_name": "buyListing",
+        "code": "function buyListing(bytes32 listingId, uint256 amount) external payable { Listing storage listing = listings[listingId]; address seller = listing.seller; address contractAddress = listing.tokenContractAddress; uint256 price = listing.price; uint256 decimals = getDecimals(listing.tokenContractAddress); uint256 factor = 10 ** decimals; uint256 sale; if (decimals > 0) { sale = price.mul(amount).div(factor); } else { sale = price.mul(amount); } uint256 allowance = listing.allowance; require(now <= listing.dateEnds); require(allowance - sold[listingId] >= amount); require(getBalance(contractAddress, seller) >= amount); require(getAllowance(contractAddress, seller, this) >= amount); require(msg.value == sale); ERC20 tokenContract = ERC20(contractAddress); require(tokenContract.transferFrom(seller, msg.sender, amount)); if (ownerPercentage > 0) { seller.transfer(sale - (sale.mul(ownerPercentage).div(10000))); } else { seller.transfer(sale); } sold[listingId] = sold[listingId].add(amount); ListingBought(listingId, contractAddress, price, amount, now, msg.sender); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function allows for reentrancy attacks because it transfers Ether to the seller before updating the 'sold' state. An attacker could recursively call this function within a fallback function to drain Ether or manipulate 'sold' state.",
+        "file_name": "0xa667f7c9f8d9e7f54814f312ae42d08a31154889.sol"
+    },
+    {
+        "function_name": "approveToken",
+        "code": "function approveToken(address token, uint256 amount) onlyOwner external { assert(ERC20(token).approve(owner, amount)); }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function does not check the return value of the 'approve' call to the ERC20 token contract. Failing to check can lead to silent failures that might not properly set the approved amount, leading to potential vulnerabilities in dependent functionality.",
+        "file_name": "0xa667f7c9f8d9e7f54814f312ae42d08a31154889.sol"
+    }
+]

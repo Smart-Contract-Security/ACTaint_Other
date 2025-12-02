@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xbd24918e527512c48e7f54b3bec8f47b9f48914b.code
+Start time: 28/08/2022 00:15:20
+Building CFG...
+CFG generation time (secs): 1.74
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawAltcoinTokens(address)
+	( 2814)  afe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdraw()
+	( 4380) 111c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4612) 1204:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 5070) 13ce:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 5178) 143a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5467) 155b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5665) 1621:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6931) 1b13:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function JANUS()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.38
+End time: 28/08/2022 00:15:27

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner {\n    newOwner = _newOwner;\n}",
+        "vulnerability": "Arbitrary Ownership Transfer",
+        "reason": "The function 'transferOwnership' allows the current owner to set a new owner by simply assigning the '_newOwner' address to the 'newOwner' state variable. However, the actual ownership transfer happens in 'acceptOwnership', which requires the new owner to call it to finalize the transfer. If the new owner is not aware or does not accept ownership, the contract is left with an unclaimed owner role, potentially freezing contract management if the original owner relinquishes control assuming the transfer is complete.",
+        "file_name": "0x715b3870ebd976b78c443b288d3dc3f0efd2f289.sol"
+    },
+    {
+        "function_name": "releaseFirstUnlock",
+        "code": "function releaseFirstUnlock() public onlyOwner returns (bool success){\n    require(now >= _firstUnlockTime);\n    require(_firstUnlockAmmount > 0);\n    balances[msg.sender] = addSafe(balances[msg.sender], _firstUnlockAmmount);\n    _firstUnlockAmmount = 0;\n    Transfer(address(0), msg.sender, _firstUnlockAmmount);\n    return true;\n}",
+        "vulnerability": "Zero Transfer Event",
+        "reason": "The 'Transfer' event within the 'releaseFirstUnlock' function is called after '_firstUnlockAmmount' is set to zero. This results in a Transfer event being emitted with a value of 0, which does not reflect the actual amount transferred. This incorrect event can lead to misleading transaction logs, which are crucial for tracking token movement and balances accurately.",
+        "file_name": "0x715b3870ebd976b78c443b288d3dc3f0efd2f289.sol"
+    },
+    {
+        "function_name": "releaseSecondUnlock",
+        "code": "function releaseSecondUnlock() public onlyOwner returns (bool success){\n    require(now >= _secondUnlockTime);\n    require(_secondUnlockAmmount > 0);\n    balances[msg.sender] = addSafe(balances[msg.sender], _secondUnlockAmmount);\n    _secondUnlockAmmount = 0;\n    Transfer(address(0), msg.sender, _secondUnlockAmmount);\n    return true;\n}",
+        "vulnerability": "Zero Transfer Event",
+        "reason": "Similar to the 'releaseFirstUnlock' function, the 'releaseSecondUnlock' function emits a 'Transfer' event with a value of 0 due to the '_secondUnlockAmmount' being set to zero before the event is emitted. This can lead to confusion and inaccuracies in understanding the token economics from the event logs, as the actual amount transferred is not reflected in the event.",
+        "file_name": "0x715b3870ebd976b78c443b288d3dc3f0efd2f289.sol"
+    }
+]

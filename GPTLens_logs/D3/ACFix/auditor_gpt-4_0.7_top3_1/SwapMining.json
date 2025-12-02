@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "swap",
+        "code": "function swap(address account, address input, address output, uint256 amount) public onlyRouter returns (bool) { require(account != address(0), \"SwapMining: taker swap account is the zero address\"); require(input != address(0), \"SwapMining: taker swap input is the zero address\"); require(output != address(0), \"SwapMining: taker swap output is the zero address\"); if (poolLength() <= 0) { return false; } if (!isWhitelist(input) || !isWhitelist(output)) { return false; } address pair = BabyLibrary.pairFor(address(factory), input, output); PoolInfo storage pool = poolInfo[pairOfPid[pair]]; if (pool.pair != pair || pool.allocPoint <= 0) { return false; } uint256 quantity = getQuantity(output, amount, targetToken); if (quantity <= 0) { return false; } mint(pairOfPid[pair]); pool.quantity = pool.quantity.add(quantity); pool.totalQuantity = pool.totalQuantity.add(quantity); UserInfo storage user = userInfo[pairOfPid[pair]][account]; user.quantity = user.quantity.add(quantity); user.blockNumber = block.number; return true; }",
+        "vulnerability": "Oracle Manipulation",
+        "reason": "The function 'swap' relies on the 'oracle' for price feeds to calculate 'quantity'. If the oracle is compromised or manipulated, it results in incorrect 'quantity' calculations which can lead to disproportionate rewards.",
+        "file_name": "SwapMining.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(uint256 _pid) public returns (bool) { PoolInfo storage pool = poolInfo[_pid]; if (block.number <= pool.lastRewardBlock) { return false; } uint256 blockReward = getBabyReward(pool.lastRewardBlock); if (blockReward <= 0) { return false; } uint256 mdxReward = blockReward.mul(pool.allocPoint).div(totalAllocPoint); pool.allocMdxAmount = pool.allocMdxAmount.add(mdxReward); pool.lastRewardBlock = block.number; return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'mint' function modifies state (updating 'allocMdxAmount' and 'lastRewardBlock') after an external call to 'getBabyReward'. This can be exploited by a reentrancy attack where the external call leads to re-invoking 'mint' before the previous execution completes, leading to incorrect reward calculations and potentially draining the contract.",
+        "file_name": "SwapMining.sol"
+    },
+    {
+        "function_name": "takerWithdraw",
+        "code": "function takerWithdraw() public { uint256 userSub; uint256 length = poolInfo.length; for (uint256 pid = 0; pid < length; ++pid) { PoolInfo storage pool = poolInfo[pid]; UserInfo storage user = userInfo[pid][msg.sender]; if (user.quantity > 0) { mint(pid); uint256 userReward = pool.allocMdxAmount.mul(user.quantity).div(pool.quantity); pool.quantity = pool.quantity.sub(user.quantity); pool.allocMdxAmount = pool.allocMdxAmount.sub(userReward); user.quantity = 0; user.blockNumber = block.number; userSub = userSub.add(userReward); } } if (userSub <= 0) { return; } console.log(userSub); babyToken.transfer(msg.sender, userSub); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'takerWithdraw' does not check the return value of 'babyToken.transfer', which could result in loss of funds if the transfer fails (e.g., due to a lack of balance). This oversight can lead to discrepancies in the state of the contract versus actual token balances.",
+        "file_name": "SwapMining.sol"
+    }
+]

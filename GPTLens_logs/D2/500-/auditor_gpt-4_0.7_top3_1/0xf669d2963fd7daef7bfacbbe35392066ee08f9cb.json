@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "finishDistribution",
+        "code": "function finishDistribution() onlyOwner canDistr public returns (bool) {\n    distributionFinished = false;\n    DistrFinished();\n    return true;\n}",
+        "vulnerability": "Distribution cannot be finished",
+        "reason": "The function 'finishDistribution' is supposed to mark the distribution process as finished by setting 'distributionFinished' to true. However, it mistakenly sets 'distributionFinished' to false, making it impossible to stop the distribution process.",
+        "file_name": "0xf669d2963fd7daef7bfacbbe35392066ee08f9cb.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval race condition",
+        "reason": "The function 'approve' allows changing the allowance only if the current allowance is zero or the new value is zero. This can lead to a race condition known as the 'approve/transferFrom' race condition where the approved address could potentially execute an old allowance and the new one.",
+        "file_name": "0xf669d2963fd7daef7bfacbbe35392066ee08f9cb.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    address myAddress = this;\n    uint256 etherBalance = myAddress.balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "The 'withdraw' function transfers all the ether balance of the contract to the owner. If the 'transfer' call fails (e.g., if the owner is a contract that fails in receiving ether), the entire function will revert, potentially leading to denial of service if the contract relies on the successful withdrawal of funds.",
+        "file_name": "0xf669d2963fd7daef7bfacbbe35392066ee08f9cb.sol"
+    }
+]

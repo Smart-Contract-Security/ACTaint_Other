@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approvedToLog",
+        "code": "function approvedToLog(address _caller) public pure returns (bool) { _caller; return true; }",
+        "vulnerability": "Authorization Bypass",
+        "reason": "The function 'approvedToLog' is intended to serve as a security check, which should restrict logging actions to authorized addresses only. However, it simply returns 'true' for any input address, thus allowing any account to invoke logging functions. This can lead to unauthorized logging and manipulation of logged events.",
+        "file_name": "DepositLog.sol"
+    },
+    {
+        "function_name": "logRedemptionRequested",
+        "code": "function logRedemptionRequested( address _requester, bytes32 _digest, uint256 _utxoSize, bytes memory _redeemerOutputScript, uint256 _requestedFee, bytes memory _outpoint ) public returns (bool) { if (!approvedToLog(msg.sender)) return false; emit RedemptionRequested( msg.sender, _requester, _digest, _utxoSize, _redeemerOutputScript, _requestedFee, _outpoint ); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'logRedemptionRequested' emits an event and relies on the return result of 'approvedToLog'. Due to the flaw in 'approvedToLog', any user can trigger this function. Although this does not directly lead to state changes or Ether transfers, it poses a risk as it allows any user to log potentially invalid or malicious redemption requests, which can result in misinformation or abuse of the logged data for fraudulent purposes.",
+        "file_name": "DepositLog.sol"
+    },
+    {
+        "function_name": "logGotRedemptionSignature",
+        "code": "function logGotRedemptionSignature(bytes32 _digest, bytes32 _r, bytes32 _s) public returns (bool) { if (!approvedToLog(msg.sender)) return false; emit GotRedemptionSignature( msg.sender, _digest, _r, _s, block.timestamp ); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "Similar to 'logRedemptionRequested', 'logGotRedemptionSignature' also makes an unchecked external call to 'approvedToLog'. Given the vulnerability in 'approvedToLog', any user can log redemption signatures. This could be exploited by adversaries to log fake or fraudulent redemption signatures, impacting the integrity of the contract's event logs and potentially misleading off-chain clients or services that rely on these events for processing transactions or other critical operations.",
+        "file_name": "DepositLog.sol"
+    }
+]

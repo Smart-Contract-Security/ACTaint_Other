@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "raiseDispute",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in identifying the potential for reentrancy due to the use of .send() within the function logic. This could indeed allow an attacker to re-enter the contract and manipulate its state or perform actions like withdrawing funds or creating multiple disputes, which could have severe implications. The severity is high due to the potential impact on contract integrity and financial security. The profitability is also moderate as an attacker could potentially extract value through careful exploitation of the reentrancy.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The raiseDispute function contains calls to .send() within its logic which are vulnerable to reentrancy attacks. Malicious actors could exploit this by making a fallback function that calls back into the contract, potentially leading to unexpected behavior like multiple dispute creations or fund withdrawals before the dispute resolution is complete.",
+        "code": "function raiseDispute(uint _transactionID, uint _arbitrationCost) internal { Transaction storage transaction = transactions[_transactionID]; transaction.status = Status.DisputeCreated; transaction.disputeId = arbitrator.createDispute.value(_arbitrationCost)(AMOUNT_OF_CHOICES, arbitratorExtraData); disputeIDtoTransactionID[transaction.disputeId] = _transactionID; emit Dispute(arbitrator, transaction.disputeId, _transactionID, _transactionID); if (transaction.senderFee > _arbitrationCost) { uint extraFeeSender = transaction.senderFee - _arbitrationCost; transaction.senderFee = _arbitrationCost; transaction.sender.send(extraFeeSender); } if (transaction.receiverFee > _arbitrationCost) { uint extraFeeReceiver = transaction.receiverFee - _arbitrationCost; transaction.receiverFee = _arbitrationCost; transaction.receiver.send(extraFeeReceiver); } }",
+        "file_name": "0xe2dd8cce2c33a04215074adb4b5820b765d8ed9d.sol",
+        "final_score": 7.25
+    },
+    {
+        "function_name": "executeRuling",
+        "vulnerability": "Unchecked Send",
+        "criticism": "The reasoning provided is accurate. The use of .send() without checking its return value can indeed lead to failed transactions without any handling, which can disrupt the intended flow of the contract and lead to inconsistencies in the state. This is a significant oversight in smart contract development, especially in functions dealing with financial transactions. The severity is high because it directly affects financial transactions and could lead to loss of funds or incorrect fund distribution. However, the profitability for an attacker is low as this vulnerability does not directly allow for profit but could cause denial of service or loss of trust.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "The executeRuling function uses .send() to transfer funds which is known to fail silently (returns false) if the transaction runs out of gas or the call stack is too deep. Failing to check the return value of these sends could allow the function to continue execution even when the sends fail, leading to discrepancies in the contract state.",
+        "code": "function executeRuling(uint _transactionID, uint _ruling) internal { Transaction storage transaction = transactions[_transactionID]; require(_ruling <= AMOUNT_OF_CHOICES, \"Invalid ruling.\"); if (_ruling == SENDER_WINS) { transaction.sender.send(transaction.senderFee + transaction.amount); } else if (_ruling == RECEIVER_WINS) { transaction.receiver.send(transaction.receiverFee + transaction.amount); } else { uint split_amount = (transaction.senderFee + transaction.amount) / 2; transaction.sender.send(split_amount); transaction.receiver.send(split_amount); } transaction.amount = 0; transaction.senderFee = 0; transaction.receiverFee = 0; transaction.status = Status.Resolved; }",
+        "file_name": "0xe2dd8cce2c33a04215074adb4b5820b765d8ed9d.sol",
+        "final_score": 6.25
+    },
+    {
+        "function_name": "timeOutBySender",
+        "vulnerability": "DoS with Block Gas Limit",
+        "criticism": "The reasoning is somewhat plausible but slightly misdirected. The primary issue described is more about the potential for a function to run out of gas due to high gas consumption rather than a specific vulnerability like DoS with Block Gas Limit. While it's true that excessive gas consumption can lead to failed transactions, this is generally a concern for all Ethereum transactions and not a specific vulnerability of this function. The severity is moderate because it could prevent the function from executing, but the profitability is very low as it does not provide a direct benefit to an attacker.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The timeOutBySender function calls executeRuling, which attempts to send all remaining funds to the sender. If the transaction's gas requirement exceeds available gas, this could cause the transaction to fail, preventing the resolution of disputes and potentially locking funds indefinitely.",
+        "code": "function timeOutBySender(uint _transactionID) public { Transaction storage transaction = transactions[_transactionID]; require(transaction.status == Status.WaitingReceiver, \"The transaction is not waiting on the receiver.\"); require(now - transaction.lastInteraction >= feeTimeout, \"Timeout time has not passed yet.\"); executeRuling(_transactionID, SENDER_WINS); }",
+        "file_name": "0xe2dd8cce2c33a04215074adb4b5820b765d8ed9d.sol",
+        "final_score": 3.75
+    }
+]

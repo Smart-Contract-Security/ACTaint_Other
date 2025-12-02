@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "claim_ico",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning correctly identifies a reentrancy vulnerability due to the state update of 'bought_tokens' before the Ether transfer. This could indeed allow a malicious contract to re-enter the 'claim_ico' function or other functions, potentially leading to unexpected behaviors or state corruption. The severity is high because it could lead to significant financial loss or manipulation of contract states. The profitability is also high as an attacker could exploit this to drain funds or manipulate contract states to their advantage.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 8,
+        "reason": "The 'claim_ico' function transfers Ether with 'msg.sender.transfer(ico)' which can allow reentrant calls. This is risky because the state 'bought_tokens' is set to true before the transfer, but other state updates and logical checks occur after this transfer. If the caller is a malicious contract, it could call back into 'claim_ico' or other public functions of this contract in the same transaction, potentially leading to unexpected behavior such as draining contract funds or other state corruption.",
+        "code": "function claim_ico(){\n    if (bought_tokens) return;\n    if (kill_switch) throw;\n    bought_tokens = true;\n    time_bought = now + 1 days;\n    token.proxyPayment.value(this.balance - ico)(address(this));\n    if(this.balance > max_eth_to_end) {\n        msg.sender.transfer(ico);\n    } else {\n        extra_time_bought = now + 1 days * 10;\n        if(this.balance < min_eth_to_end) throw;\n        else {\n            if (now > extra_time_bought) {\n                msg.sender.transfer(ico);\n            }\n        }\n    }\n}",
+        "file_name": "0xb8d24ac55866236b2c7b8fb046ca110d488fba02.sol",
+        "final_score": 8.75
+    },
+    {
+        "function_name": "refund",
+        "vulnerability": "Recursive Call",
+        "criticism": "The reasoning is accurate in identifying the recursive call in the 'refund' function without a termination condition. This indeed can lead to a stack overflow or excessive gas consumption, potentially causing a denial of service. The severity is high because it can halt the contract's functionality, but the profitability is low as it does not directly result in financial gain for an attacker, rather it disrupts the service.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 1,
+        "reason": "The 'refund' function recursively calls itself without any termination condition, which leads to unbounded recursion causing the call stack to exceed its limit and eventually leading to a stack overflow exception. This can be exploited by an attacker to force the contract to consume all gas and halt its execution, potentially leading to denial of service.",
+        "code": "function refund() private {\n    uint256 weiValue = this.balance;\n    if (weiValue == 0) throw;\n    uint256 weiRefunded;\n    weiRefunded = safeAdd(weiRefunded, weiValue);\n    refund();\n    if (!msg.sender.send(weiValue)) throw;\n}",
+        "file_name": "0xb8d24ac55866236b2c7b8fb046ca110d488fba02.sol",
+        "final_score": 6.75
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unchecked Return Values",
+        "criticism": "The reasoning is correct in pointing out the unchecked return values from transfer functions, which is a common mistake in smart contract development. This can indeed lead to a situation where the contract state is incorrectly updated despite a failed transfer, potentially allowing repeated withdrawals or incorrect balance tracking. The severity is moderate because it can lead to financial discrepancies, and the profitability is moderate as well, depending on the attacker's ability to exploit these failed transfers repeatedly.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The 'withdraw' function does not check the return value of 'msg.sender.transfer(eth_amount)' and 'token.transfer()' calls. This can lead to a situation where the transfer fails (due to a throw in the receiver contract, or the receiver running out of gas), but the contract state is still updated as if the transfer was successful. This may lead to a loss of funds or incorrect accounting of balances, allowing an attacker to repeatedly withdraw funds or tokens.",
+        "code": "function withdraw(){\n    if (!bought_tokens) {\n        uint256 eth_amount = balances[msg.sender];\n        balances[msg.sender] = 0;\n        msg.sender.transfer(eth_amount);\n    } else {\n        uint256 ZBR_amount = balances[msg.sender] * ZBR_per_eth;\n        balances[msg.sender] = 0;\n        uint256 fee = 0;\n        if (!checked_in[msg.sender]) {\n            fee = ZBR_amount / 100;\n            if(!token.transfer(developer_address, fee)) throw;\n        }\n        if(!token.transfer(msg.sender, ZBR_amount - fee)) throw;\n    }\n}",
+        "file_name": "0xb8d24ac55866236b2c7b8fb046ca110d488fba02.sol",
+        "final_score": 6.75
+    }
+]

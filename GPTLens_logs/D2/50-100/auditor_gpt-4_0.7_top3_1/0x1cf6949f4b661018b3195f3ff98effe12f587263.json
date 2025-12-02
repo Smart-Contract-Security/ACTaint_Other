@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy on ownership transfer",
+        "reason": "The function changeOwner allows transfer of ownership based on the amount of Ether sent to it. If the condition is met, the current owner is first sent the transaction value, and then the entire contract's balance. This can allow for a reentrancy attack, where a malicious contract could repeatedly call changeOwner in its fallback function, each time transferring more Ether from the contract to the attacker's control before the ownership is updated.",
+        "file_name": "0x1cf6949f4b661018b3195f3ff98effe12f587263.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Arbitrary destruction by payment",
+        "reason": "The killContract function allows the contract to be destroyed either by the owner or by anyone who sends a certain amount of Ether. This could be exploited by attackers who can permanently disable the contract by simply sending the specified amount of Ether, thus possibly locking or destroying all assets held by the contract.",
+        "file_name": "0x1cf6949f4b661018b3195f3ff98effe12f587263.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { var senderBalance = balances[msg.sender]; if (senderBalance >= _value && _value > 0) { senderBalance -= _value; balances[msg.sender] = senderBalance; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "vulnerability": "Integer underflow",
+        "reason": "The transfer function directly manipulates balances without safely checking for underflows. While it checks if the sender has enough balance, it does not use SafeMath or similar library to handle arithmetic operations securely. An attacker could potentially exploit this to cause an underflow in the sender's balance, leading to incorrect, very high token balances.",
+        "file_name": "0x1cf6949f4b661018b3195f3ff98effe12f587263.sol"
+    }
+]

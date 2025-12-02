@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x02a9bb92365b72fb735364af2af55ebfa9eb02c2.code
+Start time: 18/08/2022 20:08:11
+Building CFG...
+CFG generation time (secs): 3.53
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function incrementNonce(address)
+	(10060) 274c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function setNameTAOPositionAddress(address)
+
+Violated access control check in function incrementNonce(address)
+	(10081) 2761:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {13} in function setTAOAncestryAddress(address)
+
+Violated access control check in function incrementNonce(address)
+	(10103) 2777:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function setTAOPoolAddress(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 39.84
+End time: 18/08/2022 20:08:54

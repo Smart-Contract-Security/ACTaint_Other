@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "unlock",
+        "code": "function unlock() public requireLocked { if (allowLockAnytime && msg.sender == owner()) { lockEndBlock = block.number; } else { require(lockEndBlock < block.number, \"pool cannot be unlocked yet\"); } uint256 balance = moneyMarket.balanceOfUnderlying(address(this)); if (balance > 0) { require(moneyMarket.redeemUnderlying(balance) == 0, \"could not redeem from compound\"); finalAmount = FixidityLib.newFixed(int256(balance)); } state = State.UNLOCKED; emit PoolUnlocked(); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'unlock' contains an external call to 'moneyMarket.redeemUnderlying(balance)' without checking the return value. This could lead to unexpected behavior if the call fails for some reason, but the state is still changed to UNLOCKED and the event PoolUnlocked is emitted.",
+        "file_name": "0x4fc604536134dc64718800361ecbca0df6cbfe08.sol"
+    },
+    {
+        "function_name": "complete",
+        "code": "function complete(bytes32 _secret) public onlyOwner { if (state == State.LOCKED) { unlock(); } require(state == State.UNLOCKED, \"state must be unlocked\"); require(keccak256(abi.encodePacked(_secret)) == secretHash, \"secret does not match\"); secret = _secret; state = State.COMPLETE; uint256 fee = feeAmount(); if (fee > 0) { require(token.transfer(owner(), fee), \"could not transfer winnings\"); } emit PoolComplete(winnerAddress()); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'complete' function changes the state to COMPLETE before transferring the fee to the owner, which can lead to reentrancy problems. An attacker can potentially exploit this by making a reentrant call to 'complete' or another state-changing function within the same transaction, leading to unexpected behavior or financial loss.",
+        "file_name": "0x4fc604536134dc64718800361ecbca0df6cbfe08.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "code": "function buyTickets (int256 _countNonFixed) public requireOpen { require(_countNonFixed > 0, \"number of tickets is less than or equal to zero\"); int256 count = FixidityLib.newFixed(_countNonFixed); int256 totalDeposit = FixidityLib.multiply(ticketPrice, count); uint256 totalDepositNonFixed = uint256(FixidityLib.fromFixed(totalDeposit)); require(token.transferFrom(msg.sender, address(this), totalDepositNonFixed), \"token transfer failed\"); if (_hasEntry(msg.sender)) { entries[msg.sender].amount = FixidityLib.add(entries[msg.sender].amount, totalDeposit); entries[msg.sender].ticketCount = entries[msg.sender].ticketCount.add(uint256(_countNonFixed)); } else { entries[msg.sender] = Entry( msg.sender, totalDeposit, uint256(_countNonFixed), 0 ); entryCount = entryCount.add(1); } int256 amountNonFixed = FixidityLib.fromFixed(entries[msg.sender].amount); sortitionSumTrees.set(SUM_TREE_KEY, uint256(amountNonFixed), bytes32(uint256(msg.sender))); totalAmount = FixidityLib.add(totalAmount, totalDeposit); require(totalAmount <= maxPoolSizeFixedPoint24(FixidityLib.maxFixedDiv()), \"pool size exceeds maximum\"); emit BoughtTickets(msg.sender, _countNonFixed, totalDepositNonFixed); }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The 'buyTickets' function contains loops and multiple state updates which increase the complexity and gas cost of the function. This can lead to Denial of Service (DoS) if the transaction exceeds the block gas limit, potentially making it impossible to call this function successfully when there are many entries or operations to process.",
+        "file_name": "0x4fc604536134dc64718800361ecbca0df6cbfe08.sol"
+    }
+]

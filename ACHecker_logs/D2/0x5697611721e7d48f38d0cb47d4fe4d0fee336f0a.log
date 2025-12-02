@@ -1,0 +1,45 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5697611721e7d48f38d0cb47d4fe4d0fee336f0a.code
+Start time: 21/08/2022 09:29:31
+Building CFG...
+CFG generation time (secs): 0.30
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function 0fa356bd
+	(12749) 31cd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 7a223758
+
+Violated access control check in function 13748a40
+	(12923) 327b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {195} in function adb1f00e
+
+Violated access control check in function 4108a00b
+	(13523) 34d3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 7a223758
+
+Violated access control check in function 67e6869d
+	(13975) 3697:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {197} in function f8e17464
+
+Violated access control check in function 80c80611
+	(14598) 3906:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {196} in function 927d41ee
+
+Violated access control check in function 927d41ee
+	(15080) 3ae8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 7a223758
+
+Violated access control check in function adb1f00e
+	(15531) 3cab:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 7a223758
+
+Violated access control check in function f8e17464
+	(18302) 477e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function 7a223758
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 16.20
+End time: 21/08/2022 09:29:48

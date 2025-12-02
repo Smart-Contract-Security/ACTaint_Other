@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "isOwner",
+        "code": "function isOwner() public { owner = msg.sender; }",
+        "vulnerability": "Unauthorized Ownership Takeover",
+        "reason": "The 'isOwner' function allows any caller to set themselves as the owner of the contract without any restrictions. This could allow an attacker to gain ownership of the contract and execute owner-only functions.",
+        "file_name": "0xc55e5e72911fab07ef912c58e6dc168d73348820.sol"
+    },
+    {
+        "function_name": "withdrawAll",
+        "code": "function withdrawAll () onlyCEO() public { ceoAddress.transfer(address(this).balance); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'withdrawAll' function transfers all Ether held by the contract to 'ceoAddress' without checking the return value of the '.transfer()' method. If the transfer fails, the contract will not be aware, potentially leading to loss of funds or denial of service.",
+        "file_name": "0xc55e5e72911fab07ef912c58e6dc168d73348820.sol"
+    },
+    {
+        "function_name": "purchase",
+        "code": "function purchase(uint256 _tokenId) public payable { address oldOwner = playerToOwner[_tokenId]; address newOwner = msg.sender; uint256 sellingPrice = playerToPrice[_tokenId]; uint256 purchaseExcess = msg.value.sub(sellingPrice); require(oldOwner != newOwner); require(msg.value >= sellingPrice); _transfer(oldOwner, newOwner, _tokenId); playerToPrice[_tokenId] = nextPriceOf(_tokenId); uint256 devCut = calculateDevCut(sellingPrice); uint256 payment = sellingPrice.sub(devCut); if (oldOwner != address(this)) { oldOwner.transfer(payment); } if (purchaseExcess > 0){ newOwner.transfer(purchaseExcess); } emit TokenSold(_tokenId, sellingPrice, oldOwner, newOwner, players[_tokenId].name); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'purchase' function updates the contract state after transferring funds to 'oldOwner' and potentially 'newOwner' (for returning excess Ether). This ordering allows for a reentrancy attack where the 'oldOwner' could call back into the contract before it finishes execution, potentially leading to unexpected behavior or exploits.",
+        "file_name": "0xc55e5e72911fab07ef912c58e6dc168d73348820.sol"
+    }
+]

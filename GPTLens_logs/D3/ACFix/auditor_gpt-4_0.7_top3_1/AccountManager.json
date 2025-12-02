@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawEth",
+        "code": "function withdrawEth(address account, uint amt) external onlyOwner(account) { if(!riskEngine.isWithdrawAllowed(account, address(0), amt)) revert Errors.RiskThresholdBreached(); account.withdrawEth(msg.sender, amt); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The `withdrawEth` function allows ETH to be withdrawn from a specific account to the owner's address. This function does not implement any reentrancy guard mechanisms such as the checks-effects-interactions pattern. This can allow an attacker to re-enter the contract during the withdrawal execution, potentially draining the contract of its ETH if the conditions allow repeated withdrawals.",
+        "file_name": "AccountManager.sol"
+    },
+    {
+        "function_name": "openAccount",
+        "code": "function openAccount(address owner) external whenNotPaused { if (owner == address(0)) revert Errors.ZeroAddress(); address account; uint length = inactiveAccountsOf[owner].length; if (length == 0) { account = accountFactory.create(address(this)); IAccount(account).init(address(this)); registry.addAccount(account, owner); } else { account = inactiveAccountsOf[owner][length - 1]; inactiveAccountsOf[owner].pop(); registry.updateAccount(account, owner); } IAccount(account).activate(); emit AccountAssigned(account, owner); }",
+        "vulnerability": "Incorrect Access Control",
+        "reason": "The `openAccount` function allows any user to open an account on behalf of any other user by specifying the `owner` parameter. There is no check to ensure that the caller of the function is the same as the intended owner of the account, or has permissions to create accounts for others. This can lead to unauthorized account creation.",
+        "file_name": "AccountManager.sol"
+    },
+    {
+        "function_name": "liquidate",
+        "code": "function liquidate(address account) external { if (riskEngine.isAccountHealthy(account)) revert Errors.AccountNotLiquidatable(); _liquidate(account); emit AccountLiquidated(account, registry.ownerFor(account)); }",
+        "vulnerability": "Unrestricted Asset Liquidation",
+        "reason": "In the `liquidate` function, there is no check to see if the caller has the right to liquidate the account. Any external actor can trigger liquidation of any account if the account is deemed unhealthy by the risk engine. This could potentially allow malicious actors to force liquidation of accounts, even in cases where the account owner might have been able to rectify the situation.",
+        "file_name": "AccountManager.sol"
+    }
+]

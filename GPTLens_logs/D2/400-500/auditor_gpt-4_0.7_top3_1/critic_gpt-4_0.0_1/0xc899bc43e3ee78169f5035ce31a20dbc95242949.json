@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "testhash",
+        "vulnerability": "Arbitrary Ownership Takeover",
+        "criticism": "The reasoning is accurate as the function 'testhash' indeed allows any caller to set themselves as the owner without any checks or restrictions. This is a critical vulnerability because it allows an attacker to gain full control over the contract, potentially leading to severe consequences such as draining funds or altering contract logic. The severity is high due to the potential impact, and profitability is also high as the attacker gains administrative privileges.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The function 'testhash' allows any caller to change the 'owner' state variable to themselves without any restrictions. This grants the caller full administrative control over the contract, enabling them to access functions restricted to the owner, potentially leading to malicious activities such as altering contract parameters or withdrawing contract funds.",
+        "code": "function testhash (uint256 _value, uint256 _minReq) public { owner = msg.sender; value = _value; minReq = _minReq; balances[msg.sender] = totalDistributed; }",
+        "file_name": "0xc899bc43e3ee78169f5035ce31a20dbc95242949.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is correct in identifying a potential reentrancy attack due to the external call to 'distr' before updating the state. This could indeed lead to multiple invocations of 'getTokens' if 'distr' is exploitable. The severity is high because reentrancy can lead to significant losses or state corruption. However, the profitability depends on the implementation of 'distr' and the conditions under which 'getTokens' operates, which are not fully detailed here.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks. It calls an external contract 'distr' within its execution, which updates the state after making this call. An attacker could exploit this by making a recursive call back to 'getTokens' from within 'distr'. This could lead to unexpected behaviors such as draining the contract's funds or corrupting the state of contract variables.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; if (msg.value < minReq){ toGive = value.sub(value); } distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xc899bc43e3ee78169f5035ce31a20dbc95242949.sol"
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Unreachable Code",
+        "criticism": "The reasoning is correct in identifying unreachable code after the 'return true;' statement in the 'distr' function. This is a programming flaw that leads to logical errors, as the check for 'totalDistributed >= totalSupply' will never be executed. The severity is moderate because it affects the logic flow and could lead to over-distribution of tokens. However, the profitability for an attacker is low as this issue does not directly lead to an exploitable condition for personal gain.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The 'distr' function contains an unreachable code segment. The 'return true;' statement executes before the conditional statement to check if 'totalDistributed >= totalSupply', making the distribution finish check and setting never executed. This could lead to logical errors where the distribution might continue even after the total supply is reached.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xc899bc43e3ee78169f5035ce31a20dbc95242949.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is incorrect. The `getTokens` function does indeed call the `distr` function which updates `totalRemaining` and `totalDistributed`. The state is updated within `distr` before any external calls (events) are made, which mitigates the typical reentrancy attack vector. Therefore, the vulnerability of reentrancy as described does not exist in this context. The severity and profitability are both low because the function handles state updates correctly before making external calls.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The `getTokens` function does not update the distribution state (i.e., decrease `totalRemaining`) before calling an external contract `distr`, which can lead to reentrancy where an attacker continuously calls `getTokens` to drain the contract.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "file_name": "0xbac81d25a969ca609254f50375a4ce57123c8fc9.sol"
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The reasoning is somewhat misleading. The `distr` function emits events (`Distr` and `Transfer`), which are not external calls that can fail in a way that would require a return value check; they are simply logs that get stored on the blockchain. The solidity events do not have return values and their execution cannot fail due to external factors, thus do not pose a risk as described. Therefore, the vulnerability described does not exist, making the severity and profitability scores very low.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The `distr` function makes external calls to emit `Distr` and `Transfer` events without checking the return values. This can lead to unnoticed failures of these events that might affect tracking and auditing of token distribution.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xbac81d25a969ca609254f50375a4ce57123c8fc9.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning is correct in identifying a potential risk where the `withdraw` function could fail if the owner's address is a contract that rejects receiving Ether. This could indeed lock funds within the contract if not handled properly. However, the severity is moderate because it depends on the nature of the owner address, and the profitability is low as it does not provide a direct benefit to an attacker but rather creates a denial of service scenario.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The `withdraw` function transfers all the Ether balance to the owner without considering gas limits or checking the success of the transfer. If the transfer fails (e.g., if the owner address is a contract that rejects Ether), the entire function will revert, potentially locking all funds in the contract.",
+        "code": "function withdraw() onlyOwner public { uint256 etherBalance = this.balance; owner.transfer(etherBalance); }",
+        "file_name": "0xbac81d25a969ca609254f50375a4ce57123c8fc9.sol"
+    }
+]

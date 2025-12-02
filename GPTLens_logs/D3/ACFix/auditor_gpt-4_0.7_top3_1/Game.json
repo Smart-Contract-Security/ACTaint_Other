@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "redeemRewards",
+        "code": "function redeemRewards(uint256 _basketId) external onlyBasketOwner(_basketId) { int256 amount = baskets[_basketId].totalUnRedeemedRewards; require(amount > 0, \"Nothing to claim\"); baskets[_basketId].totalRedeemedRewards += amount; baskets[_basketId].totalUnRedeemedRewards = 0; IVault(homeVault).redeemRewardsGame(uint256(amount), msg.sender); }",
+        "vulnerability": "Integer overflow",
+        "reason": "The function does not check for integer overflow when adding rewards to 'totalRedeemedRewards'. If 'totalUnRedeemedRewards' contains a very large value, adding it to 'totalRedeemedRewards' could cause an overflow, allowing users to manipulate account balances erroneously.",
+        "file_name": "Game.sol"
+    },
+    {
+        "function_name": "lockOrUnlockTokens",
+        "code": "function lockOrUnlockTokens(uint256 _basketId, int256 _totalDelta) internal { if (_totalDelta > 0) { lockTokensToBasket(uint256(_totalDelta)); } if (_totalDelta < 0) { int256 oldTotal = basketTotalAllocatedTokens(_basketId); int256 newTotal = oldTotal + _totalDelta; int256 tokensToUnlock = oldTotal - newTotal; require(oldTotal >= tokensToUnlock, \"Not enough tokens locked\"); unlockTokensFromBasket(_basketId, uint256(tokensToUnlock)); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'lockOrUnlockTokens' adjusts token balances and calls 'unlockTokensFromBasket' which in turn transfers tokens back to users. The lack of reentrancy protection in 'unlockTokensFromBasket' and not using nonReentrant modifier for 'lockOrUnlockTokens' can lead to reentrancy attacks where a malicious user could repeatedly withdraw tokens.",
+        "file_name": "Game.sol"
+    },
+    {
+        "function_name": "settleDeltaAllocations",
+        "code": "function settleDeltaAllocations( uint256 _basketId, uint256 _vaultNumber, int256[][] memory _deltaAllocations ) internal returns (int256 totalDelta) { for (uint256 i = 0; i < _deltaAllocations.length; i++) { int256 chainTotal; uint32 chain = chainIds[i]; uint256 latestProtocol = latestProtocolId[chain]; require(_deltaAllocations[i].length == latestProtocol, \"Invalid allocation length\"); for (uint256 j = 0; j < latestProtocol; j++) { int256 allocation = _deltaAllocations[i][j]; if (allocation == 0) continue; chainTotal += allocation; addDeltaAllocationProtocol(_vaultNumber, chain, j, allocation); setBasketAllocationInProtocol(_basketId, chain, j, allocation); } totalDelta += chainTotal; addDeltaAllocationChain(_vaultNumber, chain, chainTotal); } }",
+        "vulnerability": "Unchecked return values",
+        "reason": "The function does not check for return values from 'addDeltaAllocationProtocol' and 'setBasketAllocationInProtocol'. These internal calls modify state variables and could fail silently, leading to inconsistencies in state and potential vulnerabilities in token allocations.",
+        "file_name": "Game.sol"
+    }
+]

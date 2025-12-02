@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xf2baec4108306dc87e117d98912d5adac4f15ed9.code
+Start time: 01/09/2022 02:06:10
+Building CFG...
+CFG generation time (secs): 0.05
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function stop()
+	( 1749)  6d5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function IotaGoldToken(address)
+
+Violated access control check in function start()
+	( 4219) 107b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function IotaGoldToken(address)
+
+Violated access control check in function setName(string)
+	( 4572) 11dc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function IotaGoldToken(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 2.55
+End time: 01/09/2022 02:06:13

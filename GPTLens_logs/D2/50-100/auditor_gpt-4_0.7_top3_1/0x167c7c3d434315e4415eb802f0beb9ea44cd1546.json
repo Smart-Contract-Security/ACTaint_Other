@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom( address _from, address _to, uint256 _amount ) public returns (bool success) { if (msg.sender != controller) { require(transfersEnabled); if (allowed[_from][msg.sender] < _amount) { return false; } allowed[_from][msg.sender] -= _amount; } return doTransfer(_from, _to, _amount); }",
+        "vulnerability": "Unrestricted Transfer",
+        "reason": "If the msg.sender is the controller, the transferFrom function allows the transfer of tokens ignoring the allowance check and modification. This can lead to unauthorized transfers, where the controller can move tokens from any account to another without proper allowance.",
+        "file_name": "0x167c7c3d434315e4415eb802f0beb9ea44cd1546.sol"
+    },
+    {
+        "function_name": "generateTokens",
+        "code": "function generateTokens( address _owner, uint _amount ) public onlyController returns (bool) { uint curTotalSupply = totalSupplyAt(block.number); require(curTotalSupply + _amount >= curTotalSupply); uint previousBalanceTo = balanceOfAt(_owner, block.number); require(previousBalanceTo + _amount >= previousBalanceTo); updateValueAtNow(totalSupplyHistory, curTotalSupply + _amount); updateValueAtNow(balances[_owner], previousBalanceTo + _amount); emit Transfer(0, _owner, _amount); return true; }",
+        "vulnerability": "Arbitrary Token Generation",
+        "reason": "The generateTokens function allows the controller to arbitrarily increase the balance of any account and the total supply of tokens. This can lead to inflation and devaluation of the token, impacting all token holders.",
+        "file_name": "0x167c7c3d434315e4415eb802f0beb9ea44cd1546.sol"
+    },
+    {
+        "function_name": "destroyTokens",
+        "code": "function destroyTokens( address _owner, uint _amount ) public onlyController returns (bool) { uint curTotalSupply = totalSupplyAt(block.number); require(curTotalSupply >= _amount); uint previousBalanceFrom = balanceOfAt(_owner, block.number); require(previousBalanceFrom >= _amount); updateValueAtNow(totalSupplyHistory, curTotalSupply - _amount); updateValueAtNow(balances[_owner], previousBalanceFrom - _amount); emit Transfer(_owner, 0, _amount); return true; }",
+        "vulnerability": "Arbitrary Token Destruction",
+        "reason": "The destroyTokens function allows the controller to arbitrarily decrease the balance of any account and the total supply of tokens. This could be misused to manipulate token holdings, affecting token holder's value without their consent.",
+        "file_name": "0x167c7c3d434315e4415eb802f0beb9ea44cd1546.sol"
+    }
+]

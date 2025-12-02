@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "transfer",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning correctly identifies a potential reentrancy attack due to the external call to '_transferWithReward' followed by an Ether refund calculation and execution within the same transaction. This could indeed allow an attacker to drain funds if the '_transferWithReward' function interacts with an untrusted contract. The severity is high due to the potential financial loss. Profitability is also high for an attacker if they can exploit this repeatedly before detection. The correctness is well-founded based on the provided code snippet.",
+        "correctness": 8,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "This function contains a reentrancy vulnerability because it calls an external contract '_transferWithReward' and attempts to handle Ether refund in the same transaction. An attacker could exploit this by creating a fallback function in the receiver contract that calls back into 'transfer', leading to multiple withdrawals before the first transaction is finished.",
+        "code": "function transfer(address _to, uint _value) returns (bool) { uint startGas = msg.gas + transferCallGas; if (!_transferWithReward(_db(), msg.sender, _to, _value)) { return false; } uint refund = (startGas - msg.gas + refundGas) * tx.gasprice; return _refund(refund); }",
+        "file_name": "0x57d90b64a1a57749b0f932f1a3395792e12e7055.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "remove",
+        "vulnerability": "Suicide function",
+        "criticism": "The reasoning is correct in identifying the potential risks associated with the 'suicide' function, which is now recommended to be replaced by 'selfdestruct' for clarity in newer Solidity versions. The severity of this vulnerability is high if the access control is indeed compromised, as it would allow an attacker to destroy the contract and redirect funds. However, the correctness of the reasoning depends on the implementation of 'checkAccess', which isn't provided. If 'checkAccess' is robust, the risk might be mitigated. Profitability is high for an attacker if they can exploit this vulnerability to redirect substantial funds.",
+        "correctness": 6,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "Using 'suicide' (or selfdestruct) can lead to loss of contract's code and data. It transfers the remaining Ether to a specified address, in this case, the address that calls the function. If the access control is compromised, it can lead to unexpected and possibly malicious destruction of the contract.",
+        "code": "function remove() checkAccess(\"owner\") { suicide(msg.sender); }",
+        "file_name": "0x57d90b64a1a57749b0f932f1a3395792e12e7055.sol",
+        "final_score": 6.75
+    },
+    {
+        "function_name": "setFeeAddr",
+        "vulnerability": "Arbitrary redirection of fees",
+        "criticism": "The reasoning is valid as it highlights the risk associated with changing the fee address if the access control mechanism is compromised. However, the actual risk depends heavily on the implementation of 'checkAccess'. If 'checkAccess' is secure and robust, this risk might be minimal. The severity and profitability could be high if an attacker can redirect significant amounts of transaction fees, but this is contingent on the volume of transactions and the effectiveness of the access control.",
+        "correctness": 7,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "This function allows changing the address to which transaction fees are sent. If the access control (checkAccess) is compromised or misconfigured, an attacker could redirect fees to an arbitrary address, effectively stealing the fees.",
+        "code": "function setFeeAddr(address _feeAddr) checkAccess(\"currencyOwner\") { feeAddr = _feeAddr; }",
+        "file_name": "0x57d90b64a1a57749b0f932f1a3395792e12e7055.sol",
+        "final_score": 6.75
+    }
+]

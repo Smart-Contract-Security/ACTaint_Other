@@ -1,0 +1,57 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5162a13e4b2adf708878c71f2cad69525770601f.code
+Start time: 21/08/2022 05:17:57
+Building CFG...
+CFG generation time (secs): 0.03
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	( 1256)  4e8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function addInvestorList(address[])
+
+Violated access control check in function approve(address,uint256)
+	( 1592)  638:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function turnOffSale()
+	( 1731)  6c3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function turnOnTradable()
+	( 2085)  825:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 1793)  701:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function withdraw()
+	( 2135)  857:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function removeInvestorList(address[])
+	( 2363)  93b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function transfer(address,uint256)
+	( 2506)  9ca:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function addInvestorList(address[])
+	( 2725)  aa5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+Violated access control check in function buyAAC()
+	( 1256)  4e8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function addInvestorList(address[])
+
+Violated access control check in function turnOnSale()
+	( 3021)  bcd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function AAC()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.86
+End time: 21/08/2022 05:18:03

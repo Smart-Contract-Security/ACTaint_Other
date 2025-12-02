@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createCoin",
+        "code": "function createCoin(uint16 id, string name) public payable { require(msg.value >= newCoinFee); require(id < 17576); require(bytes(name).length > 0); require(isCoinIdUnique(id)); devFees += msg.value - defaultCoinPrice; coins[id].exists = true; coins[id].name = name; coins[id].price = defaultCoinPrice; coins[id].marketValue = defaultCoinPrice; coins[id].investors.push(msg.sender); coinIds.push(id); newCoinFee += newCoinFeeIncrease; }",
+        "vulnerability": "Denial of Service (DoS) via Block Gas Limit",
+        "reason": "The loop in the 'isCoinIdUnique' function called from 'createCoin' iterates through the 'coinIds' array, which could grow indefinitely. If the array becomes large enough, the gas required to execute these loops could exceed the block gas limit, causing transactions to fail and preventing legitimate operations like coin creation.",
+        "file_name": "0x59670e7f172eafea08f44a308158c65e314a0df9.sol"
+    },
+    {
+        "function_name": "sellCoin",
+        "code": "function sellCoin(uint16 coinId) public { bool senderIsInvestor = false; uint investorIndex = 0; require(coins[coinId].exists); for (uint i = 0; i < coins[coinId].investors.length; i++) { if (coins[coinId].investors[i] == msg.sender) { senderIsInvestor = true; investorIndex = i; break; } } require(senderIsInvestor); payAndRemoveInvestor(coinId, investorIndex); }",
+        "vulnerability": "Unbounded Loop",
+        "reason": "The 'for' loop in 'sellCoin' function iterates over the 'investors' array to find the sender's index. As there are no limits on the size of this array, it can grow indefinitely, potentially using up all available gas and causing the transaction to fail. This could be exploited to prevent investors from selling their coins.",
+        "file_name": "0x59670e7f172eafea08f44a308158c65e314a0df9.sol"
+    },
+    {
+        "function_name": "payAndRemoveInvestor",
+        "code": "function payAndRemoveInvestor(uint16 coinId, uint investorIndex) private { uint value = getUserCoinMarketValue(coinId, investorIndex); coins[coinId].investors[investorIndex].transfer(value); coins[coinId].price -= coinPriceIncrease; coins[coinId].marketValue -= value; if (coins[coinId].investors.length == 1) { delete coins[coinId].investors[0]; } else { uint secondLastIndex = coins[coinId].investors.length - 1; for (uint j = investorIndex; j < secondLastIndex; j++) { coins[coinId].investors[j] = coins[coinId].investors[j - 1]; } } coins[coinId].investors.length -= 1; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'payAndRemoveInvestor' function uses the '.transfer' method to send Ether which is susceptible to reentrancy attacks. An attacker can exploit this by making a fallback function that calls 'sellCoin' again, leading to multiple unintended withdrawals before the original call has finished executing, potentially draining the contract's funds.",
+        "file_name": "0x59670e7f172eafea08f44a308158c65e314a0df9.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function transfers the entire balance of the contract to the current owner before updating the owner state. This allows the previous owner to potentially reenter the contract and manipulate state or drain funds during the ownership transfer. The `owner.transfer(this.balance)` is particularly risky because it sends all remaining Ether in the contract, which can lead to unexpected behaviors if the contract still has other pending transactions or state updates.",
+        "file_name": "0x9d0a108fbb9b311e9976bc071d4469123659562f.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Authorization through TX value",
+        "reason": "The function allows anyone who sends a sufficient amount of Ether (specified by `howManyEtherInWeiToKillContract`) to kill the contract. This can be exploited by any attacker who is willing to spend that amount of Ether to permanently disable the contract, potentially leading to loss of service or other critical functionality for legitimate users.",
+        "file_name": "0x9d0a108fbb9b311e9976bc071d4469123659562f.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Authorization through TX value",
+        "reason": "This function allows anyone to change the critical token parameters such as its name and symbol if they send enough Ether. This can be misused by attackers to change the token's identity, potentially confusing or misleading users, which can impact the token's trust and usability.",
+        "file_name": "0x9d0a108fbb9b311e9976bc071d4469123659562f.sol"
+    }
+]

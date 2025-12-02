@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "play",
+        "vulnerability": "Predictable RNG",
+        "criticism": "The reasoning is accurate in identifying the potential predictability of the RNG mechanism used to generate 'secretNumber'. Using 'now' and 'block.blockhash(block.number-1)' indeed makes the RNG susceptible to miner influence, which can be exploited by a miner or someone collaborating with a miner to predict the outcome. This vulnerability is severe as it can lead to substantial financial loss for the contract and is highly profitable for an attacker who can exploit it.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The 'secretNumber' is generated using 'sha3(now, block.blockhash(block.number-1))', which is predictable because 'now' (alias for 'block.timestamp') and 'block.blockhash(block.number-1)' can be influenced or anticipated by miners. An attacker can call the 'play' function with the predicted number to always win the roulette.",
+        "code": "function play(uint256 number) payable public {\n    require(msg.value >= betPrice && number <= 10);\n    Game game;\n    game.player = msg.sender;\n    game.number = number;\n    gamesPlayed.push(game);\n    if (number == secretNumber) {\n        msg.sender.transfer(this.balance);\n    }\n    shuffle();\n    lastPlayed = now;\n}",
+        "file_name": "0x36f726e01cc85fdb0d998dfc442856379c569274.sol",
+        "final_score": 9.0
+    },
+    {
+        "function_name": "play",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning correctly identifies a potential DoS scenario where the contract becomes unusable if the ether transfer fails. However, the severity is slightly overstated as the contract only becomes unusable temporarily until a successful payout occurs. The profitability for an attacker is low, as causing the contract to fail does not yield any direct financial benefit, though it could be used to disrupt the service.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 1,
+        "reason": "The 'shuffle' function is called after transferring the entire balance of the contract to the winner. If the transfer fails (e.g., the recipient is a contract that does not accept ether), the contract's state (including 'lastPlayed' and 'secretNumber') will not be updated due to the revert, making the contract unusable until a successful transfer occurs.",
+        "code": "function play(uint256 number) payable public {\n    require(msg.value >= betPrice && number <= 10);\n    Game game;\n    game.player = msg.sender;\n    game.number = number;\n    gamesPlayed.push(game);\n    if (number == secretNumber) {\n        msg.sender.transfer(this.balance);\n    }\n    shuffle();\n    lastPlayed = now;\n}",
+        "file_name": "0x36f726e01cc85fdb0d998dfc442856379c569274.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Use of deprecated function",
+        "criticism": "The reasoning is correct in pointing out the use of a deprecated function, which is a bad practice and can lead to maintainability issues. However, the severity and profitability are low because using 'suicide' instead of 'selfdestruct' does not inherently introduce a security risk that can be exploited for profit. It's more about code quality and future-proofing.",
+        "correctness": 7,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "The function uses 'suicide(msg.sender)', which is deprecated and should be replaced with 'selfdestruct(msg.sender)'. Using deprecated functions can lead to unpredicted behavior and makes the contract less maintainable and secure.",
+        "code": "function kill() public {\n    if (msg.sender == ownerAddr && now > lastPlayed + 1 days) {\n        suicide(msg.sender);\n    }\n}",
+        "file_name": "0x36f726e01cc85fdb0d998dfc442856379c569274.sol",
+        "final_score": 4.0
+    }
+]

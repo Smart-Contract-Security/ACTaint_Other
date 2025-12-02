@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "chooseWinner",
+        "code": "function chooseWinner() private {\n    address seed1 = contestants[uint(block.coinbase) % totalTickets].addr;\n    address seed2 = contestants[uint(msg.sender) % totalTickets].addr;\n    uint seed3 = block.difficulty;\n    bytes32 randHash = keccak256(seed1, seed2, seed3);\n    uint winningNumber = uint(randHash) % totalTickets;\n    address winningAddress = contestants[winningNumber].addr;\n    RaffleResult(raffleId, winningNumber, winningAddress, seed1, seed2, seed3, randHash);\n    raffleId++;\n    nextTicket = 0;\n    winningAddress.transfer(prize);\n    feeAddress.transfer(fee);\n}",
+        "vulnerability": "Predictable Randomness",
+        "reason": "The random number generation process in 'chooseWinner' uses variables such as block.coinbase and block.difficulty which are publicly observable and manipulable by miners, leading to potential predictability and manipulation of the random outcome to favor a miner.",
+        "file_name": "0x9ffe3a0864cce4995a6b385b99de3644cc8d2483.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "code": "function buyTickets() payable public {\n    if (paused) {\n        msg.sender.transfer(msg.value);\n        return;\n    }\n    uint moneySent = msg.value;\n    while (moneySent >= pricePerTicket && nextTicket < totalTickets) {\n        uint currTicket = 0;\n        if (gaps.length > 0) {\n            currTicket = gaps[gaps.length-1];\n            gaps.length--;\n        } else {\n            currTicket = nextTicket++;\n        }\n        contestants[currTicket] = Contestant(msg.sender, raffleId);\n        TicketPurchase(raffleId, msg.sender, currTicket);\n        moneySent -= pricePerTicket;\n    }\n    if (nextTicket == totalTickets) {\n        chooseWinner();\n    }\n    if (moneySent > 0) {\n        msg.sender.transfer(moneySent);\n    }\n}",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "In 'buyTickets', if the gaps array becomes very large, the loop iterating over it will require substantial gas, potentially exceeding block gas limits and leading to failed transactions. This can be used to deny service by preventing the completion of ticket purchases.",
+        "file_name": "0x9ffe3a0864cce4995a6b385b99de3644cc8d2483.sol"
+    },
+    {
+        "function_name": "endRaffle",
+        "code": "function endRaffle() public {\n    if (msg.sender == feeAddress) {\n        paused = true;\n        for (uint i = 0; i < totalTickets; i++) {\n            if (raffleId == contestants[i].raffleId) {\n                TicketRefund(raffleId, contestants[i].addr, i);\n                contestants[i].addr.transfer(pricePerTicket);\n            }\n        }\n        RaffleResult(raffleId, totalTickets, address(0), address(0), address(0), 0, 0);\n        raffleId++;\n        nextTicket = 0;\n        gaps.length = 0;\n    }\n}",
+        "vulnerability": "Unexpected Ether Transfer",
+        "reason": "The 'endRaffle' function forcibly sends Ether to all participants without checking whether the transfer is successful or not. This can lead to unhandled exceptions if any address is a contract that fails to receive Ether, potentially locking the function and pausing the contract indefinitely.",
+        "file_name": "0x9ffe3a0864cce4995a6b385b99de3644cc8d2483.sol"
+    }
+]

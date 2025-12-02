@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createNewElections",
+        "code": "function createNewElections() {\n    require(elections[nextElectionIndex - 1].endBlock + mandateInBlocks < block.number);\n    elections[nextElectionIndex].startBlock = block.number;\n    elections[nextElectionIndex].endBlock = block.number + blocksPerMonth;\n    elections[nextElectionIndex].totalCrbSupply = creditBitContract.totalSupply();\n    nextElectionIndex++;\n    creditCEO = 0x0;\n}",
+        "vulnerability": "Improper privilege setting",
+        "reason": "After creating a new election, the function sets the 'creditCEO' to 0x0 (null address). This could lead to a loss of control over the contract, as the 'creditCEO' is used in modifiers to restrict access to critical functions. An attacker can potentially take over the contract by ensuring they are the 'creditCEO' before this function is called and then manipulate the outcome of the elections or misappropriate funds.",
+        "file_name": "0x40219dd5412e3df40ca3c1c9a7c47786028e626c.sol"
+    },
+    {
+        "function_name": "finishElections",
+        "code": "function finishElections(uint _iterations) {\n    require(elections[nextElectionIndex - 1].endBlock < block.number);\n    require(!elections[nextElectionIndex - 1].electionsFinished);\n    uint curentVotes;\n    uint nextCandidateId = elections[nextElectionIndex - 1].idProcessed;\n    for (uint cnt = 0; cnt < _iterations; cnt++) {\n        curentVotes = elections[nextElectionIndex - 1].candidateVotes[nextCandidateId];\n        if (curentVotes > elections[nextElectionIndex - 1].numOfMaxVotes) {\n            elections[nextElectionIndex - 1].maxVotes = elections[nextElectionIndex - 1].candidateIndex[nextCandidateId];\n            elections[nextElectionIndex - 1].numOfMaxVotes = curentVotes;\n        }\n        nextCandidateId++;\n    }\n    elections[nextElectionIndex - 1].idProcessed = nextCandidateId;\n    if (elections[nextElectionIndex - 1].candidateIndex[nextCandidateId] == 0x0) {\n        creditCEO = elections[nextElectionIndex - 1].maxVotes;\n        elections[nextElectionIndex - 1].electionsFinished = true;\n        if (elections[nextElectionIndex - 1].numOfMaxVotes == 0) {\n            elections[nextElectionIndex].startBlock = block.number;\n            elections[nextElectionIndex].endBlock = block.number + blocksPerMonth;\n            elections[nextElectionIndex].totalCrbSupply = creditBitContract.totalSupply();\n            nextElectionIndex++;\n        }\n    }\n}",
+        "vulnerability": "DoS by unbounded loop",
+        "reason": "The 'finishElections' function uses a loop that iterates '_iterations' times, but there is no validation on the size of '_iterations'. This can lead to a Denial of Service (DoS) attack where an attacker could specify a very high value for '_iterations', causing the transaction to run out of gas, effectively halting the processing of election results.",
+        "file_name": "0x40219dd5412e3df40ca3c1c9a7c47786028e626c.sol"
+    },
+    {
+        "function_name": "vote",
+        "code": "function vote(address _participant) {\n    require(elections[nextElectionIndex - 1].endBlock > block.number);\n    uint avaliableBalance;\n    uint lockedBalance;\n    uint bondMultiplier;\n    uint lockedUntilBlock;\n    uint lastBlockClaimed;\n    (avaliableBalance, lockedBalance, bondMultiplier, lockedUntilBlock, lastBlockClaimed) = creditBitContract.getAccountData(msg.sender);\n    require(lockedUntilBlock >= elections[nextElectionIndex - 1].endBlock);\n    require(!elections[nextElectionIndex - 1].userHasVoted[msg.sender]);\n    uint candidateId = elections[nextElectionIndex - 1].candidateAddyToIndexMap[_participant];\n    elections[nextElectionIndex - 1].candidateVotes[candidateId] += lockedBalance;\n    elections[nextElectionIndex - 1].userHasVoted[msg.sender] = true;\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "In the 'vote' function, there is no check to prevent a reentrant call to vote again before the first transaction finishes. An attacker could exploit this by recursively calling 'vote' to artificially inflate the vote count for a candidate.",
+        "file_name": "0x40219dd5412e3df40ca3c1c9a7c47786028e626c.sol"
+    }
+]

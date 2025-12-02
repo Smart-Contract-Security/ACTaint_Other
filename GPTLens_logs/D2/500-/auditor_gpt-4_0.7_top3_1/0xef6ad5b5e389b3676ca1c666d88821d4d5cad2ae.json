@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function is vulnerable to reentrancy attacks. It directly calls 'to.transfer(amount)', which sends Ether to an address. If the recipient address is a contract, it could potentially execute fallback function to call the withdraw function again before 'Deposits[msg.sender]' is updated, resulting in multiple withdrawals.",
+        "file_name": "0xef6ad5b5e389b3676ca1c666d88821d4d5cad2ae.sol"
+    },
+    {
+        "function_name": "initVault",
+        "code": "function initVault() payable open { Owner = msg.sender; minDeposit = 0.5 ether; deposit(); }",
+        "vulnerability": "Incorrect Access Control",
+        "reason": "The function 'initVault()' is intended to initialize the vault but it does not have any access control to prevent multiple initializations or being called by non-owners. This could allow any user to change the owner to themself or repeatedly call the function to manipulate the state of 'minDeposit'.",
+        "file_name": "0xef6ad5b5e389b3676ca1c666d88821d4d5cad2ae.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "The 'kill' function allows the contract to be destroyed by any caller as long as the contract balance is zero. There is no access control checking whether the caller is the owner, which could lead to denial of service if someone else calls this function and destroys the contract.",
+        "file_name": "0xef6ad5b5e389b3676ca1c666d88821d4d5cad2ae.sol"
+    }
+]

@@ -1,0 +1,30 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x04bba664ea822924ff435ce1b3fad3e8dcc69481.code
+Start time: 18/08/2022 21:52:35
+Building CFG...
+CFG generation time (secs): 0.05
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function overthrowParliament()
+	( 3106)  c22:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function claimThrone()
+
+Violated access control check in function distributeParliamentTaxes()
+	( 2380)  94c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {10, 11, 12, 13, 14, 15, 16, 17, 18} in function parliamentInquest(address)
++--Attacker can make changes to AC item {10} in function claimParliamentSeat()
+
+Violated access control check in function kingWithdrawTaxes()
+	( 5008) 1390:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function claimThrone()
+
+Violated access control check in function wayfarerWithdrawTaxes()
+	( 5281) 14a1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function claimWayfarerTitle()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 6.15
+End time: 18/08/2022 21:52:41

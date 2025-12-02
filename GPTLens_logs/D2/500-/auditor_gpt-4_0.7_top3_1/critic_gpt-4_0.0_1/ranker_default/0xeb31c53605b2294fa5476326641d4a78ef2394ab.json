@@ -1,0 +1,26 @@
+[
+    {
+        "function_name": "ReverseBugBounty",
+        "vulnerability": "Constructor misnaming",
+        "criticism": "The reasoning correctly identifies a severe issue with the misnaming of the constructor, which can lead to unauthorized control over the contract. This vulnerability allows any user to take ownership of the contract post-deployment, which is a critical security flaw. The severity is very high as it could lead to unauthorized access and potential misuse of the contract's functionalities. The profitability is also high because an attacker can gain control over the contract and potentially redirect funds or manipulate its behavior.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The constructor is intended to be named 'ReverseBugBounty', matching the contract name for Solidity version ^0.4.24. However, due to Solidity's updates, constructors should be defined using the 'constructor' keyword to prevent them from being callable as regular functions after deployment. In its current form, anyone can call this function post-deployment and change the 'owner' state variable, thus taking control of functionalities restricted to the owner.",
+        "code": "function ReverseBugBounty(){ owner = msg.sender; }",
+        "file_name": "0xeb31c53605b2294fa5476326641d4a78ef2394ab.sol",
+        "final_score": 9.0
+    },
+    {
+        "function_name": "destroy",
+        "vulnerability": "Unauthorized access",
+        "criticism": "The reasoning is accurate in identifying a critical vulnerability due to the lack of access control in the 'destroy' function. Any user being able to trigger selfdestruct and send all Ether to the owner is a severe security flaw. This could lead to the loss of the contract's functionality and any funds it holds, which is a significant risk. The severity is high because it affects all stakeholders and can lead to total loss of the contract. However, the profitability for an external attacker is moderate, as they cannot redirect the funds to themselves but can cause disruption.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 5,
+        "reason": "The 'destroy' function allows to self-destruct the contract, sending all remaining Ether to the 'owner' address. However, this function lacks any access control mechanism, meaning that any user can call this function and destroy the contract, potentially leading to loss of contract functionality and funds unexpectedly.",
+        "code": "function destroy(){ selfdestruct(owner); }",
+        "file_name": "0xeb31c53605b2294fa5476326641d4a78ef2394ab.sol",
+        "final_score": 8.0
+    }
+]

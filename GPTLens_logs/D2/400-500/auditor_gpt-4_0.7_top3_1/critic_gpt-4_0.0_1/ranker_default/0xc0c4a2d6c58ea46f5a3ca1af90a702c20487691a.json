@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning correctly identifies a potential reentrancy attack vector due to the function handling ETH and token distribution in the same transaction. However, the severity of this vulnerability is contingent on the implementation details of the 'distr' function, which are not provided. If 'distr' is non-reentrant or checks for reentrancy, the risk would be mitigated. Without this information, the severity and profitability cannot be accurately assessed but are potentially high if the function is indeed vulnerable.",
+        "correctness": 6,
+        "severity": 7,
+        "profitability": 7,
+        "reason": "The function 'getTokens' is vulnerable to reentrancy attacks. It receives ETH and distributes tokens in the same transaction. An attacker could exploit this by creating a fallback function that calls 'getTokens' again when it receives tokens. This could allow the attacker to drain the ETH balance of the contract, as the 'distributionFinished' flag check that should stop token distribution is only updated after the tokens have been distributed.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value <= MAX_CONTRIBUTION ); require( msg.value > 0 ); uint256 bonusTokens = 0; tokens = tokensPerEth.mul(msg.value) / 1 ether; if (msg.value >= 1 ether){bonusTokens = tokens.div(2);} else if (msg.value >= 0.5 ether){bonusTokens = tokens.div(4);} else if (msg.value >= 0.25 ether){bonusTokens = tokens.div(10);} else if (msg.value >= 0.05 ether){bonusTokens = tokens.div(20);} tokens += bonusTokens; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.sol",
+        "final_score": 6.5
+    },
+    {
+        "function_name": "adminClaimAirdrop",
+        "vulnerability": "Unbounded Airdrop",
+        "criticism": "The reasoning is correct in identifying that the function allows the owner to distribute an arbitrary amount of tokens without checks on the '_amount' parameter. This could indeed lead to token dilution if the owner abuses this power. However, this is more of a design flaw or a trust issue with the contract owner rather than a traditional security vulnerability exploitable by external attackers. The severity is moderate due to potential token value dilution, but profitability is low as it requires ownership access.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The function 'adminClaimAirdrop' allows the contract owner to airdrop an arbitrary amount of tokens to any address. Since there are no checks on the '_amount' parameter, the owner can repeatedly call this function to distribute more tokens than the totalSupply, effectively creating tokens from thin air and diluting the token value.",
+        "code": "function adminClaimAirdrop(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "file_name": "0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.sol",
+        "final_score": 5.0
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The criticism of the 'transfer' function is somewhat misplaced. The SafeMath library's sub and add functions inherently use assert to prevent overflow and underflow, which means they will revert the transaction if such a condition occurs. Therefore, there is no need to check return values because these functions do not return any value but rather ensure safety by reverting on failure. The reasoning incorrectly interprets how SafeMath functions operate, leading to an overestimation of the issue.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function 'transfer' uses the SafeMath library to prevent overflow and underflow. However, the return values from SafeMath functions are not checked. If an overflow or underflow occurs, the assert statement in the SafeMath library will cause a revert, but this is not explicitly handled in the 'transfer' function logic. This may lead to unexpected reverts during legitimate transfers.",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); emit Transfer(msg.sender, _to, _amount); return true; }",
+        "file_name": "0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.sol",
+        "final_score": 1.25
+    }
+]

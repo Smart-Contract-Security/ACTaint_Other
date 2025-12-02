@@ -1,0 +1,29 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x9df38bdf603b36b8fe8040de760dfbb84ccefa6d.code
+Start time: 26/08/2022 19:48:51
+Building CFG...
+CFG generation time (secs): 4.88
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function changeMerchantAccount(uint256,address)
+	( 1323)  52b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function registerNewMerchant(address,address)
+
+Violated access control check in function registerNewMerchant(address,address)
+	( 1549)  60d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function registerNewMerchant(address,address)
+
+Violated access control check in function changeMerchantChargingAccount(uint256,address,bool)
+	( 1549)  60d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function registerNewMerchant(address,address)
+
+Violated access control check in function changeMerchantBeneficiaryAddress(uint256,address)
+	( 1833)  729:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function registerNewMerchant(address,address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 12.26
+End time: 26/08/2022 19:49:08

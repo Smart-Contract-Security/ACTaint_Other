@@ -1,0 +1,41 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x16ee6f44522dffde8070ca83df441ec20d84c598.code
+Start time: 19/08/2022 11:00:19
+Building CFG...
+CFG generation time (secs): 0.31
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawSale(uint256)
+	( 1910)  776:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+Violated access control check in function putOnSale(uint256,uint256)
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+Violated access control check in function mixAuto(uint256,uint256)
+	( 7947) 1f0b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+Violated access control check in function createSkin(uint128,uint256)
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+Violated access control check in function buyInMarket(uint256)
+	( 6645) 19f5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+Violated access control check in function mix(uint256,uint256)
+	( 7947) 1f0b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+Violated access control check in function bleach(uint128,uint128)
+	( 7214) 1c2e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 15.45
+End time: 19/08/2022 11:00:35

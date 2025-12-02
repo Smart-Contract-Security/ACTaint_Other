@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "lenderAcceptBid",
+        "code": "function lenderAcceptBid(uint256 _bidId) external override pendingBid(_bidId, \"lenderAcceptBid\") whenNotPaused returns ( uint256 amountToProtocol, uint256 amountToMarketplace, uint256 amountToBorrower ) { Bid storage bid = bids[_bidId]; address sender = _msgSenderForMarket(bid.marketplaceId); (bool isVerified, ) = marketRegistry.isVerifiedLender( bid.marketplaceId, sender ); require(isVerified, \"Not verified lender\"); require( !marketRegistry.isMarketClosed(bid.marketplaceId), \"Market is closed\" ); require(!isLoanExpired(_bidId), \"Bid has expired\"); bid.loanDetails.acceptedTimestamp = uint32(block.timestamp); bid.loanDetails.lastRepaidTimestamp = uint32(block.timestamp); bid.state = BidState.ACCEPTED; bid.lender = sender; collateralManager.deployAndDeposit(_bidId); amountToProtocol = bid.loanDetails.principal.percent(protocolFee()); amountToMarketplace = bid.loanDetails.principal.percent( marketRegistry.getMarketplaceFee(bid.marketplaceId) ); amountToBorrower = bid.loanDetails.principal - amountToProtocol - amountToMarketplace; bid.loanDetails.lendingToken.safeTransferFrom( sender, owner(), amountToProtocol ); bid.loanDetails.lendingToken.safeTransferFrom( sender, marketRegistry.getMarketFeeRecipient(bid.marketplaceId), amountToMarketplace ); bid.loanDetails.lendingToken.safeTransferFrom( sender, bid.receiver, amountToBorrower ); lenderVolumeFilled[address(bid.loanDetails.lendingToken)][sender] += bid .loanDetails .principal; totalVolumeFilled[address(bid.loanDetails.lendingToken)] += bid .loanDetails .principal; _borrowerBidsActive[bid.borrower].add(_bidId); emit AcceptedBid(_bidId, sender); emit FeePaid(_bidId, \"protocol\", amountToProtocol); emit FeePaid(_bidId, \"marketplace\", amountToMarketplace); }",
+        "vulnerability": "Reentrancy on funds transfer",
+        "reason": "The function 'lenderAcceptBid' performs multiple ERC20 'safeTransferFrom' calls after state changes without using checks-effects-interactions pattern. This could allow for reentrancy attacks where an attacker could potentially call back into the contract before the state updates complete.",
+        "file_name": "TellerV2.sol"
+    },
+    {
+        "function_name": "_repayLoan",
+        "code": "function _repayLoan( uint256 _bidId, Payment memory _payment, uint256 _owedAmount, bool _shouldWithdrawCollateral ) internal virtual { Bid storage bid = bids[_bidId]; uint256 paymentAmount = _payment.principal + _payment.interest; RepMark mark = reputationManager.updateAccountReputation( bid.borrower, _bidId ); if (paymentAmount >= _owedAmount) { paymentAmount = _owedAmount; bid.state = BidState.PAID; _borrowerBidsActive[bid.borrower].remove(_bidId); if (_shouldWithdrawCollateral) { collateralManager.withdraw(_bidId); } emit LoanRepaid(_bidId); } else { emit LoanRepayment(_bidId); } address lender = getLoanLender(_bidId); bid.loanDetails.lendingToken.safeTransferFrom( _msgSenderForMarket(bid.marketplaceId), lender, paymentAmount ); bid.loanDetails.totalRepaid.principal += _payment.principal; bid.loanDetails.totalRepaid.interest += _payment.interest; bid.loanDetails.lastRepaidTimestamp = uint32(block.timestamp); if (mark != RepMark.Good) { reputationManager.updateAccountReputation(bid.borrower, _bidId); } }",
+        "vulnerability": "Reentrancy on funds transfer",
+        "reason": "Similar to 'lenderAcceptBid', the '_repayLoan' function is vulnerable to reentrancy attacks as it calls 'safeTransferFrom' after making state changes. This could potentially allow an attacker to re-enter the contract multiple times in a single transaction, leading to unexpected behavior or exploits.",
+        "file_name": "TellerV2.sol"
+    },
+    {
+        "function_name": "submitBid",
+        "code": "function submitBid( address _lendingToken, uint256 _marketplaceId, uint256 _principal, uint32 _duration, uint16 _APR, string calldata _metadataURI, address _receiver ) public override whenNotPaused returns (uint256 bidId_) { bidId_ = _submitBid( _lendingToken, _marketplaceId, _principal, _duration, _APR, _metadataURI, _receiver ); }",
+        "vulnerability": "DoS by External Contract",
+        "reason": "The 'submitBid' function relies on external calls to determine if a market is closed and if a borrower is verified. If any external contract called here is malicious or buggy, it could lead to denial of service where valid users can't submit bids due to the failure of these external calls.",
+        "file_name": "TellerV2.sol"
+    }
+]

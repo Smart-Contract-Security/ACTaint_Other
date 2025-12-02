@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function transfers ether to the previous owner before updating the owner state variable. An attacker can exploit this by creating a fallback function in their contract that calls changeOwner again when it receives ether. This can potentially drain the contract's balance because owner is updated after ether transfers.",
+        "file_name": "0x2920e0b7d86ab76aa09bcddffedef081faaf6e2c.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "This function allows anyone to kill the contract if they send enough ether (500 ether), not just the owner. This could be exploited by an attacker who wants to destroy the contract after draining its funds or to disrupt the service.",
+        "file_name": "0x2920e0b7d86ab76aa09bcddffedef081faaf6e2c.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Arbitrary change of critical token information",
+        "reason": "The function allows anyone who sends 400 ether to change the name and symbol of the token, which can mislead or confuse token holders, potentially leading to fraud or misuse.",
+        "file_name": "0x2920e0b7d86ab76aa09bcddffedef081faaf6e2c.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setOracleData",
+        "code": "function setOracleData(address rToken, oracleChainlink _oracle) external { oracleData[rToken] = _oracle; }",
+        "vulnerability": "Unauthorized Oracle Setting",
+        "reason": "The function 'setOracleData' allows any external caller to set the oracle for any token without any restrictions or validations. This can lead to an attacker setting a malicious oracle that provides incorrect price data, affecting the integrity of the system that relies on these prices for financial calculations and operations.",
+        "file_name": "SimplePriceOracle.sol"
+    },
+    {
+        "function_name": "getUnderlyingPrice",
+        "code": "function getUnderlyingPrice(RToken rToken) public view returns (uint) { uint decimals = oracleData[address(rToken)].decimals(); (uint80 roundId,int256 answer,uint256 startedAt,uint256 updatedAt,uint80 answeredInRound) = oracleData[address(rToken)].latestRoundData(); return 10 ** (18 - decimals) * uint(answer); }",
+        "vulnerability": "Unchecked Oracle Answer",
+        "reason": "The function 'getUnderlyingPrice' directly uses the 'answer' from the oracle's 'latestRoundData' method without validating whether the 'answer' is positive or not. If the oracle is compromised or provides a negative answer, this can result in erroneous price calculations, potentially leading to financial losses or exploits in dependent contracts.",
+        "file_name": "SimplePriceOracle.sol"
+    },
+    {
+        "function_name": "getUnderlyingPrice",
+        "code": "function getUnderlyingPrice(RToken rToken) public view returns (uint) { uint decimals = oracleData[address(rToken)].decimals(); (uint80 roundId,int256 answer,uint256 startedAt,uint256 updatedAt,uint80 answeredInRound) = oracleData[address(rToken)].latestRoundData(); return 10 ** (18 - decimals) * uint(answer); }",
+        "vulnerability": "Integer Underflow",
+        "reason": "In the formula '10 ** (18 - decimals)', if 'decimals' is greater than 18, it will result in an underflow of the exponent, potentially leading to incorrect price calculations. This could be exploited if an oracle is set with a higher number of decimals than expected, affecting the accuracy and reliability of the price data.",
+        "file_name": "SimplePriceOracle.sol"
+    }
+]

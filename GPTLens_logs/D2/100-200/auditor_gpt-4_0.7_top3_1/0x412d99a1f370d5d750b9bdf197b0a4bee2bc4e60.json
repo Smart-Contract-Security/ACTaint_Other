@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "adminClaimAirdrop",
+        "code": "function adminClaimAirdrop(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "vulnerability": "Unlimited minting",
+        "reason": "The function allows the contract owner to issue an unlimited amount of tokens to any participant by calling the internal 'doAirdrop' function, which increases the 'totalDistributed' and the participant's balance without any checks on the totalSupply after distribution has started. This can lead to hyperinflation and depreciation of the token value.",
+        "file_name": "0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function is vulnerable to reentrancy attacks because it interacts with external contracts (via the 'distr' function which emits events and updates state) while the state changes (specifically 'distributionFinished') are only committed afterwards. An attacker can recursively call 'getTokens' in a fallback function to drain Ether or manipulate token distribution before the 'distributionFinished' state is set true.",
+        "file_name": "0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Improper Approval Reset",
+        "reason": "This function contains a vulnerability where it incorrectly handles the resetting of allowances. The function only allows changing the allowance from a non-zero value to another non-zero value if the current allowance is zero, which contradicts the typical expected behavior of the 'approve' function in ERC20 tokens where users should be able to freely update their allowances. This can lead to issues where allowances cannot be properly managed by token holders.",
+        "file_name": "0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.sol"
+    }
+]

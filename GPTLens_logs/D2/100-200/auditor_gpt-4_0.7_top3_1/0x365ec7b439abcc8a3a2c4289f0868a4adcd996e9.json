@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "cashOut",
+        "code": "function cashOut(uint256 _amount) public whenNotPaused { require(_amount >= 0); require(_amount == uint256(uint128(_amount))); require(this.balance >= _amount); require(balances[msg.sender] >= _amount); if (_amount == 0) _amount = balances[msg.sender]; balances[msg.sender] -= _amount; if (!msg.sender.send(_amount)) balances[msg.sender] += _amount; EventCashOut(msg.sender, _amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function cashOut uses the call method (msg.sender.send(_amount)) to send Ether, which can allow reentrancy attacks because it does not follow the checks-effects-interactions pattern. The balance is updated after the Ether transfer, which means if the call is to a malicious contract, it may call back into cashOut or other functions in EtherRacingCore and modify state (e.g., balances) in an inconsistent state.",
+        "file_name": "0x365ec7b439abcc8a3a2c4289f0868a4adcd996e9.sol"
+    },
+    {
+        "function_name": "bid",
+        "code": "function bid(uint32 _carID) public payable whenNotPaused { require(_carID > 0 && _carID < newCarID); require(cars[_carID].selling == true); uint256 currentPrice = getCarCurrentPriceAuction(_carID); require(currentPrice >= 0); require(msg.value >= currentPrice); uint256 marketFee = currentPrice * ownerCut / 10000; balances[cars[_carID].owner] += currentPrice - marketFee; balances[Master] += marketFee; balances[msg.sender] += msg.value - currentPrice; cars[_carID].owner = msg.sender; cars[_carID].selling = false; delete auctions[cars[_carID].auctionID]; cars[_carID].auctionID = 0; EventBid(msg.sender, _carID); }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The bid function calculates the marketFee as currentPrice * ownerCut / 10000 without ensuring that this operation does not overflow. Since Solidity before 0.8.0 does not automatically check for overflows, a very large currentPrice could cause an overflow, leading to a very low marketFee, resulting in incorrect balances.",
+        "file_name": "0x365ec7b439abcc8a3a2c4289f0868a4adcd996e9.sol"
+    },
+    {
+        "function_name": "upgradeCar",
+        "code": "function upgradeCar(uint32 _carID, uint8 _statID) public payable whenNotPaused { require(_carID > 0 && _carID < newCarID); require(cars[_carID].owner == msg.sender); require(_statID >= 0 && _statID < 8); require(cars[_statID].upgrades[_statID] < 20); require(msg.value >= upgradePrice); require(upgradeInterface != address(0)); if (upgradeInterface.tryUpgrade(_carID, _statID)) { cars[_carID].upgrades[_statID]++; } balances[msg.sender] += msg.value - upgradePrice; balances[Master] += upgradePrice; EventUpgradeCar(msg.sender, _carID, _statID, cars[_carID].upgrades[_statID]); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function upgradeCar interacts with an external contract (upgradeInterface) and does not check the return value of the external call to tryUpgrade. If the external call fails or behaves unexpectedly, the state of upgrades might become inconsistent or manipulated.",
+        "file_name": "0x365ec7b439abcc8a3a2c4289f0868a4adcd996e9.sol"
+    }
+]

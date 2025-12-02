@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "remove",
+        "code": "function remove(){ if(msg.sender == address(ambiC)){ suicide(msg.sender); } }",
+        "vulnerability": "Unchecked caller identity",
+        "reason": "The 'remove' function uses 'msg.sender == address(ambiC)' to check if the caller is authorized, assuming that the address stored in 'ambiC' is always a trusted administrator. However, if 'ambiC' is compromised or incorrectly set, any entity or contract could trigger this function, leading to self-destruction of the contract and potential loss of funds or state.",
+        "file_name": "0xa00fa22499478cc37beb45021a1f1c9f826f72e1.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() checkAccess(\"owner\") { suicide(msg.sender); }",
+        "vulnerability": "Potential for accidental contract kill",
+        "reason": "The 'kill' function is protected by a 'checkAccess' modifier which validates that the caller has the 'owner' role relative to the Ambi contract. However, relying solely on external contract validation without additional checks or safety mechanisms could lead to accidental or malicious killing of the contract if the Ambi contract or its permissions are compromised.",
+        "file_name": "0xa00fa22499478cc37beb45021a1f1c9f826f72e1.sol"
+    },
+    {
+        "function_name": "sendReward",
+        "code": "function sendReward(uint _cycle, uint _position) returns(bool) { if (!_isCycleValid(_cycle) || _position >= accountsUsed[_cycle].length) { return false; } Account claimant = accountsUsed[_cycle][_position]; if (claimant.status != RewardStatuses.Unsent) { return false; } int minimalAccountBalance = accountsBalances[_cycle][claimant.recipient]; if (minimalAccountBalance < int(minimalRewardedBalance)) { claimant.status = RewardStatuses.TooSmallToSend; return false; } uint rewardAmount = getInterest(uint(minimalAccountBalance), _cycle); ElcoinInterface elcoin = ElcoinInterface(getAddress(\"elcoin\")); bool result = elcoin.rewardTo(claimant.recipient, rewardAmount); if (result) { Reward(claimant.recipient, _cycle, rewardAmount, _position); claimant.status = RewardStatuses.Sent; } return true; }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'sendReward' makes an external call to another contract 'ElcoinInterface' using 'elcoin.rewardTo'. This function does not handle the possible failure of this external call appropriately. Failing to check the return value of 'rewardTo' or not handling exceptions can lead to inconsistent contract states or enable reentrancy attacks.",
+        "file_name": "0xa00fa22499478cc37beb45021a1f1c9f826f72e1.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "StopGame",
+        "code": "function StopGame(uint8 _number) public payable { require(msg.sender == rouletteOwner); GiftHasBeenSent(); result = _number; if (msg.value>0.001 ether){ selfdestruct(rouletteOwner); } }",
+        "vulnerability": "Destructive method",
+        "reason": "The selfdestruct function is called within the StopGame function if the transaction value is greater than 0.001 ether. Selfdestruct can be used to forcefully send ether to any address (in this case, rouletteOwner) and destroy the contract, removing it from the blockchain. This can lead to loss of contract functionality and ether balance without recovery options, potentially benefiting an attacker who has control over the rouletteOwner address.",
+        "file_name": "0xd87eaad7afb256c69526a490f402a658f12246fd.sol"
+    },
+    {
+        "function_name": "Play",
+        "code": "function Play(uint8 _number) external payable { require(msg.sender == tx.origin); if(result == _number && msg.value>0.001 ether && !finished) { msg.sender.transfer(this.balance); GiftHasBeenSent(); } }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The Play function contains an external call to msg.sender.transfer(this.balance) which sends all the contract's balance to the sender if certain conditions are met. This is susceptible to reentrancy attacks where a malicious contract can repeatedly call Play to drain the contract's funds. The function does not use reentrancy guards such as the 'Checks-Effects-Interactions' pattern to prevent this type of attack.",
+        "file_name": "0xd87eaad7afb256c69526a490f402a658f12246fd.sol"
+    },
+    {
+        "function_name": "StartRoulette",
+        "code": "function StartRoulette(uint8 _number) public payable { if(result==0) { result = _number; rouletteOwner = msg.sender; } }",
+        "vulnerability": "Improper authorization",
+        "reason": "The StartRoulette function allows any user to set themselves as the rouletteOwner and set the result if the result is initially zero. This can be exploited if the contract is deployed with result set to zero and an attacker calls this function before the legitimate owner. The attacker can then control the rouletteOwner address, potentially misusing the StopGame or other dependent functions.",
+        "file_name": "0xd87eaad7afb256c69526a490f402a658f12246fd.sol"
+    }
+]

@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.code
+Start time: 26/08/2022 06:30:26
+Building CFG...
+CFG generation time (secs): 0.11
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function burn(uint256)
+	( 4636) 121c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {9} in function placeBid()
+
+Violated access control check in function fillBid()
+	( 3672)  e58:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {9} in function placeBid()
+
+Violated access control check in function cancelBid()
+	( 5425) 1531:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {13} in function placeBid()
+
+Violated access control check in function transfer(address,uint256)
+	( 5769) 1689:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {9} in function placeBid()
+
+Violated access control check in function cancelSale()
+	( 7301) 1c85:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {9} in function placeBid()
+
+Violated access control check in function offerPieceForSale(uint256)
+	( 3672)  e58:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {9} in function placeBid()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 27.18
+End time: 26/08/2022 06:30:53

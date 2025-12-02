@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "supplyTokenTo",
+        "vulnerability": "Incorrect balance update",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential issue with the balance update mechanism. However, the vulnerability described as an attacker manipulating the 'to' parameter is not directly supported by the code provided. The function does not inherently prevent the sender from specifying any address as the 'to' parameter, which is a common pattern in many contracts. The severity is moderate because if misused, it could lead to unauthorized accrual of balances, but the profitability is low as it requires specific conditions and permissions to exploit effectively.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The function 'supplyTokenTo' updates the balance of 'to' address by adding the 'creditsIssued' directly. This can lead to a vulnerability where an attacker may manipulate the 'to' parameter to credit another account, potentially leading to unauthorized accrual of balances.",
+        "code": "function supplyTokenTo(uint256 mAssetAmount, address to) external override nonReentrant { mAsset.safeTransferFrom(msg.sender, address(this), mAssetAmount); uint256 creditsIssued = savings.depositSavings(mAssetAmount); imBalances[to] += creditsIssued; emit Supplied(msg.sender, to, mAssetAmount); }",
+        "file_name": "MStableYieldSource.sol"
+    },
+    {
+        "function_name": "redeemToken",
+        "vulnerability": "Insufficient balance check",
+        "criticism": "The reasoning is correct in pointing out the lack of a sufficient balance check before burning credits, which could indeed lead to an underflow issue. This is a significant oversight and could lead to severe consequences such as arbitrary large balances and unauthorized asset withdrawal. The severity is high due to the potential impact on the integrity of the token balances and the profitability is also high as an attacker could exploit this to drain assets from the contract.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'redeemToken' function does not check if the user has sufficient credits to burn before executing the redemption. This could result in underflow of the user's balance leading to arbitrary large balances, potentially allowing an attacker to withdraw more assets than they should be entitled to.",
+        "code": "function redeemToken(uint256 mAssetAmount) external override nonReentrant returns (uint256 mAssetsActual) { uint256 mAssetBalanceBefore = mAsset.balanceOf(address(this)); uint256 creditsBurned = savings.redeemUnderlying(mAssetAmount); imBalances[msg.sender] -= creditsBurned; uint256 mAssetBalanceAfter = mAsset.balanceOf(address(this)); mAssetsActual = mAssetBalanceAfter - mAssetBalanceBefore; mAsset.safeTransfer(msg.sender, mAssetsActual); emit Redeemed(msg.sender, mAssetAmount, mAssetsActual); }",
+        "file_name": "MStableYieldSource.sol"
+    },
+    {
+        "function_name": "approveMax",
+        "vulnerability": "Excessive approval",
+        "criticism": "The reasoning correctly identifies a risk associated with setting an excessively high approval limit. If the 'savings' contract is compromised, it could indeed lead to significant losses for users. However, the vulnerability's impact is contingent on the security of the 'savings' contract, which is not detailed in the provided code or reasoning. The severity is moderate, reflecting the potential damage if exploited, and the profitability is moderate, depending on the attacker's ability to compromise the 'savings' contract.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The 'approveMax' function sets the approval of the total supply of the underlying asset to the 'savings' contract. This could potentially lead to a vulnerability where, if the 'savings' contract is compromised, an attacker could drain all tokens from users who have called this function.",
+        "code": "function approveMax() public { IERC20(savings.underlying()).safeApprove(address(savings), type(uint256).max); emit ApprovedMax(msg.sender); }",
+        "file_name": "MStableYieldSource.sol"
+    }
+]

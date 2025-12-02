@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' allows the current 'owner' to be changed if a certain amount of Ether is sent. However, before updating the owner, it transfers the sent value and all contract's balance to the current owner. The owner can be a malicious contract that has a fallback function designed to call 'changeOwner' again, creating a reentrancy attack. This can lead to unexpected behavior or draining of contract funds before the owner is updated.",
+        "file_name": "0x889a32263d237872b4f7985ead9c29ebfe8b464d.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "This function allows anyone to destroy the contract by sending a specific amount of Ether. While intended to provide a control mechanism, it does not refund any remaining users or stakeholders, potentially leading to loss of funds. Furthermore, if the control of the owner is compromised or the threshold amount is sent by an attacker, this can lead to premature and potentially malicious destruction of the contract.",
+        "file_name": "0x889a32263d237872b4f7985ead9c29ebfe8b464d.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { var senderBalance = balances[msg.sender]; if (senderBalance >= _value && _value > 0) { senderBalance -= _value; balances[msg.sender] = senderBalance; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function does not properly check for overflows when adding '_value' to 'balances[_to]'. If '_to' is a malicious address or crafted such that adding '_value' results in an overflow, it can effectively reset or lower the balance, potentially leading to unauthorized token creation or destruction.",
+        "file_name": "0x889a32263d237872b4f7985ead9c29ebfe8b464d.sol"
+    }
+]

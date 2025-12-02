@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyRock",
+        "code": "function buyRock (uint rockNumber) payable {\n    require(rocks[rockNumber].currentlyForSale = true);\n    require(msg.value == rocks[rockNumber].price);\n    rocks[rockNumber].currentlyForSale = false;\n    rocks[rockNumber].timesSold++;\n    if (rockNumber != latestNewRockForSale) {\n        rocks[rockNumber].owner.transfer(rocks[rockNumber].price);\n    }\n    rocks[rockNumber].owner = msg.sender;\n    rockOwners[msg.sender].push(rockNumber);\n    if (rockNumber == latestNewRockForSale) {\n        if (rockNumber != 99) {\n            latestNewRockForSale++;\n            rocks[latestNewRockForSale].price = 10**15 + (latestNewRockForSale**2 * 10**15);\n            rocks[latestNewRockForSale].currentlyForSale = true;\n        }\n    }\n}",
+        "vulnerability": "Assignment instead of comparison",
+        "reason": "In the function `buyRock`, the `require` statement uses an assignment `=` instead of a comparison `==`. This means that the statement `require(rocks[rockNumber].currentlyForSale = true);` will always evaluate to true and update `currentlyForSale` to true, thus allowing the purchasing of a rock even if it is not marked for sale.",
+        "file_name": "0x37504ae0282f5f334ed29b4548646f887977b7cc.sol"
+    },
+    {
+        "function_name": "buyRock",
+        "code": "function buyRock (uint rockNumber) payable {\n    require(rocks[rockNumber].currentlyForSale = true);\n    require(msg.value == rocks[rockNumber].price);\n    rocks[rockNumber].currentlyForSale = false;\n    rocks[rockNumber].timesSold++;\n    if (rockNumber != latestNewRockForSale) {\n        rocks[rockNumber].owner.transfer(rocks[rockNumber].price);\n    }\n    rocks[rockNumber].owner = msg.sender;\n    rockOwners[msg.sender].push(rockNumber);\n    if (rockNumber == latestNewRockForSale) {\n        if (rockNumber != 99) {\n            latestNewRockForSale++;\n            rocks[latestNewRockForSale].price = 10**15 + (latestNewRockForSale**2 * 10**15);\n            rocks[latestNewRockForSale].currentlyForSale = true;\n        }\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function `buyRock` transfers Ether to the previous owner using `rocks[rockNumber].owner.transfer(rocks[rockNumber].price);` before updating the new owner of the rock. This can allow the previous owner to reenter the contract and call `buyRock` again before the state (`rocks[rockNumber].owner`) is updated, potentially leading to unexpected behavior or financial loss.",
+        "file_name": "0x37504ae0282f5f334ed29b4548646f887977b7cc.sol"
+    },
+    {
+        "function_name": "sellRock",
+        "code": "function sellRock (uint rockNumber, uint price) {\n    require(msg.sender == rocks[rockNumber].owner);\n    require(price > 0);\n    rocks[rockNumber].price = price;\n    rocks[rockNumber].currentlyForSale = true;\n}",
+        "vulnerability": "Front-running",
+        "reason": "The function `sellRock` allows a rock owner to set a new sale price and mark the rock as available for sale. However, due to the public nature of blockchain transactions, a malicious user can watch the pending transactions pool (mempool) and attempt to buy the rock with the new price before the original transaction is confirmed, exploiting the price change and potentially causing loss to the original owner who intended to sell at a higher price.",
+        "file_name": "0x37504ae0282f5f334ed29b4548646f887977b7cc.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() public{\n    require(now >= withdrawDate);\n    require(msg.sender == theRichest);\n    theRichest = 0;\n    treasure = 0;\n    owner.transfer(this.balance/100);\n    msg.sender.transfer(this.balance);\n}",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The function withdraw() transfers the remaining balance to the caller after sending a percentage to the owner. However, because the state variables (theRichest and treasure) are set to zero after the transfers, a malicious contract can make a recursive call back to withdraw() within the same transaction. This can happen if the malicious contract's fallback function is triggered by the transfer and calls withdraw() again. This can lead to multiple unintended withdrawals if the checks do not get a chance to act before the state is updated.",
+        "file_name": "0xe54420ef4ecda25e08b82a71f72e043f83d7d808.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public {\n    require(msg.sender==owner);\n    require(now >= withdrawDate);\n    owner.transfer(this.balance/100);\n    suicide(theRichest);\n}",
+        "vulnerability": "Improper use of suicide",
+        "reason": "The kill() function uses the suicide() function, which is now deprecated and should be replaced with selfdestruct(). Moreover, using suicide(theRichest) sends all remaining funds to the richest user's address upon contract destruction. This could be manipulated by a malicious actor if they can control the address marked as theRichest, potentially leading to loss of funds intended to be controlled or retained by the owner.",
+        "file_name": "0xe54420ef4ecda25e08b82a71f72e043f83d7d808.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function () public payable{\n    require(treasure < msg.value);\n    treasure = msg.value;\n    withdrawDate = now + 2 days;\n    theRichest = msg.sender;\n}",
+        "vulnerability": "Denial of Service by block",
+        "reason": "The fallback function implicitly changes the state of the contract by updating the treasure, withdrawDate, and theRichest based on the received msg.value. If a sender sends exactly or less than the current treasure value, the transaction will fail due to the require statement. This can be used maliciously to prevent any new transactions from occurring by setting a high enough treasure value, effectively blocking others from becoming the richest and interacting with the contract.",
+        "file_name": "0xe54420ef4ecda25e08b82a71f72e043f83d7d808.sol"
+    }
+]

@@ -1,0 +1,45 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xdcfae5ec906742f66e57e09ce098f5adb76ababa.code
+Start time: 30/08/2022 15:25:26
+Building CFG...
+CFG generation time (secs): 0.06
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function StartPaymens()
+	( 4362) 110a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function init(address)
+
+Violated access control check in function StartPaymens()
+	( 1799)  707:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function init(address)
+
+Violated access control check in function ChangeManager(address)
+	( 4362) 110a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function init(address)
+
+Violated access control check in function ChangeManager(address)
+	( 2403)  963:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function init(address)
+
+Violated access control check in function SetPrcntRate(uint256)
+	( 4362) 110a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function init(address)
+
+Violated access control check in function SetPrcntRate(uint256)
+	( 2725)  aa5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function init(address)
+
+Violated access control check in function StopPaymens()
+	( 4362) 110a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function init(address)
+
+Violated access control check in function StopPaymens()
+	( 3883)  f2b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function init(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.75
+End time: 30/08/2022 15:25:31

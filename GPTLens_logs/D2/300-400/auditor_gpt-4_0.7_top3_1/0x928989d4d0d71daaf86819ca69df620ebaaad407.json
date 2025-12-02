@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function transfers the sent ether and the entire balance of the contract to the previous owner before updating the owner state. If the previous owner is a malicious contract, it can call back into this contract and potentially exploit functions assuming the old owner still has control (or before the owner state is updated). This can lead to unexpected behaviors or loss of funds.",
+        "file_name": "0x928989d4d0d71daaf86819ca69df620ebaaad407.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "This function allows anyone to kill the smart contract if they simply send a certain amount of ether (500 ether). This poses a severe security risk as any external entity can destroy the contract, potentially causing loss of data and funds, without requiring ownership or any form of authentication apart from sending ether.",
+        "file_name": "0x928989d4d0d71daaf86819ca69df620ebaaad407.sol"
+    },
+    {
+        "function_name": "function () payable external",
+        "code": "function () payable external { if (!funding) revert(); if (msg.value == 0) revert(); var numTokens = msg.value * (1000.0/totalTokens); totalTokens += numTokens; balances[msg.sender] += numTokens; Transfer(0, msg.sender, numTokens); }",
+        "vulnerability": "Arbitrary Minting",
+        "reason": "The fallback function allows sending ether to mint an arbitrary amount of tokens based on the calculation 'msg.value * (1000.0/totalTokens)'. As totalTokens increases, the number of tokens minted per ether sent decreases, which could be manipulated by an attacker sending small amounts of ether to gradually increase totalTokens and decrease the token value. This can lead to inflation and devaluation of the token.",
+        "file_name": "0x928989d4d0d71daaf86819ca69df620ebaaad407.sol"
+    }
+]

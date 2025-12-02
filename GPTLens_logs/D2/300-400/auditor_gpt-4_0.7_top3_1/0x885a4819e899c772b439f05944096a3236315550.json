@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "purchase",
+        "code": "function purchase(address recipient) public payable { require(msg.value >= totalPrice()); ERC20 erc = ERC20(tokenContract); uint256 balance = erc.balanceOf(this); erc.transfer(recipient, balance); uint256 basePrice = tokenPrice * balance; require(basePrice > 0); require(basePrice < this.balance); seller.transfer(basePrice); MarketboardListingComplete(tokenContract, balance, 0, 0); reset(); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'purchase' function is vulnerable to reentrancy attacks because it calls an external contract (ERC20's transfer) and handles ether transfer (seller.transfer(basePrice)) afterward. An attacker can exploit this by making the called contract call back into this contract, potentially leading to unexpected behavior like multiple withdrawals.",
+        "file_name": "0x885a4819e899c772b439f05944096a3236315550.sol"
+    },
+    {
+        "function_name": "claimUnrelatedTokens",
+        "code": "function claimUnrelatedTokens(address unrelatedTokenContract, address recipient) moderatorOrSellerOnly public { require(tokenContract != unrelatedTokenContract); ERC20 erc = ERC20(unrelatedTokenContract); uint256 balance = erc.balanceOf(this); erc.transfer(recipient, balance); }",
+        "vulnerability": "Arbitrary Token Withdrawal",
+        "reason": "The 'claimUnrelatedTokens' function allows the moderator or seller to transfer any ERC20 tokens that this contract holds, except for its primary token. This could be abused if the contract accidentally or maliciously receives tokens that it was not supposed to handle, leading to potential loss of assets.",
+        "file_name": "0x885a4819e899c772b439f05944096a3236315550.sol"
+    },
+    {
+        "function_name": "setPrice",
+        "code": "function setPrice(uint256 newTokenPrice) moderatorOrSellerOnly public { uint256 oldPrice = tokenPrice; tokenPrice = newTokenPrice; MarketboardListingPriceChanged(oldPrice, newTokenPrice); }",
+        "vulnerability": "Price Manipulation",
+        "reason": "The 'setPrice' function allows the moderator or seller to arbitrarily change the price of tokens. This can be exploited by an insider to manipulate the market, either by setting an unusually high price to extract excessive amounts of ether from buyers, or by setting it too low in a potential scam to quickly sell off all tokens.",
+        "file_name": "0x885a4819e899c772b439f05944096a3236315550.sol"
+    }
+]

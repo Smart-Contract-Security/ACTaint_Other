@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) transferLock public returns (bool success) { require(_to != address(0)); require(balances[msg.sender] >= _value); require(frozen[msg.sender]==false); balances[msg.sender] = balances[msg.sender].sub(_value); balances[_to] = balances[_to].add(_value); Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "This function lacks proper gas estimation and management for the transfer of tokens, particularly because the `Transfer` event could consume high amounts of gas if looped or called multiple times in a single block. This could lead to the block gas limit being reached, effectively making the function unable to execute if the conditions persist, and thus denying service.",
+        "file_name": "0xa089c8335d6e3c8e85413a5bb40d08a14a8e92d3.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) transferLock public returns (bool success) { require(_to != address(0)); require(balances[_from] >= _value && allowed[_from][msg.sender] >= _value); require(frozen[_from]==false); balances[_to] = balances[_to].add(_value); balances[_from] = balances[_from].sub(_value); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value); Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Incorrect Access Control",
+        "reason": "The function does not validate that the `msg.sender` is authorized to call `transferFrom` for addresses other than their own unless explicitly allowed. This opens up the potential for unauthorized transfers if the `allowed` mapping is not correctly managed or set up, leading to unauthorized asset transfers.",
+        "file_name": "0xa089c8335d6e3c8e85413a5bb40d08a14a8e92d3.sol"
+    },
+    {
+        "function_name": "setFrozen",
+        "code": "function setFrozen(address _target,bool _flag) onlyAdmin public { frozen[_target]=_flag; FrozenStatus(_target,_flag); }",
+        "vulnerability": "Arbitrary Freezing of Accounts",
+        "reason": "The `setFrozen` function allows the admin to freeze any account arbitrarily without checks or balances beyond admin control. This can be misused by an admin to deny service to legitimate users arbitrarily, impacting the fairness and operability of the token contract.",
+        "file_name": "0xa089c8335d6e3c8e85413a5bb40d08a14a8e92d3.sol"
+    }
+]

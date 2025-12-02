@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawETH",
+        "code": "function withdrawETH() external onlyCAO { cfo.transfer(this.balance); }",
+        "vulnerability": "Incorrect Withdrawal Recipient",
+        "reason": "The 'withdrawETH' function transfers the entire balance of the contract to the CFO, instead of the CAO who has the permission to call this function. This discrepancy can lead to the mismanagement of funds, where the CFO may unintentionally receive funds meant for management by the CAO.",
+        "file_name": "0x16ee6f44522dffde8070ca83df441ec20d84c598.sol"
+    },
+    {
+        "function_name": "buyInMarket",
+        "code": "function buyInMarket(uint256 skinId) external payable whenNotPaused { require(isOnSale[skinId] == true); address seller = skinIdToOwner[skinId]; require(msg.sender != seller); uint256 _price = desiredPrice[skinId]; require(msg.value >= _price); uint256 sellerProceeds = _price - _computeCut(_price); seller.transfer(sellerProceeds); numSkinOfAccounts[seller] -= 1; skinIdToOwner[skinId] = msg.sender; numSkinOfAccounts[msg.sender] += 1; isOnSale[skinId] = false; desiredPrice[skinId] = 0; BuyInMarket(msg.sender, skinId); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'buyInMarket' function is vulnerable to reentrancy attacks. The function updates the state (e.g., transfer of ownership and sale status) after sending Ether to the seller. A malicious contract could call this function again in its fallback function when receiving Ether, leading to unexpected behavior such as double-spending or manipulation of contract states before they are finalized.",
+        "file_name": "0x16ee6f44522dffde8070ca83df441ec20d84c598.sol"
+    },
+    {
+        "function_name": "donateSkin",
+        "code": "function donateSkin(uint128 specifiedAppearance, address donee) external onlyCOO { Skin memory newSkin = Skin({appearance: specifiedAppearance, cooldownEndTime: uint64(now), mixingWithId: 0}); skins[nextSkinId] = newSkin; skinIdToOwner[nextSkinId] = donee; isOnSale[nextSkinId] = false; CreateNewSkin(nextSkinId, donee); nextSkinId++; numSkinOfAccounts[donee] += 1; skinCreatedNum += 1; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'donateSkin' function creates a new skin and assigns it directly to a 'donee' address. This function does not verify whether the 'donee' address is a valid recipient or a contract that can handle incoming tokens correctly, which might lead to tokens being locked forever if 'donee' is a contract that does not expect to receive tokens or is unable to interact with this contract.",
+        "file_name": "0x16ee6f44522dffde8070ca83df441ec20d84c598.sol"
+    }
+]

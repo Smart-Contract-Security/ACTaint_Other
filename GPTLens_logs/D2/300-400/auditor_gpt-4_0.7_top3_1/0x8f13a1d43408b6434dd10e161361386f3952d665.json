@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "enter",
+        "code": "function enter() {\n    if (msg.value > 1 ether) {\n        msg.sender.send(msg.value);\n        return;\n    }\n    uint idx = participants.length;\n    participants.length += 1;\n    participants[idx].etherAddress = msg.sender;\n    participants[idx].amount = msg.value;\n    if (idx != 0) {\n        collectedFees += msg.value * 1 / 20;\n        balance += msg.value;\n    } else {\n        collectedFees += msg.value;\n    }\n    if (balance > participants[payoutIdx].amount * 2) {\n        uint transactionAmount = 2 * (participants[payoutIdx].amount - participants[payoutIdx].amount / 20);\n        participants[payoutIdx].etherAddress.send(transactionAmount);\n        balance -= participants[payoutIdx].amount * 2;\n        payoutIdx += 1;\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function `enter` uses the `send` method to transfer Ether which can allow reentrancy if the recipient is a contract. This can lead to unexpected behavior such as draining the contract funds or manipulating internal states (e.g., `balance` or `payoutIdx`) between the calls.",
+        "file_name": "0x8f13a1d43408b6434dd10e161361386f3952d665.sol"
+    },
+    {
+        "function_name": "enter",
+        "code": "function enter() {\n    if (msg.value > 1 ether) {\n        msg.sender.send(msg.value);\n        return;\n    }\n    uint idx = participants.length;\n    participants.length += 1;\n    participants[idx].etherAddress = msg.sender;\n    participants[idx].amount = msg.value;\n    if (idx != 0) {\n        collectedFees += msg.value * 1 / 20;\n        balance += msg.value;\n    } else {\n        collectedFees += msg.value;\n    }\n    if (balance > participants[payoutIdx].amount * 2) {\n        uint transactionAmount = 2 * (participants[payoutIdx].amount - participants[payoutIdx].amount / 20);\n        participants[payoutIdx].etherAddress.send(transactionAmount);\n        balance -= participants[payoutIdx].amount * 2;\n        payoutIdx += 1;\n    }\n}",
+        "vulnerability": "Unchecked send",
+        "reason": "The function `enter` fails to verify the return value of `send` methods. This method returns false on failure but the result is not checked, which can lead to funds being locked in the contract or lost without the sender's awareness.",
+        "file_name": "0x8f13a1d43408b6434dd10e161361386f3952d665.sol"
+    },
+    {
+        "function_name": "setOwner",
+        "code": "function setOwner(address _owner) onlyowner {\n    owner = _owner;\n}",
+        "vulnerability": "Ownership takeover",
+        "reason": "The function `setOwner` allows the current owner to change the ownership of the contract to any address. If the private key of the owner account is compromised, the attacker can change the ownership and gain full control over the contract, including withdrawal of collected fees.",
+        "file_name": "0x8f13a1d43408b6434dd10e161361386f3952d665.sol"
+    }
+]

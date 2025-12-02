@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Kill",
+        "code": "function Kill(uint a) { selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The function 'Kill' allows any caller to destroy the contract. The misuse of selfdestruct function without any authorization checks can lead to denial of service where the smart contract is destructed and removed from the Ethereum network.",
+        "file_name": "0x49d2374241a0a4b407a71d359a753fc630c5d8d4.sol"
+    },
+    {
+        "function_name": "Test2",
+        "code": "function Test2(uint a) returns(address) { return msg.sender; }",
+        "vulnerability": "Missing function visibility",
+        "reason": "The function 'Test2' is missing visibility specifier and by default is public in Solidity versions prior to 0.5.0. This means that the function can be invoked by any external user, potentially leading to unintentional behavior or exposure of contract state.",
+        "file_name": "0x49d2374241a0a4b407a71d359a753fc630c5d8d4.sol"
+    },
+    {
+        "function_name": "Test4",
+        "code": "function Test4(uint b) returns(uint) { return a.length; }",
+        "vulnerability": "Missing function visibility",
+        "reason": "Similar to Test2, the function 'Test4' lacks a visibility specifier, making it public by default in Solidity versions before 0.5.0. This can allow any external entity to access internal state variables through the function, which might not have been the developer's intention.",
+        "file_name": "0x49d2374241a0a4b407a71d359a753fc630c5d8d4.sol"
+    }
+]

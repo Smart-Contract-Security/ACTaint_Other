@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Authorization Bypass",
+        "reason": "The 'withdraw' function uses msg.sender to determine the maximum withdrawal amount from the Deposits mapping. However, it should be using the 'to' address instead of msg.sender. This error allows the owner to withdraw funds on behalf of other users by specifying any 'to' address.",
+        "file_name": "0x3e365d13828c398d1bd1694adce8998fd0139ba3.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Incorrect Authorization",
+        "reason": "The 'kill' function is intended to destroy the contract only when the balance is 0. However, there is no ownership check or other authorization mechanism ensuring that only the owner can execute this function. This could allow any attacker to destroy the contract once the balance is zero, potentially causing denial of service or other disruptions.",
+        "file_name": "0x3e365d13828c398d1bd1694adce8998fd0139ba3.sol"
+    },
+    {
+        "function_name": "lock",
+        "code": "function lock() public { Locked = true; }",
+        "vulnerability": "Missing Access Control",
+        "reason": "The 'lock' function sets the Locked state variable to true which is used to restrict certain functionalities (like initialization) but this function does not have any access control mechanism such as the 'onlyOwner' modifier. This allows any user to lock the contract which can prevent the legitimate owner or other users from performing important operations such as depositing or setting release dates.",
+        "file_name": "0x3e365d13828c398d1bd1694adce8998fd0139ba3.sol"
+    }
+]

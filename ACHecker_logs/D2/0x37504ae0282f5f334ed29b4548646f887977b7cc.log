@@ -1,0 +1,31 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x37504ae0282f5f334ed29b4548646f887977b7cc.code
+Start time: 20/08/2022 10:00:21
+Building CFG...
+CFG generation time (secs): 0.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function giftRock(uint256,address)
+	(  977)  3d1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function dontSellRock(uint256)
++--Attacker can make changes to AC item {0} in function buyRock(uint256)
++--Attacker can make changes to AC item {0} in function sellRock(uint256,uint256)
+
+Violated access control check in function dontSellRock(uint256)
+	( 1327)  52f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function dontSellRock(uint256)
++--Attacker can make changes to AC item {0} in function buyRock(uint256)
++--Attacker can make changes to AC item {0} in function sellRock(uint256,uint256)
+
+Violated access control check in function sellRock(uint256,uint256)
+	( 2763)  acb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function dontSellRock(uint256)
++--Attacker can make changes to AC item {0} in function buyRock(uint256)
++--Attacker can make changes to AC item {0} in function sellRock(uint256,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 4.34
+End time: 20/08/2022 10:00:26

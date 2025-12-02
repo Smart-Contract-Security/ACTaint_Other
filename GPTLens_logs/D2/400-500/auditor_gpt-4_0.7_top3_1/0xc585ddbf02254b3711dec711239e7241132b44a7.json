@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public { require(newOwner != address(0)); OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Missing onlyOwner modifier",
+        "reason": "The function transferOwnership lacks the onlyOwner modifier, which means any user can call this function and potentially take ownership of the contract. This poses a severe security risk as ownership should be restricted to the current owner only.",
+        "file_name": "0xc585ddbf02254b3711dec711239e7241132b44a7.sol"
+    },
+    {
+        "function_name": "buyTokens",
+        "code": "function buyTokens() public payable { require(initialized && now <= START.add(DAYS * 1 days)); uint256 weiAmount = msg.value; uint256 tokens = weiAmount.mul(getRate()); tokens = tokens.div(1 ether); BoughtTokens(msg.sender, tokens); balances[msg.sender] = balances[msg.sender].add(tokens); balances[owner] = balances[owner].sub(tokens); totalSupply.sub(tokens); timeBought.push(now) -1; raisedAmount = raisedAmount.add(msg.value); investors.push(msg.sender) -1; }",
+        "vulnerability": "Reentrancy on Ether Transfer",
+        "reason": "The function buyTokens updates the state (e.g., balances and totalSupply) after sending ether. This ordering can make the contract vulnerable to reentrancy attacks where, during the execution of external calls, the state may be manipulated by recursively calling back into the contract.",
+        "file_name": "0xc585ddbf02254b3711dec711239e7241132b44a7.sol"
+    },
+    {
+        "function_name": "destroy",
+        "code": "function destroy() public onlyOwner { selfdestruct(owner); }",
+        "vulnerability": "Selfdestruct can be problematic",
+        "reason": "The use of selfdestruct could lead to loss of contract data and Ether balance without recovery options. It can be triggered by the owner at any moment, potentially leading to unexpected behavior and loss of funds or data for users.",
+        "file_name": "0xc585ddbf02254b3711dec711239e7241132b44a7.sol"
+    }
+]

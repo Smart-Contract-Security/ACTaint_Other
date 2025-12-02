@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(string memory passphrase) public { require(isPassphrase(passphrase)); emit PassphraseOK(passphrase); assert(dai.transfer(msg.sender, dai.balanceOf(address(this)))); selfdestruct(msg.sender); }",
+        "vulnerability": "Emitting plain passphrase",
+        "reason": "The function emits the plain passphrase as an event that is visible on the blockchain. This compromises the security of the passphrase since anyone can see and reuse it, potentially allowing unauthorized access to the contract's funds.",
+        "file_name": "0xf8a5f0be78b60ecb992a1765661d67c27d7a1a2b.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(string memory passphrase) public { require(isPassphrase(passphrase)); emit PassphraseOK(passphrase); assert(dai.transfer(msg.sender, dai.balanceOf(address(this)))); selfdestruct(msg.sender); }",
+        "vulnerability": "Assert misuse for transfer",
+        "reason": "Using 'assert' for conditionally checking the success of a 'transfer' function is incorrect. 'assert' is meant for checking invariants and conditions that should never fail unless there's a bug. Instead, 'require' should be used to ensure the transfer was successful. If the transfer fails and 'assert' is used, it consumes all gas, whereas 'require' would refund the remaining gas, making it safer and more gas-efficient.",
+        "file_name": "0xf8a5f0be78b60ecb992a1765661d67c27d7a1a2b.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(string memory passphrase) public { require(isPassphrase(passphrase)); emit PassphraseOK(passphrase); assert(dai.transfer(msg.sender, dai.balanceOf(address(this)))); selfdestruct(msg.sender); }",
+        "vulnerability": "Use of selfdestruct",
+        "reason": "The use of 'selfdestruct' makes the contract vulnerable to denial of service (DoS) attacks and potentially loss of control over the contract. Once 'selfdestruct' is called, the contract code is removed from the blockchain, and all ether stored in the contract is sent to the specified address. This could be exploited by an attacker if they can trigger the 'withdraw' function, leading to loss of control and funds.",
+        "file_name": "0xf8a5f0be78b60ecb992a1765661d67c27d7a1a2b.sol"
+    }
+]

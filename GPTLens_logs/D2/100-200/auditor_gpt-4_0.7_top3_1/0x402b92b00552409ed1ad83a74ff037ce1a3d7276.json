@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Crowdsale",
+        "code": "function () payable { require(!token.lockOf(msg.sender) && !crowdsaleClosed && stage<2 && msg.value >= 1 * (1 ether)/10); if(stage==1 && (now < presaleEndTime.add(countdownDuration) || amountRaisedPreSale+amountRaisedICO+msg.value > hardCap)) { throw; } uint amount = msg.value; balanceOf[msg.sender] += amount; if(stage==0) { amountRaisedPreSale += amount; token.mint(msg.sender, amount.mul(2) * price); } else { amountRaisedICO += amount; token.mint(msg.sender, amount * price); } FundTransfer(msg.sender, amount, true); }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The mint function inside the fallback function is called without checking whether the total amount of tokens minted exceeds the intended maximum supply. This could potentially allow an attacker to mint an arbitrary number of tokens, inflating the supply and devaluing the token.",
+        "file_name": "0x402b92b00552409ed1ad83a74ff037ce1a3d7276.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _amount) onlyOwner canMint public returns (bool) { require(!locks[_to]); totalSupply = totalSupply.add(_amount); balances[_to] = balances[_to].add(_amount); Mint(_to, _amount); Transfer(0x0, _to, _amount); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The mint function updates the state of totalSupply and balances after calling the Mint and Transfer events. This ordering could allow a reentrant call if the recipient is a contract that calls back into the token contract. A safer approach would be to update the state before emitting the events.",
+        "file_name": "0x402b92b00552409ed1ad83a74ff037ce1a3d7276.sol"
+    },
+    {
+        "function_name": "safeWithdrawal",
+        "code": "function safeWithdrawal() { require(crowdsaleClosed && !icoSuccess); uint amount; if(stage==1) { amount = balanceOf[msg.sender]; } else if(stage==2) { amount = balanceOf[msg.sender].mul(2)/3; } else if(stage==3) { amount = balanceOf[msg.sender]/3; } balanceOf[msg.sender] = 0; if (amount > 0) { msg.sender.transfer(amount); FundTransfer(msg.sender, amount, false); } }",
+        "vulnerability": "Integer Division Round Down",
+        "reason": "Within the safeWithdrawal function, the balance is reduced based on the stage, using integer division which rounds down. This could potentially lead to lost funds as the portions calculated can omit small amounts due to rounding, not returning the total expected amount to the user.",
+        "file_name": "0x402b92b00552409ed1ad83a74ff037ce1a3d7276.sol"
+    }
+]

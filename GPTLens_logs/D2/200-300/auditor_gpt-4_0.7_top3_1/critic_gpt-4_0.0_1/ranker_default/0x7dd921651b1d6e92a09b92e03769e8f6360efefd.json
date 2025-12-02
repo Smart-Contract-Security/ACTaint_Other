@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unchecked send",
+        "criticism": "The reasoning is correct. The withdraw function transfers ether to the owner without checking the result of the transfer operation. This is a classic example of the 'unchecked send' vulnerability. If the transfer fails, the contract will not be aware, and the ether will still be deducted from the contract's balance, leading to discrepancies. This vulnerability is severe because it can result in financial losses and disrupt the contract's intended functionality. The profitability for an external attacker is low, as this vulnerability primarily affects the contract owner.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The withdraw function directly transfers all contract balance to the owner without checking the success of the transfer. If the transfer fails, the contract will not be aware, potentially leading to lost funds or denial of service if the contract logic depends on successful withdrawal.",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "file_name": "0x7dd921651b1d6e92a09b92e03769e8f6360efefd.sol",
+        "final_score": 6.0
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is partially correct. The function getTokens does indeed call an external contract via the distr function, which could potentially be a vector for reentrancy attacks. However, the severity of this vulnerability depends on the implementation of the distr function. If distr is not susceptible to reentrancy or does not make external calls itself, the risk might be mitigated. The profitability of exploiting this vulnerability would be high if the reentrancy could indeed be executed, as it could drain ETH from the contract. More information about the distr function is needed to fully assess this vulnerability.",
+        "correctness": 5,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The function getTokens is vulnerable to reentrancy attacks because it calls an external contract (via distr) before updating its state (totalDistributed and distributionFinished). An attacker could recursively call getTokens in the callback of the distr function to drain ETH from the contract.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x7dd921651b1d6e92a09b92e03769e8f6360efefd.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "TeamTokensAllocation",
+        "vulnerability": "Unauthorized access",
+        "criticism": "The reasoning is incorrect. The function TeamTokensAllocation does not have any access control mechanism, such as 'onlyOwner', which would restrict its execution to the owner of the contract. However, the function sets the owner to the message sender every time it is called, which is a severe security flaw as it allows anyone to become the owner. The vulnerability is severe because it allows unauthorized control over the contract and can lead to token theft. The profitability is high because an attacker can gain control of the contract and potentially redirect tokens to their address.",
+        "correctness": 2,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function TeamTokensAllocation allows any user to call it and reassign the contract's owner while distributing tokens to themselves. This can lead to unauthorized control of the contract and token theft.",
+        "code": "function TeamTokensAllocation () public { owner = msg.sender; uint256 TeamTokens = 1000000000e8; distr(owner, TeamTokens); }",
+        "file_name": "0x7dd921651b1d6e92a09b92e03769e8f6360efefd.sol",
+        "final_score": 4.75
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool success) {\n    if (balances[msg.sender] >= _value && _value > 0) {\n        balances[msg.sender] -= _value;\n        balances[_to] += _value;\n        Transfer(msg.sender, _to, _value);\n        return true;\n    } else {\n        return false;\n    }\n}",
+        "vulnerability": "Missing Input Validation",
+        "reason": "The transfer function does not validate if the '_to' address is a zero address (0x0). Transferring to address 0x0 is generally considered an error, akin to burning the tokens, which might not be the sender's intention.",
+        "file_name": "0xf7c4890677e5b30cb49087cde7ff6800442e28a1.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns (bool success) {\n    allowed[msg.sender][_spender] = _value;\n    Approval(msg.sender, _spender, _value);\n    if(!_spender.call(bytes4(bytes32(sha3(\"receiveApproval(address,uint256,address,bytes)\"))), msg.sender, _value, this, _extraData)) {\n        throw;\n    }\n    return true;\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows for a reentrancy attack because it calls an arbitrary external contract ('_spender') using the low-level 'call' function without restricting reentrancy. An attacker-controlled contract could call back into this contract before the external call is completed, potentially leading to unexpected behavior or exploits.",
+        "file_name": "0xf7c4890677e5b30cb49087cde7ff6800442e28a1.sol"
+    },
+    {
+        "function_name": "function() payable",
+        "code": "function() payable{\n    totalEthInWei = totalEthInWei + msg.value;\n    uint256 amount = msg.value * Rate;\n    balances[fundsWallet] = balances[fundsWallet] - amount;\n    balances[msg.sender] = balances[msg.sender] + amount;\n    Transfer(fundsWallet, msg.sender, amount);\n}",
+        "vulnerability": "Integer Overflow",
+        "reason": "In the fallback function, the calculation 'msg.value * Rate' can lead to an integer overflow if the values are large enough. This could subsequently lead to an incorrect amount of tokens being transferred, which can severely disrupt the token balance integrity.",
+        "file_name": "0xf7c4890677e5b30cb49087cde7ff6800442e28a1.sol"
+    }
+]

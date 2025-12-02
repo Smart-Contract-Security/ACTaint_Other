@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "updateBorrowCap",
+        "vulnerability": "Potential Misuse of Approval",
+        "criticism": "The reasoning correctly identifies a potential issue with not resetting previous approvals when the borrow cap is lowered. This could allow a borrower to exploit previous higher approvals to borrow more than the currently intended cap. The severity is relatively high as it directly affects how much a borrower can take, potentially leading to significant financial discrepancies. The profitability is also moderate because a borrower could potentially exploit this to borrow more funds than allowed under the current cap.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "This function sets approvals of aUSDC tokens based on the new borrow cap. However, it does not decrease or remove previous approvals when the cap is lowered, potentially allowing borrowers to borrow more than intended if they previously had a higher cap.",
+        "code": "function updateBorrowCap(address borrowerAddress, uint256 cap) external onlyOwner {\n    if (borrowerAddress != address(dnGmxJuniorVault) && borrowerAddress != address(leveragePool)) revert InvalidBorrowerAddress();\n    if (IBorrower(borrowerAddress).getUsdcBorrowed() >= cap) revert InvalidCapUpdate();\n    borrowCaps[borrowerAddress] = cap;\n    aUsdc.approve(borrowerAddress, cap);\n    emit BorrowCapUpdated(borrowerAddress, cap);\n}",
+        "file_name": "DnGmxSeniorVault.sol",
+        "final_score": 6.75
+    },
+    {
+        "function_name": "borrow",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The criticism is valid as the function does not check the return value of the 'transfer' function call. This could indeed lead to a situation where the transfer fails silently, causing discrepancies in the accounting of funds. However, the severity is not extremely high because the function includes a revert condition for invalid borrow amounts, which provides some level of safeguard. The profitability of exploiting this vulnerability is low as it primarily results in potential loss rather than a direct gain for an attacker.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "This function transfers aUSDC to a borrower without checking the return value of the transfer function. This could lead to loss of funds or inaccurate accounting if the transfer fails silently.",
+        "code": "function borrow(uint256 amount) external onlyBorrower {\n    if (amount == 0 || amount > availableBorrow(msg.sender)) revert InvalidBorrowAmount();\n    dnGmxJuniorVault.harvestFees();\n    aUsdc.transfer(msg.sender, amount);\n}",
+        "file_name": "DnGmxSeniorVault.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "repay",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is correct in identifying the lack of return value checking for the 'transferFrom' function. This oversight could lead to unrecorded repayments if the transfer fails, affecting the integrity of the financial records. The severity is moderate because it impacts the financial tracking within the contract. However, like the borrow function, the profitability for an attacker is low, as it does not provide a direct mechanism for profit but could cause disruption or loss.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "Similar to the borrow function, this function does not check the return value of the transferFrom function. If the transferFrom call fails, the function will not revert, potentially leading to incorrect accounting of repayments.",
+        "code": "function repay(uint256 amount) external onlyBorrower {\n    dnGmxJuniorVault.harvestFees();\n    aUsdc.transferFrom(msg.sender, address(this), amount);\n}",
+        "file_name": "DnGmxSeniorVault.sol",
+        "final_score": 5.25
+    }
+]

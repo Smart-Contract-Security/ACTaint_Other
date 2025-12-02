@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fillSellOrder",
+        "code": "function fillSellOrder( address payable seller, address contractAddress, uint256 tokenId, uint256 startTime, uint256 expiration, uint256 price, uint256 quantity, uint256 createdAtBlockNumber, address paymentERC20, bytes memory signature, address payable buyer ) external payable whenNotPaused nonReentrant { if (paymentERC20 == address(0)) { require(msg.value >= price, \"Transaction doesn't have the required ETH amount.\"); } else { _checkValidERC20Payment(buyer, price, paymentERC20); } SellOrder memory sellOrder = SellOrder( seller, contractAddress, tokenId, startTime, expiration, price, quantity, createdAtBlockNumber, paymentERC20 ); require( cancellationRegistry.getSellOrderCancellationBlockNumber(seller, contractAddress, tokenId) < createdAtBlockNumber, \"This order has been cancelled.\" ); require(_validateSellerSignature(sellOrder, signature), \"Signature is not valid for SellOrder.\"); require((block.timestamp > startTime), \"SellOrder start time is in the future.\"); require((block.timestamp < expiration), \"This sell order has expired.\"); _fillSellOrder(sellOrder, buyer); }",
+        "vulnerability": "Reentrancy on ETH transfer",
+        "reason": "In the 'fillSellOrder' function, there is a call to '_fillSellOrder' which eventually leads to '_sendETHPaymentsWithRoyalties' where ETH is transferred to various addresses. This operation can potentially be re-entered even though 'nonReentrant' modifier is used. The issue lies in the fact that ETH transfer is made to possibly untrusted addresses, which could be contracts designed to take advantage of reentrancy.",
+        "file_name": "Quixotic.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() external onlyOwner { uint balance = address(this).balance; payable(msg.sender).transfer(balance); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'withdraw' function directly transfers all contract balance to the message sender, which is assumed to be the owner. This function doesn't check for the success of the transfer operation, which could lead to cases where the transfer fails but the contract state assumes it succeeded. This lack of checks could lead to denial of service or other unintended behaviors.",
+        "file_name": "Quixotic.sol"
+    },
+    {
+        "function_name": "fillBuyOrder",
+        "code": "function fillBuyOrder( address payable buyer, address contractAddress, uint256 tokenId, uint256 startTime, uint256 expiration, uint256 price, uint256 quantity, address paymentERC20, bytes memory signature, address payable seller ) external payable whenNotPaused nonReentrant { _checkValidERC20Payment(buyer, price, paymentERC20); require(!isOrderCancelled(signature), \"This order has been cancelled.\"); BuyOrder memory buyOrder = BuyOrder( buyer, contractAddress, tokenId, startTime, expiration, price, quantity, paymentERC20 ); require(_validateBuyerSignature(buyOrder, signature), \"Signature is not valid for BuyOrder.\"); require((block.timestamp > buyOrder.startTime), \"This buy order's start time is in the future.\"); require((block.timestamp < buyOrder.expiration), \"This buy order has expired.\"); _fillBuyOrder(buyOrder, signature, seller); }",
+        "vulnerability": "Signature Replay Attack",
+        "reason": "The 'fillBuyOrder' function does not check if the buy order signature has been used before or if it is unique, which allows for the possibility of a replay attack. An attacker could reuse a valid signature to repeatedly process a buy order, potentially leading to unexpected or unauthorized purchases.",
+        "file_name": "Quixotic.sol"
+    }
+]

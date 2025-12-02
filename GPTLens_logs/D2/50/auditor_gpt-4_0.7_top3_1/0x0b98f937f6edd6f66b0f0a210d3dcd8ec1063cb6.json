@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintForwarder",
+        "code": "function mintForwarder(uint256 nonce, bytes32 challenge_digest, address[] proxyMintArray) public returns (bool) { require(proxyMintArray.length > 0); uint previousEpochCount = ERC918Interface(minedToken).epochCount(); address proxyMinter = proxyMintArray[0]; if(proxyMintArray.length == 1) { require(proxyMinterInterface(proxyMinter).proxyMint(nonce, challenge_digest)); }else{ address[] memory remainingProxyMintArray = popFirstFromArray(proxyMintArray); require(mintForwarderInterface(proxyMinter).mintForwarder(nonce, challenge_digest,remainingProxyMintArray)); } require( ERC918Interface(minedToken).epochCount() == previousEpochCount.add(1) ); bytes memory nonceBytes = uintToBytesForAddress(nonce); address newKing = bytesToAddress(nonceBytes); miningKing = newKing; return true; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function calls 'proxyMinterInterface(proxyMinter).proxyMint(nonce, challenge_digest)' and 'mintForwarderInterface(proxyMinter).mintForwarder(nonce, challenge_digest, remainingProxyMintArray)' but does not check the return value. This could allow a malicious proxyMinter contract to always return false, preventing minting from being successfully forwarded.",
+        "file_name": "0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.sol"
+    },
+    {
+        "function_name": "transferKing",
+        "code": "function transferKing(address newKing) public { require(msg.sender == miningKing); miningKing = newKing; emit TransferKing(msg.sender, newKing); }",
+        "vulnerability": "Authorization through tx.origin",
+        "reason": "The function 'transferKing' checks that 'msg.sender' is equal to 'miningKing' before allowing the transfer of kingship. However, if 'miningKing' is a contract, any transactions originating from the contract (even if initiated by an unauthorized user) would pass this check, allowing unauthorized users to gain control.",
+        "file_name": "0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.sol"
+    },
+    {
+        "function_name": "mintForwarder",
+        "code": "function mintForwarder(uint256 nonce, bytes32 challenge_digest, address[] proxyMintArray) public returns (bool) { require(proxyMintArray.length > 0); uint previousEpochCount = ERC918Interface(minedToken).epochCount(); address proxyMinter = proxyMintArray[0]; if(proxyMintArray.length == 1) { require(proxyMinterInterface(proxyMinter).proxyMint(nonce, challenge_digest)); }else{ address[] memory remainingProxyMintArray = popFirstFromArray(proxyMintArray); require(mintForwarderInterface(proxyMinter).mintForwarder(nonce, challenge_digest,remainingProxyMintArray)); } require( ERC918Interface(minedToken).epochCount() == previousEpochCount.add(1) ); bytes memory nonceBytes = uintToBytesForAddress(nonce); address newKing = bytesToAddress(nonceBytes); miningKing = newKing; return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'mintForwarder' invokes external contracts via 'proxyMint' and 'mintForwarder' functions of potentially untrusted contracts, which could perform reentrancy attacks. This is especially concerning because the 'miningKing' variable is set after these external calls, allowing a reentrant call to change the king again or conduct other state changes before the original call completes.",
+        "file_name": "0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.sol"
+    }
+]

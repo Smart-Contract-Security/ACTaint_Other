@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xf6e7ec5d6983fafd6eb14c2a20c2dd354e09ce9b.code
+Start time: 01/09/2022 07:48:04
+Building CFG...
+CFG generation time (secs): 0.02
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw(address)
+	( 2764)  acc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function AirdropBeggarsCommunity()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 0.82
+End time: 01/09/2022 07:48:04

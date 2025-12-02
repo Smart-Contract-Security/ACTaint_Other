@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Missing return value check",
+        "criticism": "The criticism of the function not checking the return value of 'sub' and 'add' from the SafeMath library is incorrect. The SafeMath library's 'sub' and 'add' functions inherently revert the transaction if an underflow or overflow occurs. Therefore, there is no need for an explicit return value check in the 'transferFrom' function itself, as any error would stop execution immediately. The reasoning provided does not align with how SafeMath is designed to function, leading to an overestimation of the vulnerability.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function does not check the return value of the 'sub' and 'add' calls from the SafeMath library. If the subtraction results in an underflow or the addition results in an overflow, the SafeMath library will revert the transaction. However, the function will continue executing until the revert, potentially leading to inconsistent state or unexpected behavior.",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) returns (bool) { var _allowance = allowed[_from][msg.sender]; balances[_to] = balances[_to].add(_value); balances[_from] = balances[_from].sub(_value); allowed[_from][msg.sender] = _allowance.sub(_value); Transfer(_from, _to, _value); return true; }",
+        "file_name": "0xd6b3d9e44f767f0c178f60d24fb186ba49bc444a.sol"
+    },
+    {
+        "function_name": "buyTicketsFor",
+        "vulnerability": "Denial of service via unbounded loop",
+        "criticism": "The reasoning assumes that the 'addParticipant' function contains an unbounded loop, which is not directly evident from the provided code snippet. The actual vulnerability would depend on the implementation of 'addParticipant'. Without knowing its internal workings, it's speculative to assume it leads to an unbounded loop. The severity and profitability cannot be accurately assessed without more information on the 'addParticipant' function. Thus, the criticism is based on an assumption rather than a concrete analysis of the code.",
+        "correctness": 3,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The function 'addParticipant' is called within 'buyTicketsFor', which iterates based on '_numberOfTickets'. If '_numberOfTickets' is extremely large, this can lead to an unbounded loop consuming all the gas provided to the transaction, thus causing it to fail. This can be exploited to prevent legitimate operations on the contract.",
+        "code": "function buyTicketsFor(address _beneficiary) public payable { require(_beneficiary != 0x0); require(msg.value >= PRICE); uint256 change = msg.value%PRICE; uint256 numberOfTickets = msg.value.sub(change).div(PRICE); ticket.mint(_beneficiary, numberOfTickets); addParticipant(_beneficiary, numberOfTickets); msg.sender.transfer(change); }",
+        "file_name": "0xd6b3d9e44f767f0c178f60d24fb186ba49bc444a.sol"
+    },
+    {
+        "function_name": "refundPlayersAfterVeryLongGame",
+        "vulnerability": "Potential for gas limit issues",
+        "criticism": "The reasoning is valid as the function does include a loop that could potentially transfer ether to a large number of participants, which could indeed consume a lot of gas. However, the severity of this issue is somewhat mitigated by the fact that such scenarios are predictable and can be managed by limiting the number of participants or ensuring sufficient gas is provided. The profitability of exploiting this vulnerability is low, as it primarily leads to denial of service rather than a direct financial gain for the attacker.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "This function includes a loop that transfers ether to an arbitrary number of participants. If the number of participants is large, the loop may require more gas than is available in a block, causing the transaction to fail. This could lock funds in the contract indefinitely if the game is not able to progress past a certain point due to gas limitations.",
+        "code": "function refundPlayersAfterVeryLongGame() public { require(block.number.sub(gameStartedAtBlock) >= INACTIVITY); require(counter%SIZE != 0); uint256 _size = counter%SIZE; counter -= _size; for (uint8 i = 0; i < _size; i++) { participants[gameIndex][i].transfer(PRICE); } GameRefunded(gameIndex); increaseGame(); }",
+        "file_name": "0xd6b3d9e44f767f0c178f60d24fb186ba49bc444a.sol"
+    }
+]

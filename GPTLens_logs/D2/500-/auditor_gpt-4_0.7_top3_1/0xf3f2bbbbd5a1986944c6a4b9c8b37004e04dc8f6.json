@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "BlocksureInfo",
+        "code": "function BlocksureInfo() { owner = tx.origin; }",
+        "vulnerability": "Use of tx.origin",
+        "reason": "The constructor uses 'tx.origin' to set the initial owner, which can lead to security vulnerabilities. 'tx.origin' always returns the original external account that started the transaction, which can be exploited in phishing attacks where a malicious contract can trick the user into executing a transaction, ultimately allowing the attacker to take control if the contract relies on 'tx.origin' for authentication.",
+        "file_name": "0xf3f2bbbbd5a1986944c6a4b9c8b37004e04dc8f6.sol"
+    },
+    {
+        "function_name": "destroy",
+        "code": "function destroy() onlyowner { suicide(owner); }",
+        "vulnerability": "Use of deprecated function",
+        "reason": "The 'destroy' function uses 'suicide(owner)', a deprecated function in Solidity (replaced by 'selfdestruct'). This not only indicates potential issues with maintainability and compatibility with newer Ethereum clients but also can lead to unexpected behavior in contract destruction.",
+        "file_name": "0xf3f2bbbbd5a1986944c6a4b9c8b37004e04dc8f6.sol"
+    },
+    {
+        "function_name": "setOwner",
+        "code": "function setOwner(address _owner) onlyowner { owner = _owner; }",
+        "vulnerability": "Arbitrary Ownership Takeover",
+        "reason": "The 'setOwner' function allows the current owner to change the owner state variable to any address. If the onlyowner modifier is bypassed or if the current owner is malicious, this function can be used to transfer ownership to any arbitrary address, which could lead to unauthorized control of the contract.",
+        "file_name": "0xf3f2bbbbd5a1986944c6a4b9c8b37004e04dc8f6.sol"
+    }
+]

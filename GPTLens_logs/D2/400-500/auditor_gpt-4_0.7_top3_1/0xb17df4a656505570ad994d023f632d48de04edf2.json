@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address _from, address _to, uint256 _value) public onlyManagerOrOwner onlyActive isUser(_from) returns (bool ok) { require(INMR(_TOKEN).withdraw(_from, _to, _value)); return true; }",
+        "vulnerability": "Unauthorized token transfer",
+        "reason": "The 'withdraw' function allows a manager or owner to call the 'withdraw' method on the INMR token contract to move tokens from a user address to any other address without the user's explicit consent. This could lead to unauthorized token transfers if the manager or owner account is compromised.",
+        "file_name": "0xb17df4a656505570ad994d023f632d48de04edf2.sol"
+    },
+    {
+        "function_name": "burnZeroAddress",
+        "code": "function burnZeroAddress() public { uint256 amtZero = INMR(_TOKEN).balanceOf(_NULL_ADDRESS); uint256 amtBurn = INMR(_TOKEN).balanceOf(_BURN_ADDRESS); require(INMR(_TOKEN).withdraw(_NULL_ADDRESS, address(this), amtZero)); require(INMR(_TOKEN).withdraw(_BURN_ADDRESS, address(this), amtBurn)); uint256 amtThis = INMR(_TOKEN).balanceOf(address(this)); _burn(amtThis); }",
+        "vulnerability": "Unauthorized withdrawal and burn",
+        "reason": "This function allows the withdrawal of all tokens from the null and burn addresses and subsequently burns them. This manipulation of token supply could be misused if the function access is not strictly controlled or in case of role compromise.",
+        "file_name": "0xb17df4a656505570ad994d023f632d48de04edf2.sol"
+    },
+    {
+        "function_name": "disableTokenUpgradability",
+        "code": "function disableTokenUpgradability() public onlyOwner onlyActive { require(INMR(_TOKEN).createRound(uint256(0),uint256(0),uint256(0),uint256(0))); }",
+        "vulnerability": "Potential denial of service",
+        "reason": "This function essentially misuses the 'createRound' function of the INMR token to permanently disable token upgradability by creating a round with zero parameters. This can be seen as a denial of service if used maliciously to prevent further updates or fixes to the token contract.",
+        "file_name": "0xb17df4a656505570ad994d023f632d48de04edf2.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning correctly identifies a reentrancy vulnerability due to the lack of reentrancy guards and the state update (balance reset to zero) occurring after the ether transfer. This could indeed allow an attacker to recursively call the withdraw function to drain funds. The severity and profitability are both high because this vulnerability directly allows draining of funds, which is both severe and profitable for an attacker.",
+        "correctness": 8,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "This function allows for withdrawal of funds. However, it checks the stage and performs a transfer of ether based on the balance of the sender without using any mutex or reentrancy guard pattern. This could be exploited by an attacker who can invoke this function recursively before the balance is set to zero after the ether transfer, potentially allowing multiple withdrawals and draining the contract's funds.",
+        "code": "function withdraw(address _tokenAddress) public { Beneficiary storage b = beneficiaries[msg.sender]; require(b.balance > 0, \"msg.sender has no balance. Nice Try!\"); if(contractStage == CONTRACT_OPEN){ uint256 transferAmt = b.balance; b.balance = 0; msg.sender.transfer(transferAmt); emit BeneficiaryBalanceChanged(msg.sender, 0); } else { _withdraw(msg.sender, _tokenAddress); } }",
+        "file_name": "0x6ecd85f58b50d8a135376a86943b171c50d2ba7a.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "submitPool",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism is partially correct in identifying a potential reentrancy issue due to the external call made within the function. However, the reasoning incorrectly states that the function sets 'locked = true' at the beginning, which is not mentioned in the provided code snippet. The actual vulnerability arises because the state updates occur after the external call, which is a classic reentrancy flaw. The severity is high because reentrancy can lead to significant loss of funds, but the profitability is moderate as it depends on the attacker's ability to exploit the reentrancy in a profitable manner.",
+        "correctness": 6,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "Although the function uses a 'noReentrancy' modifier intended to prevent reentrancy attacks, the actual execution of the external call to 'receiverAddress.call.value(weiAmount).gas(gasleft().sub(5000))()' can still allow reentrancy. The function changes the state after this call, which can be exploited by an attacker if the receiver address is a malicious contract that calls back into this contract. Even though the function sets `locked = true` at the beginning, subsequent calls can still be made before `locked = false` is executed, leading to potential reentrancy vulnerabilities.",
+        "code": "function submitPool(uint256 weiAmount) public onlyAdmin noReentrancy { require(contractStage < CONTRACT_SUBMIT_FUNDS, \"Cannot resubmit pool.\"); require(receiverAddress != 0x00, \"receiver address cannot be empty\"); uint256 contractBalance = address(this).balance; if(weiAmount == 0){ weiAmount = contractBalance; } require(minContribution <= weiAmount && weiAmount <= contractBalance, \"submitted amount too small or larger than the balance\"); finalBalance = contractBalance; require(receiverAddress.call.value(weiAmount).gas(gasleft().sub(5000))(), \"Error submitting pool to receivingAddress\"); contractBalance = address(this).balance; if(contractBalance > 0) { ethRefundAmount.push(contractBalance); } contractStage = CONTRACT_SUBMIT_FUNDS; emit PoolSubmitted(receiverAddress, weiAmount); }",
+        "file_name": "0x6ecd85f58b50d8a135376a86943b171c50d2ba7a.sol",
+        "final_score": 6.0
+    },
+    {
+        "function_name": "enableTokenWithdrawals",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The reasoning about the integer overflow vulnerability is incorrect. The function uses the 'sub' method from the SafeMath library (indicated by the '.sub' syntax), which inherently checks for overflows and underflows. Therefore, the risk of integer overflow in the calculation of 'feeAmount' is mitigated by the use of SafeMath. The severity and profitability are both low because the SafeMath library prevents the overflow from occurring, thus negating the potential for exploitation.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "This function is susceptible to an integer overflow in the calculation of 'feeAmount' which uses '_applyPct' function. The calculation does not check for overflows which can lead to an incorrect calculation of fees. Malicious users can input values that cause overflow thus manipulating the fee amount that gets transferred, potentially leading to economic damage to the contract holders or unintended behavior.",
+        "code": "function enableTokenWithdrawals (address _tokenAddr, bool _useAsDefault) public onlyAdmin noReentrancy { require (contractStage == CONTRACT_SUBMIT_FUNDS, \"wrong contract stage\"); if (_useAsDefault) { defaultToken = _tokenAddr; } else { require (defaultToken != 0x00, \"defaultToken must be set\"); } TokenAllocation storage ta = tokenAllocationMap[_tokenAddr]; if (ta.pct.length==0){ ta.token = ERC20(_tokenAddr); } uint256 amount = ta.token.balanceOf(this).sub(ta.balanceRemaining); require (amount > 0); if (feePct > 0) { uint256 feePctFromBips = _toPct(feePct, 10000); uint256 feeAmount = _applyPct(amount, feePctFromBips); require (ta.token.transfer(owner, feeAmount)); emit TokenWithdrawal(owner, _tokenAddr, feeAmount); } amount = ta.token.balanceOf(this).sub(ta.balanceRemaining); ta.balanceRemaining = ta.token.balanceOf(this); ta.pct.push(_toPct(amount,finalBalance)); }",
+        "file_name": "0x6ecd85f58b50d8a135376a86943b171c50d2ba7a.sol",
+        "final_score": 1.5
+    }
+]

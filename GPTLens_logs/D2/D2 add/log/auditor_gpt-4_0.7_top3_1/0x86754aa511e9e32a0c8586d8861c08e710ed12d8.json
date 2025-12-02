@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "init",
+        "code": "function init(EToken2Interface _etoken2, string memory _symbol, string memory _name) public returns(bool) {\n    if (address(etoken2) != address(0)) {\n        return false;\n    }\n    etoken2 = _etoken2;\n    etoken2Symbol = _bytes32(_symbol);\n    name = _name;\n    symbol = _symbol;\n    return true;\n}",
+        "vulnerability": "Initialization Reentrancy",
+        "reason": "The function 'init' sets the state of the contract after the check for 'etoken2' being zero. An attacker could potentially make a re-entrant call to 'init' before the state of 'etoken2' is updated, leading to multiple initializations, which can cause unexpected behavior or overwrite critical state variables.",
+        "file_name": "0x86754aa511e9e32a0c8586d8861c08e710ed12d8.sol"
+    },
+    {
+        "function_name": "_performGeneric",
+        "code": "function _performGeneric(bytes memory, address) public payable { revert(); }",
+        "vulnerability": "Denial of Service",
+        "reason": "The '_performGeneric' function is designed to always revert without any condition. This means that if this function gets invoked, it will always fail, causing the entire transaction to revert, leading to a denial of service for any feature depending on this function.",
+        "file_name": "0x86754aa511e9e32a0c8586d8861c08e710ed12d8.sol"
+    },
+    {
+        "function_name": "transferFromWithReference",
+        "code": "function transferFromWithReference( address _from, address _to, uint _value, string memory _reference) public returns(bool) {\n    return _getAsset()._performTransferFromWithReference( _from, _to, _value, _reference, msg.sender );\n}",
+        "vulnerability": "Missing Authorization Check",
+        "reason": "The function 'transferFromWithReference' does not perform any checks to verify that the caller has authorization to transfer tokens on behalf of '_from'. This could allow any user to transfer tokens from any other user's account without their consent, leading to unauthorized token transfers.",
+        "file_name": "0x86754aa511e9e32a0c8586d8861c08e710ed12d8.sol"
+    }
+]

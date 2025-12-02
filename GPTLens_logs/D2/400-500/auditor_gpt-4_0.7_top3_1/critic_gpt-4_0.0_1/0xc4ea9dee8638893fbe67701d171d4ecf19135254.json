@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withdrawVault",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate as the function indeed transfers Ether before setting the balance to zero, which is a classic reentrancy vulnerability. This could allow a malicious contract to re-enter the function and withdraw more Ether than intended. The severity is high due to potential loss of funds, and profitability is also high as an attacker could drain the contract's Ether.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'withdrawVault' function transfers Ether to an address before setting that address's balance to zero. This is a classic reentrancy vulnerability, where a malicious contract could call back into 'withdrawVault' (or any other function that affects the balance) during the transfer, potentially leading to multiple withdrawals.",
+        "code": "function withdrawVault() public { address _player = msg.sender; uint256 _balance = pilots_[_player].vault; require(_balance > 0); pilots_[_player].vault = 0; _player.transfer(_balance); }",
+        "file_name": "0xc4ea9dee8638893fbe67701d171d4ecf19135254.sol"
+    },
+    {
+        "function_name": "_createDroneInternal",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning provided is somewhat vague and does not specify what the unchecked external call in '_figthEnemy' could entail. Without specific details on how '_figthEnemy' behaves or how it interacts with external entities, it's difficult to assess the actual risk. The severity and profitability are uncertain due to lack of detailed information on the external call's impact.",
+        "correctness": 4,
+        "severity": 3,
+        "profitability": 3,
+        "reason": "The function '_createDroneInternal' includes a call to '_figthEnemy' which has an unchecked external call that may lead to unexpected behavior or denial of service. This external call could potentially be manipulated by an attacker, especially if they have control over the '_player' address or the outcome of '_figthEnemy'.",
+        "code": "function _createDroneInternal(address _player) internal { require(hives_.length == amountHives_); require(conquesting_); require(now > pilots_[_player].lastFlight + 60 seconds); drones_.push(_player); pilots_[_player].lastFlight = now; emit onDroneCreated(_player, drones_.length, now); _figthEnemy(_player); }",
+        "file_name": "0xc4ea9dee8638893fbe67701d171d4ecf19135254.sol"
+    },
+    {
+        "function_name": "_payout",
+        "vulnerability": "Integer Division",
+        "criticism": "The reasoning correctly identifies the use of integer division which can lead to rounding errors and potentially incorrect payouts. However, the claim that this can be exploited by an attacker to manipulate transaction order or the number of drones and hives is speculative without evidence of how these manipulations could be practically achieved. The severity is moderate due to potential financial discrepancies, but profitability is low as exploiting this requires specific conditions that may not be easily achievable.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The '_payout' function performs integer divisions to calculate payouts, which may lead to loss of precision and potentially incorrect payout amounts. This can be exploited by an attacker to manipulate transaction order or the number of drones and hives, maximizing their own benefit at the expense of others.",
+        "code": "function _payout() internal { uint256 _hivesIncome = amountHives_ * hiveCost_; uint256 _dronesIncome = drones_.length * droneCost_; uint256 _pot = pot_ + _hivesIncome + _dronesIncome; uint256 _fee = _pot / 10; _pot = _pot - _fee; _hivesIncome = (_hivesIncome * 9) / 10; _dronesIncome = (_dronesIncome * 9) / 10; uint256 _toCommander = (_hivesIncome * hiveXCommanderFee_) / 100 + (_dronesIncome * droneXCommanderFee_) / 100; uint256 _toHives = (_dronesIncome * droneXHiveFee_) / 1000; uint256 _toHive = _toHives / 8; uint256 _toDrones = _pot - _toHives - _toCommander; if (conquested_) { for (uint8 i = 0; i < 8; i++) { address _ownerHive = hives_[i]; pilots_[_ownerHive].vault = pilots_[_ownerHive].vault + _toHive; _pot = _pot - _toHive; } uint256 _squadSize; if (drones_.length >= 4) { _squadSize = 4; } else { _squadSize = drones_.length; } for (uint256 j = (drones_.length - _squadSize); j < drones_.length; j++) { address _ownerDrone = drones_[j]; pilots_[_ownerDrone].vault = pilots_[_ownerDrone].vault + (_toDrones / _squadSize); _pot = _pot - (_toDrones / _squadSize); } } if (commander_ != address(this)) { pilots_[commander_].vault = pilots_[commander_].vault + _toCommander; _pot = _pot - _toCommander; } fundTHCAddress_.transfer(_fee / 2); fundP3DAddress_.transfer(_fee / 2); pot_ = _pot; payedOut_ = true; }",
+        "file_name": "0xc4ea9dee8638893fbe67701d171d4ecf19135254.sol"
+    }
+]

@@ -1,0 +1,62 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb8842b95a9c0cdbd4c0d6e0319b8d46792830677.code
+Start time: 27/08/2022 20:32:46
+Building CFG...
+CFG generation time (secs): 0.92
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	(  305)  131:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setMax(uint256)
+	( 1868)  74c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function kill()
+	( 2067)  813:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setCost(uint256)
+	( 2112)  840:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setWaitTime(uint8)
+	( 2238)  8be:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function enableProxy(address)
+	( 2572)  a0c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function removeProxy(address)
+	( 2648)  a58:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 2860)  b2c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function withdraw(address,uint256)
+	( 2933)  b75:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function owned()
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function owned()
+Needed to protect following instruction in function kill()
+( 2085)  825:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 77.13
+End time: 27/08/2022 20:34:04

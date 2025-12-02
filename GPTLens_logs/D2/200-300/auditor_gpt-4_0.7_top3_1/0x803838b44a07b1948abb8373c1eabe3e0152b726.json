@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "SentTo",
+        "code": "function SentTo(address _address) payable onlyOwner public returns (bool) { toaddr = _address; kill(); emit SendTo(); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows an attacker to cause a reentrancy attack because it calls 'kill()' which uses 'selfdestruct(toaddr)', transferring all contract's Ether to the address specified. If the destination address is a contract, it could have a fallback function that calls back into 'SentTo' causing unforeseen consequences or draining Ether in a loop.",
+        "file_name": "0x803838b44a07b1948abb8373c1eabe3e0152b726.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public{ selfdestruct(toaddr); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The 'kill' function allows any caller to destroy the contract since it lacks an 'onlyOwner' modifier or other access control mechanisms. This could lead to loss of contract code and funds without the owner's consent.",
+        "file_name": "0x803838b44a07b1948abb8373c1eabe3e0152b726.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { require(newOwner != address(this)); owner = newOwner; emit OwnershipTransferred(owner, newOwner); }",
+        "vulnerability": "Ownership Hijacking",
+        "reason": "The function does not check if the 'newOwner' is a zero address, which means ownership could be unintentionally transferred to a zero address, resulting in a loss of administrative control over the contract.",
+        "file_name": "0x803838b44a07b1948abb8373c1eabe3e0152b726.sol"
+    }
+]

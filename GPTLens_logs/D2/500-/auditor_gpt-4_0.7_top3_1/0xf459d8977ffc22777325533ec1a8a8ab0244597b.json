@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool success) { if (balances[msg.sender] >= _value && balances[_to] + _value > balances[_to]) { balances[msg.sender] -= _value; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } else { throw; } }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The condition 'balances[_to] + _value > balances[_to]' is meant to check for overflows but does not prevent underflows if _value is zero or if an attacker manipulates the input. Additionally, there is no check for the case where the sum of balances[_to] + _value could wrap around to a lower value, thus creating tokens out of thin air.",
+        "file_name": "0xf459d8977ffc22777325533ec1a8a8ab0244597b.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) returns (bool success) { if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && balances[_to] + _value > balances[_to]) { balances[_to] += _value; balances[_from] -= _value; allowed[_from][msg.sender] -= _value; Transfer(_from, _to, _value); return true; } else { throw; } }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "Similar to the 'transfer' function, this function does not adequately protect against the integer overflow vulnerability when incrementing balances[_to]. The same scenario applies where incorrect handling of uint256 arithmetic could allow for token manipulation.",
+        "file_name": "0xf459d8977ffc22777325533ec1a8a8ab0244597b.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) returns (bool success) { if (_value > 0) { require(allowed[msg.sender][_spender] == 0); } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "This function contains a race condition vulnerability known as 'approve/transferFrom attack'. It allows a spender to potentially spend more than the owner intended in the case where the approval amount is modified before the spender\u2019s transaction is executed. This is because it only checks if the previously allowed amount is zero before setting a new amount, without considering pending transactions.",
+        "file_name": "0xf459d8977ffc22777325533ec1a8a8ab0244597b.sol"
+    }
+]

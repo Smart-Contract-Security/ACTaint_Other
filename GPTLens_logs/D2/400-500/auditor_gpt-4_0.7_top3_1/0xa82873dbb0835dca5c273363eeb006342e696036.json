@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool) { require(_to != address(0)); require(_value <= balances[_from]); require(_value <= allowed[_from][msg.sender]); balances[_from] = balances[_from].sub(_value); balances[_to] = balances[_to].add(_value); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value); emit Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transferFrom' allows for a transfer of tokens from one account to another. It decreases the allowance and updates the balances of both the sender and the recipient. However, it lacks protection against reentrancy attacks. If a malicious contract were to be called in the '_to' address, it could potentially call back into 'transferFrom' before the first execution is completed, leading to issues like double spending.",
+        "file_name": "0xa82873dbb0835dca5c273363eeb006342e696036.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() public payable whenNotPaused atStage(Stages.OfferingStarted) returns (bool) { buyTokens(); return true; revert(); }",
+        "vulnerability": "Logical error",
+        "reason": "The 'buy' function is intended to facilitate the purchase of tokens during a crowdsale. However, even though it calls 'buyTokens' to handle the transaction, it immediately follows this with a 'return true;' and then a 'revert();'. The revert statement will undo all changes made to the state during the transaction, including the effects of 'buyTokens', rendering the function ineffective for its purpose.",
+        "file_name": "0xa82873dbb0835dca5c273363eeb006342e696036.sol"
+    },
+    {
+        "function_name": "ownerSafeWithdrawal",
+        "code": "function ownerSafeWithdrawal() external onlyOwner { beneficiary.transfer(address(this).balance); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The 'ownerSafeWithdrawal' function transfers the entire balance of the contract to the 'beneficiary' address. However, the transfer is done via a direct call to 'transfer' without checking the success of this external call. If the call fails, the contract will not be aware, and the state could reflect an incorrect assumption that the funds were successfully transferred.",
+        "file_name": "0xa82873dbb0835dca5c273363eeb006342e696036.sol"
+    }
+]

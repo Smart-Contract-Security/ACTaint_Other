@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "overthrow",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The reasoning provided is incorrect as the 'overthrow' function itself does not contain any external call to 'leader.send(this.balance)'. The external call is actually in the 'checkDate()' function. Therefore, the vulnerability should be associated with the 'checkDate' function, not 'overthrow'. The severity of this issue is moderate because if the external call fails, it could indeed lead to loss of funds. However, the profitability is low as it does not provide a direct way for an attacker to profit from this vulnerability.",
+        "correctness": 2,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "In the 'overthrow' function, there is an external call 'leader.send(this.balance)' in the 'checkDate()' function which is invoked. This external call is made without checking for its execution success, which can lead to a loss of funds if the call fails. Furthermore, if the call throws an exception, it can halt the entire contract execution.",
+        "code": "function overthrow(string challengeData) returns (bool success){ var challengeHash = sha3(challengeData); if(checkDate()) return false; if(challengeHash == leaderHash) return false; if((challengeHash ^ leaderHash) > difficulty) return false; difficulty = (challengeHash ^ leaderHash); challengeWorldRecord(difficulty); leader = msg.sender; leaderHash = challengeHash; Leader(\"New leader! This is their address, and the new hash to collide.\", leader, leaderHash); fallenLeaders++; return true; }",
+        "file_name": "0xc726ac92955fc07ad09c5af4827418f581e37017.sol"
+    },
+    {
+        "function_name": "checkDate",
+        "vulnerability": "Denial of Service via timestamp dependency",
+        "criticism": "The reasoning is partially correct in identifying the use of 'block.timestamp' which can be slightly manipulated by miners. However, the impact is overstated. The manipulation of block timestamps can only be done within a certain small range, which limits the extent to which this can be exploited to disrupt the game significantly. Therefore, while the vulnerability exists, its severity is not as high as suggested. The profitability of exploiting this is also low, as it does not directly result in financial gain.",
+        "correctness": 6,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The function 'checkDate' uses 'block.timestamp' for logic control which determines when a game ends and when to send all contract balances. Miners can manipulate 'block.timestamp' to a certain degree, which could be exploited to extend or reduce the game duration inappropriately, potentially disrupting the game's fairness and functionality.",
+        "code": "function checkDate() private returns (bool success) { if (block.timestamp > (startingTime + gameLength)) { if(leader != admin){ Winner(\"Victory! Game will be reset to end in 1 week (in block time).\", leader); leader.send(this.balance); }else NoWinner(\"No winner! Game will be reset to end in 1 week (in block time).\"); startingTime = block.timestamp; reset(); return true; } return false; }",
+        "file_name": "0xc726ac92955fc07ad09c5af4827418f581e37017.sol"
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Unauthorized contract termination",
+        "criticism": "The reasoning is incorrect as the 'kill' function explicitly checks if the caller is the admin before allowing the contract to be destroyed. This is not an unauthorized action but a controlled privilege given to the admin. Therefore, this is not a vulnerability but a feature of the contract. The severity and profitability are both low because the action is authorized and does not lead to unexpected behavior or direct profit for an attacker.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'kill' function allows the admin to destroy the contract at any time. This poses a severe risk as the admin can terminate the contract unilaterally without any consent from other stakeholders, leading to a loss of trust and potential fund loss if there were any balances left in the contract.",
+        "code": "function kill(){ if (msg.sender == admin){ GameOver(\"The Crypto Hill has ended.\"); selfdestruct(admin); } }",
+        "file_name": "0xc726ac92955fc07ad09c5af4827418f581e37017.sol"
+    }
+]

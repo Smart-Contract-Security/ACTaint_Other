@@ -1,0 +1,73 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xa21551510d28bc0bc40fa725aa980f64419d8eb1.code
+Start time: 26/08/2022 22:58:41
+Building CFG...
+CFG generation time (secs): 25.89
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	( 1656)  678:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function disableWhitelist(address[])
++--Attacker can make changes to AC item {4} in function enableWhitelist(address[])
+
+Violated access control check in function withdraw()
+	( 2510)  9ce:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2603)  a2b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function disableWhitelist(address[])
+	( 2841)  b19:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function airdrop(address[])
+	( 2991)  baf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 3224)  c98:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function enableWhitelist(address[])
+	( 3333)  d05:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distributeAmounts(address[],uint256[])
+	( 3452)  d7c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function getTokens()
+	( 1656)  678:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function disableWhitelist(address[])
++--Attacker can make changes to AC item {4} in function enableWhitelist(address[])
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 4547) 11c3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 4832) 12e0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distribution(address[],uint256)
+	( 4922) 133a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function QMQCoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 26.73
+End time: 26/08/2022 22:59:34

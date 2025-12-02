@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x14a3f4795076c0ae67c2aa9efc10e58427a00dff.code
+Start time: 19/08/2022 09:21:42
+Building CFG...
+CFG generation time (secs): 0.10
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function cancelAuction(uint32)
+	( 3465)  d89:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyShip(uint32)
+
+Violated access control check in function upgradeShip(uint32,uint8)
+	( 4306) 10d2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyShip(uint32)
+
+Violated access control check in function sellShip(uint32,uint256,uint256,uint256)
+	( 5098) 13ea:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyShip(uint32)
+
+Violated access control check in function _transfer(uint32,address)
+	( 8337) 2091:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyShip(uint32)
+
+Violated access control check in function _transferAction(uint32,address,uint8)
+	( 9199) 23ef:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyShip(uint32)
+
+Violated access control check in function cashOutShip(uint32)
+	( 9764) 2624:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function buyShip(uint32)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 33.07
+End time: 19/08/2022 09:22:15

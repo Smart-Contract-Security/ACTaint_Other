@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "create",
+        "code": "function create() payable external { if (msg.value == 0) throw; var numTokens = msg.value * tokenCreationRate; totalTokens += numTokens; balances[msg.sender] += numTokens; Transfer(0x0, msg.sender, numTokens); }",
+        "vulnerability": "Integer Overflow",
+        "reason": "In the create function, 'numTokens' is calculated as msg.value * tokenCreationRate without checking for overflow. If msg.value is large enough, it could cause numTokens to overflow and wrap around, leading to incorrect token calculations and potentially issuing more tokens than intended.",
+        "file_name": "0xfabe292d8019bfa02e5fead2c78ef71a1bf35ce8.sol"
+    },
+    {
+        "function_name": "refund",
+        "code": "function refund() external { var tokenValue = balances[msg.sender]; if (tokenValue == 0) throw; balances[msg.sender] = 0; totalTokens -= tokenValue; var ethValue = tokenValue / tokenCreationRate; Refund(msg.sender, ethValue); if (!msg.sender.send(ethValue)) throw; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The refund function allows for a reentrancy attack because it calls msg.sender.send(ethValue) before it sets the user's balance to zero. An attacker can recursively call the refund function in a fallback function to drain the contract's Ether.",
+        "file_name": "0xfabe292d8019bfa02e5fead2c78ef71a1bf35ce8.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { if(totalTokens > 0) throw; selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized Self-Destruction",
+        "reason": "The kill function allows the contract owner to destroy the contract only if totalTokens is 0. However, since there's no access control on the kill function, any user can call it when the totalTokens is 0, potentially leading to denial of service or other unintended effects.",
+        "file_name": "0xfabe292d8019bfa02e5fead2c78ef71a1bf35ce8.sol"
+    }
+]

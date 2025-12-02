@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferGift",
+        "code": "function transferGift(uint256 _amount) external {\n    require(balanceOf(msg.sender) >= _amount);\n    uint256 ept = etherPerToken();\n    _burn(msg.sender, _amount);\n    emit TokensBurned(msg.sender, _amount);\n    msg.sender.transfer(_amount * ept);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transferGift' performs an Ether transfer after adjusting the state with '_burn', but does not follow the checks-effects-interactions pattern rigorously. The Ether transfer can potentially allow reentrancy attacks, where the same or another function in the contract is called again before the first invocation is completed, leading to unexpected behaviour or state.",
+        "file_name": "0x972dc0ee6fc536378dde23e63a143cfd9995e18c.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function() external payable {\n    require(flag);\n    flag = false;\n    if (endBlock > block.number) {\n        require(msg.value >= amount);\n        uint256 tokenAmount = msg.value / amount;\n        uint256 change = msg.value - tokenAmount * amount;\n        if (change > 0 ) msg.sender.transfer(change);\n        if (msg.data.length == 20) {\n            address refAddress = bToAddress(bytes(msg.data));\n            refAddress.transfer(msg.value / 10);\n        }\n        mainGift += msg.value / 5;\n        donee = msg.sender;\n        endBlock = block.number + 24 * 60 * 4;\n        amount += increment * tokenAmount;\n        _mint(msg.sender, tokenAmount);\n        emit Mint(msg.sender, tokenAmount);\n        flag = true;\n    } else {\n        msg.sender.transfer(msg.value);\n        emit MintFinished();\n        selfdestruct(donee);\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function is vulnerable to reentrancy, as it calls 'msg.sender.transfer' before all state updates are finalized ('flag' state is set at the very end). A malicious user could recursively call the fallback function to drain Ether from the contract by exploiting the state where 'flag' is temporarily set to false.",
+        "file_name": "0x972dc0ee6fc536378dde23e63a143cfd9995e18c.sol"
+    },
+    {
+        "function_name": "increaseApproval",
+        "code": "function increaseApproval(\n    address _spender,\n    uint256 _addedValue\n) external returns (bool) {\n    allowed_[msg.sender][_spender] = (\n        allowed_[msg.sender][_spender].add(_addedValue)\n    );\n    emit Approval(msg.sender, _spender, allowed_[msg.sender][_spender]);\n    return true;\n}",
+        "vulnerability": "Approval race condition",
+        "reason": "The increaseApproval function can lead to a race condition where approved spending limits could be manipulated by an attacker. If a user calls increaseApproval and then conducts a transferFrom transaction, a malicious spender might call transferFrom multiple times if they watch the blockchain and see the increaseApproval transaction before it's mined. This could lead to unauthorized or unexpected spending.",
+        "file_name": "0x972dc0ee6fc536378dde23e63a143cfd9995e18c.sol"
+    }
+]

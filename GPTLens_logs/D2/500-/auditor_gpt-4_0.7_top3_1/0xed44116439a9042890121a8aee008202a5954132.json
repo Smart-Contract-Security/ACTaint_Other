@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setTransferible",
+        "code": "function setTransferible(address admin, address sujeto, bool state) public returns (bool) { require(_administradores[admin], 'Not an admin'); _notransferible[sujeto] = state; return true; }",
+        "vulnerability": "Privilege escalation",
+        "reason": "The function setTransferible allows any address marked as an administrator to set transfer restrictions on any other address. Since the function checks only if the passed 'admin' parameter is an administrator, an attacker who can control an admin account or if an admin account is compromised, can misuse this function to arbitrarily restrict the transfer capabilities of other legitimate users.",
+        "file_name": "0xed44116439a9042890121a8aee008202a5954132.sol"
+    },
+    {
+        "function_name": "_forwardFunds",
+        "code": "function _forwardFunds() internal { _custodian.transfer(msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The _forwardFunds function directly transfers Ether to an external address (_custodian) using the .transfer method, which can be a potential vector for reentrancy attacks. Although there exists a nonReentrant modifier in the buyTokens function where _forwardFunds is called, the reentrancy protection is incorrectly implemented, allowing for a possible reentrancy if the _guardCounter is manipulated or if _forwardFunds is called from another function without proper reentrancy protection.",
+        "file_name": "0xed44116439a9042890121a8aee008202a5954132.sol"
+    },
+    {
+        "function_name": "constructor",
+        "code": "constructor() public{ _owner = msg.sender; _balances[_owner] = totalSupply; totalSupply = 10000000000000000; _administradores[_owner] = true; }",
+        "vulnerability": "Incorrect initial balance setup",
+        "reason": "In the constructor, the initial balance of the owner is set to the totalSupply before totalSupply is initialized to its intended value. This results in the owner's balance being set to 0, and then totalSupply is updated to 10000000000000000. This error in the sequence of assignments leads to the owner having an incorrect balance of 0 instead of the total supply, which could lead to functional issues in the token distribution logic.",
+        "file_name": "0xed44116439a9042890121a8aee008202a5954132.sol"
+    }
+]

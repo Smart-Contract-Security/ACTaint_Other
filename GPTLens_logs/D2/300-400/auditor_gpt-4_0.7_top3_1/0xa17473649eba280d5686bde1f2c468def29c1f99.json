@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setup",
+        "code": "function setup(uint256 chi_amount, uint256 price_in_wei) public { require(is_empty()); require(Chi.allowance(msg.sender, this) >= chi_amount); require(price_in_wei > 1000); price = price_in_wei; Chi_available = chi_amount; Amount_of_Chi_for_One_ETH = 1 ether / price_in_wei; seller = msg.sender; require(Chi.transferFrom(msg.sender, this, chi_amount)); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'setup' is vulnerable to reentrancy. After transferring the Chi tokens to the contract, the state variables like 'price', 'Chi_available', 'Amount_of_Chi_for_One_ETH', and 'seller' are set. If the 'Chi.transferFrom' call can trigger a callback to this contract, the state changes may not be fully completed before an attacker interacts with the contract again. This issue can be exploited to disrupt the expected flow of the contract and potentially manipulate trading conditions or stall the contract.",
+        "file_name": "0xa17473649eba280d5686bde1f2c468def29c1f99.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function() public payable{ uint256 eth_balance = this.balance; uint256 chi_balance = Chi.balanceOf(this); if(msg.sender == seller){ seller = 0x0; price = 0; Chi_available = 0; Amount_of_Chi_for_One_ETH = 0; cooldown_start_time = now; if(eth_balance > 0) msg.sender.transfer(eth_balance); if(chi_balance > 0) require(Chi.transfer(msg.sender, chi_balance)); } else{ require(msg.value > 0); require(price > 0); uint256 num_chi = msg.value / price; require(chi_balance >= num_chi); Chi_available = chi_balance - num_chi; require(Chi.transfer(msg.sender, num_chi)); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function is susceptible to reentrancy attacks as it transfers both ETH and Chi tokens based on certain conditions without using a reentrancy guard. When transferring assets (ETH or Chi tokens) to the 'seller' or any other user, if those addresses are contracts, they can perform a callback to this contract, potentially allowing reentrancy. This could be exploited to drain assets from the contract or interfere with the intended logic of asset transfers.",
+        "file_name": "0xa17473649eba280d5686bde1f2c468def29c1f99.sol"
+    },
+    {
+        "function_name": "setup",
+        "code": "function setup(uint256 chi_amount, uint256 price_in_wei) public { require(is_empty()); require(Chi.allowance(msg.sender, this) >= chi_amount); require(price_in_wei > 1000); price = price_in_wei; Chi_available = chi_amount; Amount_of_Chi_for_One_ETH = 1 ether / price_in_wei; seller = msg.sender; require(Chi.transferFrom(msg.sender, this, chi_amount)); }",
+        "vulnerability": "Integer Division",
+        "reason": "In the 'setup' function, the division used to calculate 'Amount_of_Chi_for_One_ETH' (1 ether / price_in_wei) can lead to integer division issues where the result is rounded down. This can cause significant discrepancies in the exchange rate calculation, potentially leading to unfavorable trade conditions for users. If the price per Chi is not a perfect divisor of 1 ether, users could receive less Chi per ETH than expected, which might be exploited by an informed attacker to gain more Chi at a lower price.",
+        "file_name": "0xa17473649eba280d5686bde1f2c468def29c1f99.sol"
+    }
+]

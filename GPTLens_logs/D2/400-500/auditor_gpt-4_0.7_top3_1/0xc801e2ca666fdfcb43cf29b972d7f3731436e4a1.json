@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public {\n    balanceOf[target] += mintedAmount;\n    totalSupply += mintedAmount;\n    Transfer(0, this, mintedAmount);\n    Transfer(this, target, mintedAmount);\n}",
+        "vulnerability": "Unchecked Minting",
+        "reason": "This function allows the contract owner to mint an arbitrary amount of tokens to any account. The mintedAmount is directly added to the target's balance and the totalSupply without any checks or limits. This can lead to hyperinflation, devaluing the token and affecting all token holders.",
+        "file_name": "0xc801e2ca666fdfcb43cf29b972d7f3731436e4a1.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public {\n    uint amount = msg.value / buyPrice;\n    _transfer(this, msg.sender, amount);\n}",
+        "vulnerability": "Integer Division",
+        "reason": "In the buy function, the amount of tokens to transfer is calculated using integer division of msg.value by buyPrice. If buyPrice is not properly set or is set to a very high value, the division will result in zero, and no tokens will be transferred even though Ether is sent to the contract. This can lead to loss of funds for users without receiving any tokens in return.",
+        "file_name": "0xc801e2ca666fdfcb43cf29b972d7f3731436e4a1.sol"
+    },
+    {
+        "function_name": "selfdestructs",
+        "code": "function selfdestructs() payable public {\n    selfdestruct(owner);\n}",
+        "vulnerability": "Unauthorized Selfdestruct",
+        "reason": "The selfdestructs function can be called by anyone, not just the owner. This allows any user to destroy the contract, removing all code and state from the blockchain, and sending all Ether in the contract to the owner. This can lead to loss of access to the contract's functionality and loss of tokens held by the contract.",
+        "file_name": "0xc801e2ca666fdfcb43cf29b972d7f3731436e4a1.sol"
+    }
+]

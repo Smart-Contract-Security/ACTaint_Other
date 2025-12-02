@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferETH",
+        "code": "function transferETH(address _to, uint _value) external onlyowner returns (bytes32 _r) { if (underLimit(_value)) { emit SingleTransact(msg.sender, _value, _to); _to.transfer(_value); return 0; } _r = keccak256(abi.encodePacked(msg.data, block.number)); if (!confirmETH(_r) && m_txs[_r].to == 0) { m_txs[_r].to = _to; m_txs[_r].value = _value; emit ConfirmationETHNeeded(_r, msg.sender, _value, _to); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows for reentrancy attacks because it performs a call (`_to.transfer(_value)`) that can be used by a malicious contract to re-enter and call `transferETH` again before the first execution is finished. This can lead to unexpected behavior or drains of ETH from the contract if not properly handled.",
+        "file_name": "0x5f30dca1c90708e8b5b0b047be6b73e4bcae6238.sol"
+    },
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner(address _from, address _to) onlymanyowners(keccak256(abi.encodePacked(msg.data, block.number))) external { if (isOwner(_to)) return; uint ownerIndex = m_ownerIndex[uint(_from)]; if (ownerIndex == 0) return; clearPending(); m_owners[ownerIndex] = uint(_to); m_ownerIndex[uint(_from)] = 0; m_ownerIndex[uint(_to)] = ownerIndex; emit OwnerChanged(_from, _to); }",
+        "vulnerability": "Front-running",
+        "reason": "The function `changeOwner` is susceptible to a front-running attack because it relies on the transaction data and block number for generating a hash used in `onlymanyowners` modifier. A malicious user can watch the transaction pool and send a transaction with higher gas to become an owner before the original transaction is processed.",
+        "file_name": "0x5f30dca1c90708e8b5b0b047be6b73e4bcae6238.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill(address _to) onlymanyowners(keccak256(abi.encodePacked(msg.data, block.number))) external { selfdestruct(_to); }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "The `kill` function uses `selfdestruct`, which can be called by any owner through the `onlymanyowners` modifier. This can lead to premature or unexpected destruction of the contract, potentially causing loss of contract data and funds without consensus of all stakeholders.",
+        "file_name": "0x5f30dca1c90708e8b5b0b047be6b73e4bcae6238.sol"
+    }
+]

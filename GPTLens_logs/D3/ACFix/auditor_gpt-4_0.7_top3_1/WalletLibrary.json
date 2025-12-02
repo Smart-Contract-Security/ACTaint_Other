@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "execute",
+        "code": "function execute(address _to, uint _value, bytes _data) external onlyowner returns (bytes32 o_hash) {\n    if ((_data.length == 0 && underLimit(_value)) || m_required == 1) {\n        address created;\n        if (_to == 0) {\n            created = create(_value, _data);\n        } else {\n            if (!_to.call.value(_value)(_data)) throw;\n        }\n        SingleTransact(msg.sender, _value, _to, _data, created);\n    } else {\n        o_hash = sha3(msg.data, block.number);\n        if (m_txs[o_hash].to == 0 && m_txs[o_hash].value == 0 && m_txs[o_hash].data.length == 0) {\n            m_txs[o_hash].to = _to;\n            m_txs[o_hash].value = _value;\n            m_txs[o_hash].data = _data;\n        }\n        if (!confirm(o_hash)) {\n            ConfirmationNeeded(o_hash, msg.sender, _value, _to, _data);\n        }\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows for a reentrancy attack because it makes an external call (_to.call.value(_value)(_data)) to an arbitrary address without ensuring that the state changes have been made before the external call. An attacker can exploit this by creating a fallback function that calls back into the execute function or other functions modifying the state, which can lead to unexpected behaviors or draining of funds.",
+        "file_name": "WalletLibrary.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill(address _to) onlymanyowners(sha3(msg.data)) external {\n    suicide(_to);\n}",
+        "vulnerability": "Unchecked Send",
+        "reason": "The 'kill' function directly forwards all remaining contract balance to an address without any checks. Using 'suicide(_to)' sends ether to the address '_to', but if the recipient is a contract, it could fail if the contract's fallback function requires more gas than provided or has been set to revert. This might lock the funds in the contract permanently, causing loss of funds.",
+        "file_name": "WalletLibrary.sol"
+    },
+    {
+        "function_name": "addOwner",
+        "code": "function addOwner(address _owner) onlymanyowners(sha3(msg.data)) external {\n    if (isOwner(_owner)) return;\n    clearPending();\n    if (m_numOwners >= c_maxOwners) reorganizeOwners();\n    if (m_numOwners >= c_maxOwners) return;\n    m_numOwners++;\n    m_owners[m_numOwners] = uint(_owner);\n    m_ownerIndex[uint(_owner)] = m_numOwners;\n    OwnerAdded(_owner);\n}",
+        "vulnerability": "Denial of Service by Block Gas Limit",
+        "reason": "The function reorganizes owners if the maximum number of owners is reached before adding a new one. However, if the number of owners is very high, close to 'c_maxOwners', the reorganizeOwners function may require more gas than the block gas limit allows. This could effectively block the addition of new owners and potentially block other functionalities related to owner management, leading to a Denial of Service (DoS) condition.",
+        "file_name": "WalletLibrary.sol"
+    }
+]

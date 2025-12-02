@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Pay",
+        "code": "function Pay(uint productId) public payable {\n    require(products[productId].price == msg.value);\n    require(products[productId].isFrozen == false);\n    uint fee = msg.value / feePercent;\n    uint remaining = msg.value - fee;\n    products[productId].merchant.transfer(remaining);\n    purchases[msg.sender][productId] = true;\n    ProductPurchased(productId, msg.sender);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function Pay allows transferring ether to an external address (merchant) before updating the state of the purchases mapping. An attacker controlling the merchant address could create a fallback function to re-enter the Pay function, potentially allowing them to drain funds continuously if certain conditions (like product availability or balance check) are not met.",
+        "file_name": "0xd282aaabc2b194ebba0da2b98ef1c9c66eb24931.sol"
+    },
+    {
+        "function_name": "AddProduct",
+        "code": "function AddProduct(uint price) public payable returns(uint productId) {\n    productId = numProducts++;\n    products[productId] = Product(price, msg.sender, false);\n    purchases[msg.sender][productId] = true;\n    ProductAdded(productId, msg.sender, price);\n}",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "AddProduct function does not check if the mapping assignment (products[productId]) is successful, and always assumes that the product addition is successful. This can lead to a scenario where a product is considered added and active, even if the state update fails due to low gas or other issues, leading to inconsistent state in the contract.",
+        "file_name": "0xd282aaabc2b194ebba0da2b98ef1c9c66eb24931.sol"
+    },
+    {
+        "function_name": "WithdrawFees",
+        "code": "function WithdrawFees() public payable {\n    require(msg.sender == owner);\n    owner.transfer(this.balance);\n}",
+        "vulnerability": "Denial of Service by Gas Limit",
+        "reason": "The WithdrawFees function transfers the entire balance of the contract to the owner. If the contract's balance becomes very large, the gas cost of the transfer might exceed block gas limit, potentially making it impossible to withdraw the funds. This can essentially lock the funds within the contract indefinitely, denying service to the contract owner.",
+        "file_name": "0xd282aaabc2b194ebba0da2b98ef1c9c66eb24931.sol"
+    }
+]

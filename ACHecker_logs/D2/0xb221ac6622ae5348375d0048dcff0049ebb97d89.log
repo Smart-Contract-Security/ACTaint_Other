@@ -1,0 +1,23 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb221ac6622ae5348375d0048dcff0049ebb97d89.code
+Start time: 27/08/2022 14:34:10
+Building CFG...
+CFG generation time (secs): 0.76
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function addFundsToTransaction(bytes32)
+	( 3146)  c4a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function execute(uint8[],bytes32[],bytes32[],bytes32,address[],uint256[])
++--Attacker can make changes to AC item {0} in function addTokenTransaction(address,address,address,uint8,uint32,bytes32,uint256,bytes20,address)
+
+Violated access control check in function addTokensToTransaction(bytes32,uint256)
+	( 7077) 1ba5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function execute(uint8[],bytes32[],bytes32[],bytes32,address[],uint256[])
++--Attacker can make changes to AC item {0} in function addTokenTransaction(address,address,address,uint8,uint32,bytes32,uint256,bytes20,address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 128.37
+End time: 27/08/2022 14:36:19

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "requestNumber",
+        "vulnerability": "Use of tx.origin",
+        "criticism": "The reasoning is accurate in identifying the use of 'tx.origin' as a vulnerability. Using 'tx.origin' can indeed lead to security risks where a malicious contract could exploit the function to perform unauthorized actions. The severity is high because it can potentially allow unintended actions at the user level. However, the profitability is moderate because exploiting this requires specific conditions and a malicious contract setup.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function uses 'tx.origin' to assign the requestProxy. This can be exploited by malicious contracts calling this function, as 'tx.origin' will be equal to the original sender (user), not the immediate sender (contract). This can lead to unauthorized actions being taken on behalf of the user.",
+        "code": "function requestNumber(address _requestor, uint256 _max, uint8 _waitTime) payable public {\n    if (!whiteList[msg.sender]) {\n        require(!(msg.value < cost));\n    }\n    assert(!isRequestPending(_requestor));\n    pendingNumbers[_requestor] = PendingNumber({\n        requestProxy: tx.origin,\n        renderedNumber: 0,\n        max: max,\n        originBlock: block.number,\n        waitTime: waitTime\n    });\n    if (_max > 1) {\n        pendingNumbers[_requestor].max = _max;\n    }\n    if (_waitTime > 0 && _waitTime < 250) {\n        pendingNumbers[_requestor].waitTime = _waitTime;\n    }\n    EventRandomLedgerRequested(_requestor, pendingNumbers[_requestor].max, pendingNumbers[_requestor].originBlock, pendingNumbers[_requestor].waitTime, pendingNumbers[_requestor].requestProxy);\n}",
+        "file_name": "0x870ed69ed12430c6a3d4abdb30c7eeb1918c62b1.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "kill",
+        "vulnerability": "Unchecked selfdestruct",
+        "criticism": "The reasoning provided is somewhat misleading. The 'kill' function is protected by the 'onlyOwner' modifier, meaning only the contract owner can trigger it. While it's true that selfdestruct can be drastic and unexpected for users, it's typically a controlled action by the owner. The severity is moderate due to potential loss of contract functionality and funds, but profitability is low as it does not provide a direct profit route for an attacker.",
+        "correctness": 5,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The kill function allows the owner to destroy the contract and send remaining funds to the owner's address. This can be problematic if not properly communicated or agreed upon by all stakeholders or users of the contract, as it can lead to loss of access or funds unexpectedly.",
+        "code": "function kill() onlyOwner {\n    selfdestruct(owner);\n}",
+        "file_name": "0x870ed69ed12430c6a3d4abdb30c7eeb1918c62b1.sol",
+        "final_score": 4.0
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "No check for transfer success",
+        "criticism": "The reasoning is partially correct. The function uses '.transfer()', which inherently reverts the transaction if the transfer fails. Therefore, the criticism that the function does not check for transfer success is incorrect because '.transfer()' handles this internally. The severity and profitability are both low because the function's implementation prevents the described issue.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function does not check if the transfer was successful. This can lead to loss of funds if the transfer fails for any reason (e.g., the call stack depth limit is reached, or the recipient is a contract that throws an error). Using .transfer() is safer as it automatically reverts on failure, but the function should handle the logic post-transfer appropriately.",
+        "code": "function withdraw(address _recipient, uint256 _balance) onlyOwner public returns (bool) {\n    _recipient.transfer(_balance);\n    return true;\n}",
+        "file_name": "0x870ed69ed12430c6a3d4abdb30c7eeb1918c62b1.sol",
+        "final_score": 1.25
+    }
+]

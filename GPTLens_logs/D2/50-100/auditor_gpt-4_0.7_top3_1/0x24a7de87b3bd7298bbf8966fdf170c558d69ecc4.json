@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) { require(!frozenAccount[msg.sender]); require(tokenBalanceOf[msg.sender] >= amount); require(amount > 0); require(sellPrice > 0); _transfer(msg.sender, this, amount); uint256 revenue = amount * sellPrice; require(this.balance >= revenue); commission = msg.value/commissionRate; require(address(this).send(commission)); msg.sender.transfer(revenue); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'sell' function transfers Ether to 'msg.sender' without setting the sender\u2019s balance to zero beforehand. An attacker could potentially call 'sell' repeatedly in a single transaction, before the first 'msg.sender.transfer(revenue)' call is finished, leading to multiple withdrawals.",
+        "file_name": "0x24a7de87b3bd7298bbf8966fdf170c558d69ecc4.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) isOwner { assert(newOwner != address(0)); address oldOwner = owner; owner = newOwner; ownerChanged(msg.sender, oldOwner, newOwner); allowed[this][oldOwner] = 0; allowed[this][newOwner] = tokenBalanceOf[this]; }",
+        "vulnerability": "Arbitrary Ownership Transfer",
+        "reason": "The 'transferOwnership' function allows the current owner to transfer ownership to any address. If the owner's private key is compromised, ownership can be arbitrarily transferred, potentially leading to a hostile takeover of the contract.",
+        "file_name": "0x24a7de87b3bd7298bbf8966fdf170c558d69ecc4.sol"
+    },
+    {
+        "function_name": "freezeAccount",
+        "code": "function freezeAccount(address account, bool freeze) isOwner { require(account != owner); require(account != supervisor); frozenAccount[account] = freeze; if(freeze) { FrozenFunds(msg.sender, account, 'Account set frozen!'); }else { FrozenFunds(msg.sender, account, 'Account set free for use!'); } }",
+        "vulnerability": "Denial of Service",
+        "reason": "The 'freezeAccount' function allows the owner to freeze any account except for the owner's and the supervisor's. This can be abused to deny service to legitimate users by freezing their accounts, preventing them from transferring tokens.",
+        "file_name": "0x24a7de87b3bd7298bbf8966fdf170c558d69ecc4.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "die",
+        "code": "function die() public { selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized Selfdestruct",
+        "reason": "The function 'die' allows any caller to destroy the contract. The selfdestruct function is called with msg.sender as the argument, which forwards any remaining contract balance to the caller's address. This can be exploited by any attacker just by calling this function, leading to potential loss of funds and the destruction of the contract without consent from the owner or other stakeholders.",
+        "file_name": "0xdf861993edbe95bafbfa7760838f8ebbd5afda9f.sol"
+    },
+    {
+        "function_name": "die",
+        "code": "function die() public { selfdestruct(msg.sender); }",
+        "vulnerability": "Denial of Service",
+        "reason": "Using selfdestruct, the function allows any external user to permanently disable the contract which can be considered a Denial of Service (DoS) attack. Since there are no access control checks (like onlyOwner modifier or similar), any malicious actor can trigger this function, halting the availability of the contract's services and possibly impacting other systems or contracts dependent on this one.",
+        "file_name": "0xdf861993edbe95bafbfa7760838f8ebbd5afda9f.sol"
+    },
+    {
+        "function_name": "die",
+        "code": "function die() public { selfdestruct(msg.sender); }",
+        "vulnerability": "Unrestricted Ether Withdrawal",
+        "reason": "The selfdestruct operation sends all the Ether held by the contract to the address provided in the argument, in this case, msg.sender. This functionality can be misused by an attacker to drain all the Ether from the contract by simply calling this function, potentially stealing Ether from the contract owner or other rightful owners.",
+        "file_name": "0xdf861993edbe95bafbfa7760838f8ebbd5afda9f.sol"
+    }
+]

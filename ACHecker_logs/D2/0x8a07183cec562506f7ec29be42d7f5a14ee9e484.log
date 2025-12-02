@@ -1,0 +1,23 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x8a07183cec562506f7ec29be42d7f5a14ee9e484.code
+Start time: 26/08/2022 03:36:26
+Building CFG...
+CFG generation time (secs): 0.07
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+(  761)  2f9:	57	-2 +0 = -2	JUMPI
+((  755)  2f3:	34	-0 +1 = 1	CALLVALUE, (  756)  2f4:	80	-1 +2 = 1	DUP1, (  757)  2f5:	15	-1 +1 = 0	ISZERO, (    0)    0:	63	-0 +1 = 1	PUSH4(3735929054) 	deadc0de)
+
+Violated access control check in function sendHouse(uint256,uint256,address)
+	( 2669)  a6d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {106974352148254247443002424860746200082415828814647159066518186632126350659435} in function buildHouses(uint256[])
+
+Violated access control check in function upgradeHouse(uint256,uint256)
+	( 3025)  bd1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {106974352148254247443002424860746200082415828814647159066518186632126350659435} in function buildHouses(uint256[])
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 7.60
+End time: 26/08/2022 03:36:34

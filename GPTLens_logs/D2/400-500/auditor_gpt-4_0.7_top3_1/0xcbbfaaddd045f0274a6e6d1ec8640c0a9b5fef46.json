@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer( address to, uint value, bytes data, string custom_fallback ) public returns (bool success) { _transfer( msg.sender, to, value, data ); require( address(to).call.value(0)( bytes4(keccak256(custom_fallback)), msg.sender, value, data ) ); return true; }",
+        "vulnerability": "Arbitrary Code Execution",
+        "reason": "This function allows the caller to specify a custom fallback function name. By crafting a malicious function name and data, an attacker can trigger arbitrary code execution in the context of the called contract. The use of address(to).call.value(0)(...) is dangerous as it directly interacts with potentially untrusted contracts without any validation of the contract code or state.",
+        "file_name": "0xcbbfaaddd045f0274a6e6d1ec8640c0a9b5fef46.sol"
+    },
+    {
+        "function_name": "transferToContract",
+        "code": "function transferToContract( address to, uint value, bytes data ) private returns (bool success) { _transfer( msg.sender, to, value, data ); ContractReceiver rx = ContractReceiver(to); if (isContract(rx)) { rx.tokenFallback( msg.sender, value, data ); return true; } return false; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function transferToContract performs an external call to rx.tokenFallback without checking the result of this call. This can lead to unintended effects if the called function behaves maliciously or unexpectedly. Additionally, the isContract check does not guarantee that the contract will behave correctly or benignly, leading to potential reentrancy or other contract-level attacks.",
+        "file_name": "0xcbbfaaddd045f0274a6e6d1ec8640c0a9b5fef46.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer( address from, address to, uint value, bytes data ) internal { require( to != 0x0 ); require( balances[from] >= value ); require( balances[to] + value > balances[to] ); balances[from] -= value; balances[to] += value; bytes memory ignore; ignore = data; Transfer( from, to, value ); }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function does not properly protect against integer overflow when adding 'value' to 'balances[to]'. Although there is a check to ensure 'balances[to] + value > balances[to]', this check can be bypassed if an overflow occurs, allowing attackers to cause balance inconsistencies and potentially steal tokens.",
+        "file_name": "0xcbbfaaddd045f0274a6e6d1ec8640c0a9b5fef46.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyPiece",
+        "code": "function buyPiece() payable { if (pieceForSale && msg.value >= lowestAskPrice) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; uint256 _amountReferrer; _amountOwner = (msg.value / 10000) * ownerCommission; _amountEthart = (msg.value / 10000) * ethartRevenueReward; _amountSeller = msg.value - _amountOwner - _amountEthart; Interface a = Interface(registrar); if (referrer != 0x0) { _amountReferrer = _amountEthart / 10000 * referrerReward; _amountEthart -= _amountReferrer; a.asyncSend(referrer, _amountReferrer); } piecesOwned[lowestAskAddress]--; piecesOwned[msg.sender]++; PieceSold (lowestAskAddress, msg.sender, msg.value); pieceForSale = false; lowestAskPrice = 0; a.issuePatrons(msg.sender, msg.value); a.asyncSend(owner, _amountOwner); a.asyncSend(lowestAskAddress, _amountSeller); lowestAskAddress = 0x0; a.asyncSend(registrar, _amountEthart); registrar.transfer(msg.value); } else {throw;} }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyPiece' is vulnerable to reentrancy attacks because it calls external contracts (via 'a.asyncSend' and 'registrar.transfer') after updating state variables (e.g., 'piecesOwned', 'pieceForSale'). An attacker can exploit this by recursively calling 'buyPiece' during one of these external calls before the function execution completes, potentially leading to unexpected behavior such as duplicating tokens or Ether.",
+        "file_name": "0x93ebbf10084680bae8afdb05955bf1c0dd65948a.sol"
+    },
+    {
+        "function_name": "fillBid",
+        "code": "function fillBid () ethArtOnlyAfterOneYear notLocked(msg.sender, 1) { if (pieceWanted && piecesOwned[msg.sender] >= 1) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; uint256 _amountReferrer; _amountOwner = (highestBidPrice / 10000) * ownerCommission; _amountEthart = (highestBidPrice / 10000) * ethartRevenueReward; _amountSeller = highestBidPrice - _amountOwner - _amountEthart; Interface a = Interface(registrar); if (referrer != 0x0) { _amountReferrer = _amountEthart / 10000 * referrerReward; _amountEthart -= _amountReferrer; a.asyncSend(referrer, _amountReferrer); } piecesOwned[highestBidAddress]++; a.issuePatrons(highestBidAddress, highestBidPrice); piecesOwned[msg.sender]--; PieceSold (msg.sender, highestBidAddress, highestBidPrice); pieceWanted = false; highestBidPrice = 0; highestBidAddress = 0x0; a.asyncSend(owner, _amountOwner); a.asyncSend(msg.sender, _amountSeller); a.asyncSend(registrar, _amountEthart); } else {throw;} }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The function 'fillBid' computes token and Ether distribution using arithmetic operations directly on user-supplied and external values without proper validation or use of SafeMath library. This can lead to integer overflow or underflow, which might allow attackers to manipulate calculations to either cause denial of service (by creating values that the system cannot handle) or steal tokens by manipulating distribution logic.",
+        "file_name": "0x93ebbf10084680bae8afdb05955bf1c0dd65948a.sol"
+    },
+    {
+        "function_name": "Artwork",
+        "code": "function Artwork ( bytes32 _SHA256ofArtwork, uint256 _editionSize, string _title, string _fileLink, string _customText, uint256 _ownerCommission, address _owner ) { if (_ownerCommission > (10000 - ethartRevenueReward)) {throw;} Interface a = Interface(registrar); ethartRevenueReward = a.getEthartRevenueReward(); ethartArtReward = a.getEthartArtReward(); referrer = a.getReferrer (_owner); referrerReward = a.getReferrerReward (); owner = _owner; SHA256ofArtwork = _SHA256ofArtwork; editionSize = _editionSize; title = _title; fileLink = _fileLink; customText = _customText; ownerCommission = _ownerCommission; activationTime = now; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The constructor of the 'Artwork' contract fetches values from an external contract 'Interface' (e.g., 'ethartRevenueReward', 'ethartArtReward') without checking whether the calls are successful or the returned values are sensible. This can lead to incorrect initialization of the contract state if the external calls fail or return unexpected values, potentially causing logical errors in contract execution or misuse of the contract functions.",
+        "file_name": "0x93ebbf10084680bae8afdb05955bf1c0dd65948a.sol"
+    }
+]

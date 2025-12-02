@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) public { require(this.balance >= amount * sellPrice); _transfer(msg.sender, this, amount); msg.sender.transfer(amount * sellPrice); }",
+        "vulnerability": "Integer overflow",
+        "reason": "In the 'sell' function, the calculation 'amount * sellPrice' is vulnerable to integer overflow. If 'amount' and 'sellPrice' are both very large numbers, their product might exceed the maximum uint256 value, causing an overflow and leading to unexpected behavior, such as incorrect balance checks and token transfers.",
+        "file_name": "0x31fc37ccafa5ce3986eb4ba758300a67a2283294.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public { uint amount = msg.value / buyPrice; _transfer(this, msg.sender, amount); }",
+        "vulnerability": "Missing sender validation",
+        "reason": "In the 'buy' function, there is no validation to check if the 'buyPrice' is non-zero. If 'buyPrice' is zero, the division 'msg.value / buyPrice' will cause a division by zero error, which can halt the contract and lead to denial of service.",
+        "file_name": "0x31fc37ccafa5ce3986eb4ba758300a67a2283294.sol"
+    },
+    {
+        "function_name": "selfdestructs",
+        "code": "function selfdestructs() payable public { selfdestruct(owner); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The 'selfdestructs' function can be called by any user and not only by the owner of the contract. This can lead to unauthorized destruction of the contract, resulting in loss of contract state and funds contained in the contract without the owner's consent.",
+        "file_name": "0x31fc37ccafa5ce3986eb4ba758300a67a2283294.sol"
+    }
+]

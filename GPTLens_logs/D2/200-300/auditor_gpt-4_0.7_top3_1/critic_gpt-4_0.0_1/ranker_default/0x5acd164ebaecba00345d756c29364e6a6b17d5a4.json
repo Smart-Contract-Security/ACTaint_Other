@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "buySprite",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning is partially correct. The function does make an external call to transfer ether without checking the return value, which is a bad practice and can lead to loss of funds if the call fails. However, the severity is not extremely high as the function does not contain other critical state changes after the external call that could be exploited via reentrancy. The profitability of exploiting this vulnerability is also low as it primarily results in loss rather than gain for an attacker.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "In the 'buySprite' function, there is an unsafe external call (kittyOwner.transfer) which transfers funds without checking the return value. This practice can lead to loss of funds if the call fails, and it also ignores potential re-entrancy attack vectors.",
+        "code": "function buySprite (uint spriteId) payable {\n    uint _ownerCut;\n    uint _charityCut;\n    if (broughtSprites[spriteId].forSale == true) {\n        _ownerCut = ((broughtSprites[spriteId].price / 1000) * ownerCut);\n        _charityCut = ((broughtSprites[spriteId].price / 1000) * charityCut);\n        require (msg.value == broughtSprites[spriteId].price + _ownerCut + _charityCut);\n        broughtSprites[spriteId].owner.transfer(broughtSprites[spriteId].price);\n        numberOfSpritesOwnedByUser[broughtSprites[spriteId].owner]--;\n        if (broughtSprites[spriteId].timesTraded == 0) {\n            allPurchasedSprites.push(spriteId);\n        }\n        Transfer (broughtSprites[spriteId].owner, msg.sender, spriteId);\n    } else {\n        require (broughtSprites[spriteId].timesTraded == 0);\n        require (broughtSprites[spriteId].price == 0);\n        uint priceIfAny = SaleClockAuction(SaleClockAuctionAddress).getCurrentPrice(spriteId);\n        require (priceIfAny > 0);\n        _ownerCut = ((priceIfAny / 1000) * ownerCut) * priceMultiplier / priceDivider;\n        _charityCut = ((priceIfAny / 1000) * charityCut) * priceMultiplier / priceDivider;\n        require (msg.value >= (priceIfAny * priceMultiplier / priceDivider) + _ownerCut + _charityCut);\n        var (kittyOwner,,,,) = SaleClockAuction(SaleClockAuctionAddress).getAuction(spriteId);\n        kittyOwner.transfer(priceIfAny * priceMultiplier / priceDivider);\n        allPurchasedSprites.push(spriteId);\n        broughtSprites[spriteId].spriteImageID = uint(block.blockhash(block.number-1))%360 + 1;\n        Transfer (kittyOwner, msg.sender, spriteId);\n    }\n    totalBuys++;\n    spriteOwningHistory[msg.sender].push(spriteId);\n    numberOfSpritesOwnedByUser[msg.sender]++;\n    broughtSprites[spriteId].owner = msg.sender;\n    broughtSprites[spriteId].forSale = false;\n    broughtSprites[spriteId].timesTraded++;\n    broughtSprites[spriteId].featured = false;\n    etherForOwner += _ownerCut;\n    etherForCharity += _charityCut;\n}",
+        "file_name": "0x5acd164ebaecba00345d756c29364e6a6b17d5a4.sol",
+        "final_score": 4.5
+    },
+    {
+        "function_name": "featureSprite",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is incorrect. The function 'featureSprite' does not make any external calls that transfer ether to untrusted contracts before updating its state. The external calls made (ownerOf and getCurrentPrice) are to trusted contracts and do not involve ether transfers. Therefore, the risk of reentrancy is minimal. The severity and profitability are both low as the function does not expose critical vulnerabilities that could be exploited for profit.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The function 'featureSprite' transfers ether to the owner and updates balances after making external calls (like 'ownerOf' and 'getCurrentPrice'), allowing for potential re-entrancy attacks. Reentrancy attacks can allow attackers to drain funds or manipulate contract states before the first transaction is finished.",
+        "code": "function featureSprite (uint spriteId) payable {\n    require (msg.value == featurePrice);\n    broughtSprites[spriteId].featured = true;\n    if (broughtSprites[spriteId].timesTraded == 0) {\n        address kittyOwner = KittyCore(KittyCoreAddress).ownerOf(spriteId);\n        uint priceIfAny = SaleClockAuction(SaleClockAuctionAddress).getCurrentPrice(spriteId);\n        if (priceIfAny > 0 && msg.sender == kittyOwner) {\n            broughtSprites[spriteId].price = priceIfAny * priceMultiplier / priceDivider;\n            broughtSprites[spriteId].forSale = true;\n        }\n        broughtSprites[spriteId].owner = kittyOwner;\n        broughtSprites[spriteId].spriteImageID = uint(block.blockhash(block.number-1))%360 + 1;\n        numberOfSpritesOwnedByUser[kittyOwner]++;\n    }\n    totalFeatures++;\n    etherForOwner += msg.value;\n    featuredSprites.push(spriteId);\n}",
+        "file_name": "0x5acd164ebaecba00345d756c29364e6a6b17d5a4.sol",
+        "final_score": 1.5
+    },
+    {
+        "function_name": "changeOwner",
+        "vulnerability": "Unauthorized Control Change",
+        "criticism": "The reasoning is incorrect. The function 'changeOwner' is protected by the 'onlyOwner' modifier, which restricts its execution to the current owner of the contract. This means that only the current owner can change the ownership, and there is no risk of unauthorized control change from external entities. The severity and profitability are both very low as the function behaves as intended and does not allow unauthorized users to change ownership.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'changeOwner' function allows the current owner to transfer ownership without any checks on the new owner address. This can lead to accidental or malicious changes in control if the input is not validated or if the function is exposed to exploitation.",
+        "code": "function changeOwner (address _owner) onlyOwner {\n    owner = _owner;\n}",
+        "file_name": "0x5acd164ebaecba00345d756c29364e6a6b17d5a4.sol",
+        "final_score": 0.5
+    }
+]

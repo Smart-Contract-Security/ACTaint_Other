@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint _value) returns (bool success) { if ((_value != 0) && (allowed[msg.sender][_spender] != 0)) throw; allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race Condition (ERC20 Approve/Allowance)",
+        "reason": "The approve function does not reset allowance properly before setting a new value, allowing for potential race conditions. If a user first sets a non-zero allowance and then attempts to change it, another transaction could occur in between these actions, allowing an approved spender to potentially spend more than intended.",
+        "file_name": "0xb104df39250112eda59b27f5db7013c7ee132d50.sol"
+    },
+    {
+        "function_name": "process",
+        "code": "function process(address sender, uint sendValue) onlyOwner returns (uint tokenAmount) {...}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'process' function in the 'CrowdSale' contract updates state variables after calling external contracts or transferring funds. This order of operations can allow attackers to re-enter the contract before it has finished executing, potentially leading to unexpected behavior such as draining cryptocurrency.",
+        "file_name": "0xb104df39250112eda59b27f5db7013c7ee132d50.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint _value) beforeTransfer returns (bool success) { balances[msg.sender] = sub(balances[msg.sender], _value); balances[_to] = add(balances[_to], _value); Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'transfer' function sends tokens to an address but does not check if the '_to' address is a contract that can handle ERC20 tokens. This could lead to tokens being sent to contracts that do not expect them or are not designed to handle them, potentially resulting in lost tokens.",
+        "file_name": "0xb104df39250112eda59b27f5db7013c7ee132d50.sol"
+    }
+]

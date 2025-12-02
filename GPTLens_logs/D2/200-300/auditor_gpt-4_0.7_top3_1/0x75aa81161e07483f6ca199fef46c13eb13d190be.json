@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Matthew",
+        "code": "function Matthew(){\n    owner = msg.sender;\n    setFacts();\n}",
+        "vulnerability": "Constructor Misnaming",
+        "reason": "The function name 'Matthew' is intended to be a constructor but does not match the contract name 'contract Matthew'. Since Solidity 0.4.22, constructors should be defined using 'constructor()' syntax. Misnaming the constructor means it is treated as a regular function that can be called by anyone, allowing unauthorized users to reset contract state arbitrarily.",
+        "file_name": "0x75aa81161e07483f6ca199fef46c13eb13d190be.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () payable{\n    if (block.number - period >= blockheight){\n        bool isSuccess=false;\n        var nextStake = stake * WINNERTAX_PRECENT/100;\n        if (isSuccess == false) isSuccess = whale.send(stake - nextStake);\n        MatthewWon(\"Matthew won\", whale, stake - nextStake, block.number);\n        setFacts();\n        if (mustBeDestroyed) selfdestruct(whale);\n        return;\n    }else{\n        if (msg.value < stake + DELTA) throw;\n        bool isOtherSuccess = msg.sender.send(stake);\n        setFacts();\n        StakeIncreased(\"stake increased\", whale, stake, blockheight);\n    }\n}",
+        "vulnerability": "Unchecked Send",
+        "reason": "The send method used here is not checked for success before proceeding, e.g., 'isSuccess = whale.send(stake - nextStake);'. If this send fails, the contract does not handle the failure, potentially leading to loss of funds or unintended behavior.",
+        "file_name": "0x75aa81161e07483f6ca199fef46c13eb13d190be.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () payable{\n    if (block.number - period >= blockheight){\n        bool isSuccess=false;\n        var nextStake = stake * WINNERTAX_PRECENT/100;\n        if (isSuccess == false) isSuccess = whale.send(stake - nextStake);\n        MatthewWon(\"Matthew won\", whale, stake - nextStake, block.number);\n        setFacts();\n        if (mustBeDestroyed) selfdestruct(whale);\n        return;\n    }else{\n        if (msg.value < stake + DELTA) throw;\n        bool isOtherSuccess = msg.sender.send(stake);\n        setFacts();\n        StakeIncreased(\"stake increased\", whale, stake, blockheight);\n    }\n}",
+        "vulnerability": "Re-entrancy",
+        "reason": "The fallback function allows re-entrancy attack because it calls an external address (whale.send) and continues to execute further state updates post this call. An attacker-controlled whale address can call back into the contract within the same transaction, potentially leading to unexpected behaviors like double withdrawals.",
+        "file_name": "0x75aa81161e07483f6ca199fef46c13eb13d190be.sol"
+    }
+]

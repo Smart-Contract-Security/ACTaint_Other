@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "onlyAdmin",
+        "code": "modifier onlyAdmin() { msg.sender == admin; _; }",
+        "vulnerability": "Access control bypass",
+        "reason": "The onlyAdmin modifier is intended to restrict the execution of certain functions to the admin address only. However, it uses the expression 'msg.sender == admin' without any effect (missing ';'). This results in no actual restriction being enforced, allowing any user to call functions that are meant to be restricted to the admin.",
+        "file_name": "0xfe55d20bc9abd995ce965b1d082d10f6f1f057eb.sol"
+    },
+    {
+        "function_name": "withdraw_eth",
+        "code": "function withdraw_eth(uint256 _amount) onlyAdmin public { uint256 currentBalance_ = token_balance[0]; require(currentBalance_ >= _amount); transferETHFromContract(msg.sender, _amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows the withdrawal of Ether by the admin. However, it calls an external address (msg.sender) which could be a malicious contract designed to re-enter the withdraw_eth function. Without proper reentrancy guards such as the check-effects-interactions pattern, this can lead to multiple withdrawals and potentially draining the contract of its Ether.",
+        "file_name": "0xfe55d20bc9abd995ce965b1d082d10f6f1f057eb.sol"
+    },
+    {
+        "function_name": "constructor",
+        "code": "constructor(address _base_token, address _traded_token,uint256 _base_token_seed_amount, uint256 _traded_token_seed_amount, uint256 _commission_ratio) public { admin = tx.origin; base_token = _base_token; traded_token = _traded_token; base_token_seed_amount = _base_token_seed_amount; traded_token_seed_amount = _traded_token_seed_amount; commission_ratio = _commission_ratio; }",
+        "vulnerability": "Phishing with tx.origin",
+        "reason": "The constructor sets the admin state variable using 'tx.origin' instead of 'msg.sender'. This can lead to phishing attacks where an external malicious contract tricks an authenticated user into executing a transaction, thereby setting the attacker's address as the admin. This vulnerability allows the attacker to gain unauthorized control over the contract.",
+        "file_name": "0xfe55d20bc9abd995ce965b1d082d10f6f1f057eb.sol"
+    }
+]

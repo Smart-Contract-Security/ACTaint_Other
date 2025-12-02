@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { require(_to != address(0), \"cannot transfer to the zero address\"); if (_to != owner && msg.sender != crowdsale) { require(isTransferable == true, \"kvt is not yet transferable\"); } require(msg.sender != owner, \"the owner of the kvt contract cannot transfer\"); return _transfer(_to, msg.sender, _value); }",
+        "vulnerability": "Broken Access Control",
+        "reason": "This function does not allow the owner to transfer tokens which contradicts the typical capabilities and rights of an owner in an ERC20 token contract. This could result in funds being locked without the ability to transfer them which could be critical if the owner needs to move funds for any reason.",
+        "file_name": "0x3a859b9ea4998d344547283c7ce8ebc4abb77656.sol"
+    },
+    {
+        "function_name": "approveTransferableToggle",
+        "code": "function approveTransferableToggle() public onlyRole(ADMIN_ROLE) { require(toggleTransferablePending == true, \"transfer toggle not in pending state\"); require(transferToggleRequester != msg.sender, \"the requester cannot approve the transfer toggle\"); isTransferable = !isTransferable; toggleTransferablePending = false; transferToggleRequester = address(0); }",
+        "vulnerability": "Improper Authorization",
+        "reason": "The function allows any admin, other than the requester, to approve making the token transferable or not. However, it does not adequately ensure that multiple trusted parties agree on changing this critical state, potentially allowing a single rogue admin to unilaterally change whether tokens can be transferred.",
+        "file_name": "0x3a859b9ea4998d344547283c7ce8ebc4abb77656.sol"
+    },
+    {
+        "function_name": "adminTransfer",
+        "code": "function adminTransfer(address _to, uint32 _quantity) public onlyRole(ADMIN_ROLE) { address newTransfer = new MultiSigTransfer(_quantity, _to, msg.sender); transfers.push(newTransfer); }",
+        "vulnerability": "Unchecked Return Values",
+        "reason": "This function creates a new MultiSigTransfer contract instance but does not check the success of the operation. In Solidity, the 'new' keyword can fail (e.g., out of gas), but this failure goes unchecked, which might lead to incorrect assumptions about the state of transfers.",
+        "file_name": "0x3a859b9ea4998d344547283c7ce8ebc4abb77656.sol"
+    }
+]

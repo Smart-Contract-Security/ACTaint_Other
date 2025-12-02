@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x071a91b97d0500e0547f0289144490ca088847d2.code
+Start time: 19/08/2022 00:03:46
+Building CFG...
+CFG generation time (secs): 1.71
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawAltcoinTokens(address)
+	( 2814)  afe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdraw()
+	( 4380) 111c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4612) 1204:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 5070) 13ce:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 5307) 14bb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5596) 15dc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5794) 16a2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6934) 1b16:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function MetaFoxToken()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.21
+End time: 19/08/2022 00:03:53

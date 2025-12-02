@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "commitPrice",
+        "code": "function commitPrice(uint priceInWei, uint timeInSecond) public isPriceFeed() returns (bool success) { require(started && timeInSecond <= getNowTimestamp() && timeInSecond >= lastPrice.timeInSecond.add(priceUpdateCoolDown)); uint priceDiff; if (numOfPrices == 0) { priceDiff = priceInWei.diff(lastPrice.priceInWei); if (priceDiff.mul(BP_DENOMINATOR).div(lastPrice.priceInWei) <= priceTolInBP) { acceptPrice(priceInWei, timeInSecond, msg.sender); } else { firstPrice = Price(priceInWei, timeInSecond, msg.sender); emit CommitPrice(priceInWei, timeInSecond, msg.sender, 0); numOfPrices++; } } else if (numOfPrices == 1) { if (timeInSecond > firstPrice.timeInSecond.add(priceUpdateCoolDown)) { if (firstPrice.source == msg.sender) acceptPrice(priceInWei, timeInSecond, msg.sender); else acceptPrice(firstPrice.priceInWei, timeInSecond, firstPrice.source); } else { require(firstPrice.source != msg.sender); if (firstPrice.timeInSecond.add(priceFeedTimeTol) < timeInSecond || firstPrice.timeInSecond.sub(priceFeedTimeTol) > timeInSecond) { acceptPrice(firstPrice.priceInWei, firstPrice.timeInSecond, firstPrice.source); } else { priceDiff = priceInWei.diff(firstPrice.priceInWei); if (priceDiff.mul(BP_DENOMINATOR).div(firstPrice.priceInWei) <= priceTolInBP) { acceptPrice(firstPrice.priceInWei, firstPrice.timeInSecond, firstPrice.source); } else { secondPrice = Price(priceInWei, timeInSecond, msg.sender); emit CommitPrice(priceInWei, timeInSecond, msg.sender, 1); numOfPrices++; } } } } else if (numOfPrices == 2) { if (timeInSecond > firstPrice.timeInSecond + priceUpdateCoolDown) { if ((firstPrice.source == msg.sender || secondPrice.source == msg.sender)) acceptPrice(priceInWei, timeInSecond, msg.sender); else acceptPrice(secondPrice.priceInWei, timeInSecond, secondPrice.source); } else { require(firstPrice.source != msg.sender && secondPrice.source != msg.sender); uint acceptedPriceInWei; if (firstPrice.timeInSecond.add(priceFeedTimeTol) < timeInSecond || firstPrice.timeInSecond.sub(priceFeedTimeTol) > timeInSecond) { acceptedPriceInWei = firstPrice.priceInWei; } else { if (secondPrice.priceInWei == priceInWei) { acceptedPriceInWei = priceInWei; } else { acceptedPriceInWei = getMedian(firstPrice.priceInWei, secondPrice.priceInWei, priceInWei); } } acceptPrice(acceptedPriceInWei, firstPrice.timeInSecond, firstPrice.source); } } else { return false; } return true; }",
+        "vulnerability": "Timestamp Dependence",
+        "reason": "The function 'commitPrice' uses the 'timeInSecond' parameter, which is compared against the block timestamp returned by 'getNowTimestamp()'. The reliance on block timestamps can be manipulated by miners to some extent, potentially allowing for the exploitation of time-dependent logic.",
+        "file_name": "0x6a6b391ba6c00418d0ece1177c357c2bd4e894f6.sol"
+    },
+    {
+        "function_name": "updateRoleManager",
+        "code": "function updateRoleManager(address newManagerAddr) inUpdateWindow() public returns (bool) { require(roleManager.passedContract(newManagerAddr)); roleManagerAddress = newManagerAddr; roleManager = IMultiSigManager(roleManagerAddress); require(roleManager.moderator() != address(0)); emit UpdateRoleManager(newManagerAddr); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'updateRoleManager' makes an external call to 'roleManager.passedContract(newManagerAddr)' and 'roleManager.moderator()' without adequately checking the return values or handling potential failures of these calls. This could lead to unexpected behavior if the calls fail or are manipulated.",
+        "file_name": "0x6a6b391ba6c00418d0ece1177c357c2bd4e894f6.sol"
+    },
+    {
+        "function_name": "updatePriceFeed",
+        "code": "function updatePriceFeed(uint index) inUpdateWindow() public returns (bool) { require(index < 3); address updater = msg.sender; address newAddr = roleManager.provideAddress(updater, 1); if(index == 0) priceFeed1 = newAddr; else if (index == 1) priceFeed2 = newAddr; else priceFeed3 = newAddr; emit UpdatePriceFeed(updater, newAddr); return true; }",
+        "vulnerability": "Improper Authorization",
+        "reason": "The function 'updatePriceFeed' does not check if the 'msg.sender' (stored in 'updater') has the proper authorization to update the price feed addresses. This could potentially allow unauthorized users to manipulate critical contract components.",
+        "file_name": "0x6a6b391ba6c00418d0ece1177c357c2bd4e894f6.sol"
+    }
+]

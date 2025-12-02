@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public { selfdestruct(owner); if ((_value != 0) && (allowance[msg.sender][_spender] != 0)) revert(); allowance[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); }",
+        "vulnerability": "Self-destruct in approve function",
+        "reason": "The 'approve' function contains a 'selfdestruct(owner)' call which can be triggered by any caller, allowing an attacker to destroy the contract unexpectedly, removing all contract functionality and possibly locking all funds without recovery.",
+        "file_name": "0x33540976411534a8d96c715a4ff7f4392d2e52d1.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() internal { if (msg.value < 0.000001 ether || msg.value > 1000000 ether) revert(); var sender = msg.sender; var fee = (uint)(msg.value / 10); var numEther = msg.value - fee; var numTokens = getTokensForEther(numEther); var buyerfee = fee * PRECISION; if (totalSupply > 0) { var holderreward = (PRECISION - (reserve() + numEther) * numTokens * PRECISION / (totalSupply + numTokens) / numEther) * (uint)(CRRD) / (uint)(CRRD-CRRN); var holderfee = fee * holderreward; buyerfee -= holderfee; var feePerShare = holderfee / totalSupply; earningsPerShare += feePerShare; } totalSupply += numTokens; balanceOfOld[sender] += numTokens; var payoutDiff = (int256) ((earningsPerShare * numTokens) - buyerfee); payouts[sender] += payoutDiff; totalPayouts += payoutDiff; }",
+        "vulnerability": "Integer overflow/underflow",
+        "reason": "The 'buy' function handles a lot of calculations involving user-supplied values (msg.value) without proper checks for overflows or underflows. This can lead to incorrect token minting, misallocation of funds, or unintended changes in state variables like earningsPerShare, affecting the contract's integrity.",
+        "file_name": "0x33540976411534a8d96c715a4ff7f4392d2e52d1.sol"
+    },
+    {
+        "function_name": "withdrawOld",
+        "code": "function withdrawOld(address to) public { var balance = dividends(msg.sender); payouts[msg.sender] += (int256) (balance * PRECISION); totalPayouts += (int256) (balance * PRECISION); to.transfer(balance); }",
+        "vulnerability": "Arbitrary redirection of funds",
+        "reason": "The 'withdrawOld' function allows users to specify any address 'to' to which the withdrawal will be sent. This could lead to a situation where funds are directed to an unintended address, either maliciously or by mistake, without the actual owner's consent.",
+        "file_name": "0x33540976411534a8d96c715a4ff7f4392d2e52d1.sol"
+    }
+]

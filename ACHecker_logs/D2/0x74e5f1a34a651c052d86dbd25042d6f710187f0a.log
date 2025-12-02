@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x74e5f1a34a651c052d86dbd25042d6f710187f0a.code
+Start time: 23/08/2022 15:18:01
+Building CFG...
+CFG generation time (secs): 0.03
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Non protected SELFDESTRUCT) Missing access control check in function kill()
+Needed to protect following instruction in function kill()
+( 1644)  66c:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 1.24
+End time: 23/08/2022 15:18:02

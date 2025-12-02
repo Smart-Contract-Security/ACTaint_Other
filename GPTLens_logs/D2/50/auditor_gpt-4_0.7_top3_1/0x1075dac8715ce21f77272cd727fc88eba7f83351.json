@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address receive, uint value) external onlyOwner {\n    require(address(this).balance >= value, \"no enough balance\");\n    receive.transfer(value);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function allows the owner to transfer funds to any address. However, if the receiving address is a contract, it may perform a fallback function that could call back into this contract and reenter the 'withdraw' function before the first transaction is completed. This could enable draining of the contract's balance, circumventing the protections in place.",
+        "file_name": "0x1075dac8715ce21f77272cd727fc88eba7f83351.sol"
+    },
+    {
+        "function_name": "doBet",
+        "code": "function doBet(uint8[] memory index, uint16[] memory bet) isHuman() payable public {\n    uint value = msg.value;\n    address sender = msg.sender;\n    require(value >= pWagerPrice, \"too little wager\");\n    require(index.length == bet.length, \"wrong params\");\n    require(address(this).balance >= pMaxWins, \"out of balance\");\n    uint wagers;\n    uint8 j;\n    for (uint8 i = 0; i < index.length; i++) {\n        j = index[i];\n        require(j >= 0 && j < 50, \"wrong index\");\n        wagers += bet[i];\n    }\n    require(value / pWagerPrice == wagers, \"wrong bet\");\n    uint id = seqId++;\n    gRecords[id].blockNum = block.number;\n    gRecords[id].player = sender;\n    gRecords[id].index = index;\n    gRecords[id].bet = bet;\n}",
+        "vulnerability": "Denial of Service due to insufficient gas",
+        "reason": "The 'doBet' function does not limit the size of the arrays 'index' and 'bet' that it processes, potentially leading to excessive gas costs when large arrays are passed. This could be exploited to make the function fail due to out-of-gas errors, effectively disabling the betting functionality.",
+        "file_name": "0x1075dac8715ce21f77272cd727fc88eba7f83351.sol"
+    },
+    {
+        "function_name": "setCroupier",
+        "code": "function setCroupier(address addr) external onlyOwner {\n    gCroupiers[addr] = true;\n}",
+        "vulnerability": "Arbitrary Croupier Assignment",
+        "reason": "The 'setCroupier' function allows the owner to set any address as a croupier. There is no check on the address being a contract or an EOA (Externally Owned Account). This could potentially allow a malicious contract to be set as a croupier, which could manipulate the outcomes or the flow of the games.",
+        "file_name": "0x1075dac8715ce21f77272cd727fc88eba7f83351.sol"
+    }
+]

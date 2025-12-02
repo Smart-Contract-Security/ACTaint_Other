@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdrawReward",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is correct in pointing out the reentrancy risk due to the external call to 'msg.sender.transfer(balance)' before setting the player's reward to zero. This classic reentrancy pattern could allow an attacker to drain the contract's Ether by repeatedly reentering the 'withdrawReward' function. The severity and profitability are both high due to the direct financial implications and the potential for significant loss of funds.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'withdrawReward' function calls msg.sender.transfer(balance), which is an external call that can be used to reenter the contract. This occurs before setting the player's reward to zero. If an attacker can cause the external call to reenter 'withdrawReward', they can withdraw their rewards multiple times, draining the contract's Ether.",
+        "code": "function withdrawReward() public disableContract { if (games[round].endTime <= now) endRound(); updateReward(msg.sender); Player storage p = players[msg.sender]; uint256 balance = p.reward; if (address(this).balance >= balance) { msg.sender.transfer(balance); p.reward = 0; } }",
+        "file_name": "0xd67f271c2d3112d86d6991bfdfc8f9f27286bc4b.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "share",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the external call to 'MiningWar.subCrystal' before state updates. This could indeed allow an attacker to reenter the 'share' function or other state-altering functions, manipulating the game's mechanics. The severity is high because it can disrupt the game's integrity and fairness. The profitability is also high as an attacker could leverage this to gain undue advantages or rewards.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 7,
+        "reason": "The 'share' function calls an external contract (MiningWar.subCrystal) before updating the game's and player's state, which could lead to reentrancy attacks. An attacker could potentially make recursive calls back into 'share' or other functions that alter state, manipulating game mechanics to their advantage before the state variables are updated.",
+        "code": "function share(uint256 _value) public disableContract { require(miningWarDeadline > now); require(games[round].ended == false); require(_value >= 10000); MiningWar.subCrystal(msg.sender, _value); if (games[round].endTime <= now) endRound(); updateReward(msg.sender); Game storage g = games[round]; uint256 _share = SafeMath.mul(_value, CRTSTAL_MINING_PERIOD); g.crystals = SafeMath.add(g.crystals, _share); Player storage p = players[msg.sender]; if (p.currentRound == round) { p.share = SafeMath.add(p.share, _share); } else { p.share = _share; p.currentRound = round; } emit Deposit(msg.sender, 1, 1, _value, 0, 0); }",
+        "file_name": "0xd67f271c2d3112d86d6991bfdfc8f9f27286bc4b.sol",
+        "final_score": 7.5
+    },
+    {
+        "function_name": "startRound",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning correctly identifies a risk associated with not checking the return value of an external call to 'Engineer.claimPrizePool'. However, the impact and exploitability of this issue depend on the implementation of the external contract and the overall game logic. If the failure of this call does not critically affect the game's state or financial distributions, the severity might be lower. The profitability of exploiting this vulnerability is also uncertain without more context on the consequences of the call failing.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 3,
+        "reason": "The 'startRound' function calls an external contract 'Engineer.claimPrizePool' without checking the return value. This could lead to unexpected behavior if the external call fails, as the contract assumes the call succeeds. This oversight could be exploited by an attacker if they can cause the external call to fail, potentially disrupting the game logic.",
+        "code": "function startRound() private { require(games[round].ended == true); uint256 crystalsLastRound = games[round].crystals; uint256 prizePoolLastRound= games[round].prizePool; round = round + 1; uint256 endTime = now + HALF_TIME; uint256 engineerPrizePool = getEngineerPrizePool(); uint256 prizePool = SafeMath.div(SafeMath.mul(engineerPrizePool, 5),100); if (prizePool >= PRIZE_MAX) prizePool = PRIZE_MAX; Engineer.claimPrizePool(address(this), prizePool); if (crystalsLastRound <= 0) prizePool = SafeMath.add(prizePool, prizePoolLastRound); games[round] = Game(round, 0, prizePool, endTime, false); }",
+        "file_name": "0xd67f271c2d3112d86d6991bfdfc8f9f27286bc4b.sol",
+        "final_score": 4.75
+    }
+]

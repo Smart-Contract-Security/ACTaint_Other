@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawTo",
+        "code": "function withdrawTo(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Authorization flaw",
+        "reason": "The function 'withdrawTo' uses 'Deposits[msg.sender]' to check the withdrawal limit, but 'msg.sender' always refers to the owner because of the 'onlyOwner' modifier. This means that only the owner's deposit is checked, and the owner can withdraw funds from any account, not just their own, which is not intended behavior and can lead to unauthorized fund access and transfer.",
+        "file_name": "0xbddd99e8aaeb85847703c31a83277856d49961d9.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Destructive behavior",
+        "reason": "The 'kill' function allows the contract owner to destroy the contract, but only if the contract's balance is 0. However, this can be problematic if there are still pending withdrawals or if users expect the contract to persist. Moreover, by self-destructing, all remaining funds (if any due to unforeseen circumstances) are sent to the owner, which can be an incentive for the owner to prematurely end the contract.",
+        "file_name": "0xbddd99e8aaeb85847703c31a83277856d49961d9.sol"
+    },
+    {
+        "function_name": "deposit",
+        "code": "function deposit() public payable { if (msg.value > 0) { if (msg.value >= MinimumDeposit()) Deposits[msg.sender] += msg.value; Deposit(msg.sender, msg.value); } }",
+        "vulnerability": "Denial of Service (DoS) by underfunding",
+        "reason": "The 'deposit' function checks if the sent value is greater than or equal to 'MinimumDeposit'. However, it does not revert or handle the scenario where the sent value is positive but less than 'MinimumDeposit'. This could lead to a situation where small, non-compliant fund transfers are sent repeatedly, causing event spamming and potentially increasing the cost of interacting with the contract for legitimate users due to increased computational overhead.",
+        "file_name": "0xbddd99e8aaeb85847703c31a83277856d49961d9.sol"
+    }
+]

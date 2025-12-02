@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "fallback function",
+        "vulnerability": "Reentrancy on ether transfer",
+        "criticism": "The reasoning is accurate in identifying the potential for reentrancy due to the lack of the checks-effects-interactions pattern in ether transfers to PROMO and last.depositor. This could indeed allow an attacker to re-enter the contract and potentially drain funds or cause other unintended effects. The severity is high due to the potential loss of funds, and profitability is also high if an attacker exploits this vulnerability effectively.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The fallback function transfers ether to both PROMO and the last.depositor based on certain conditions without using the checks-effects-interactions pattern. This can allow an attacker to re-enter the contract multiple times in a single transaction if the external contract called is malicious and fallback function is invoked recursively. Reentrancy could lead to unexpected behavior like draining contract funds.",
+        "code": "function () saleIsOn private payable { if(msg.value == 0 && msg.sender == last.depositor) { require(gasleft() >= 220000, \"We require more gas!\"); require(last.blockNumber + 45 < block.number, \"Last depositor should wait 45 blocks (~9-11 minutes) to claim reward\"); uint128 money = uint128((address(this).balance)); if(money >= last.expect){ last.depositor.transfer(last.expect); } else { last.depositor.transfer(money); } delete last; } else if(msg.value > 0){ require(gasleft() >= 220000, \"We require more gas!\"); require(msg.value <= MAX_DEPOSIT && msg.value >= MIN_DEPOSIT); queue.push(Deposit(msg.sender, uint128(msg.value), uint128(msg.value*MULTIPLIER/100))); last.depositor = msg.sender; last.expect += msg.value*LAST_DEPOSIT_PERCENT/100; last.blockNumber = block.number; txnCount += 1; if(txnCount > 200) { MIN_DEPOSIT = 0.05 ether; } else if(txnCount > 150) { MIN_DEPOSIT = 0.04 ether; } else if(txnCount > 100) { MIN_DEPOSIT = 0.03 ether; }else if(txnCount > 50) { MIN_DEPOSIT = 0.02 ether; }else { MIN_DEPOSIT = 0.01 ether; } uint promo = msg.value*PROMO_PERCENT/100; uint128 contractBalance = uint128((address(this).balance)); if(contractBalance >= promo){ PROMO.transfer(promo); } else { PROMO.transfer(contractBalance); } pay(); } }",
+        "file_name": "0xb6d3dad9dde4d21cae7e245c88a75fbf2efa18c4.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "pay",
+        "vulnerability": "Unbounded loop",
+        "criticism": "The reasoning is correct in pointing out the risk of running out of gas due to an unbounded loop iterating over 'queue'. This could indeed lead to funds being stuck in the contract, which is a severe issue. However, the profitability for an attacker is low, as this vulnerability does not directly result in a gain for them but rather in a denial of service.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The 'pay' function iterates over 'queue' without setting a strict upper bound on the number of iterations. If 'queue' becomes large enough, the function could run out of gas, making it unable to process all items in 'queue'. This could lead to funds getting stuck in the contract because not all depositors are paid out.",
+        "code": "function pay() private { uint128 moneyCoefficient = uint128((address(this).balance)/last.expect); uint128 money = uint128((address(this).balance)-last.expect); if(moneyCoefficient < 1) { return; } for(uint i=0; i<queue.length; i++){ uint idx = currentReceiverIndex + i; Deposit storage dep = queue[idx]; if(money >= dep.expect){ dep.depositor.transfer(dep.expect); money -= dep.expect; delete queue[idx]; }else{ dep.depositor.transfer(money); dep.expect -= money; break; } if(gasleft() <= 50000) break; } currentReceiverIndex += i; }",
+        "file_name": "0xb6d3dad9dde4d21cae7e245c88a75fbf2efa18c4.sol",
+        "final_score": 6.0
+    },
+    {
+        "function_name": "fallback function",
+        "vulnerability": "Dynamic gas requirements",
+        "criticism": "The reasoning correctly identifies the potential denial of service due to high dynamic gas requirements. However, the severity is not as high as it might seem because users can adjust their gas limits to meet the requirements. The profitability for an attacker is low, as this vulnerability does not provide a direct mechanism for profit but could be used to disrupt service.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 0,
+        "reason": "The fallback function requires a minimum of 220,000 gas to execute, which is dynamically checked using gasleft(). This can lead to situations where legitimate transactions are unable to proceed because they do not meet the gas requirement, potentially leading to denial of service if the gas price is high or if there are constraints on transaction gas limits.",
+        "code": "function () saleIsOn private payable { if(msg.value == 0 && msg.sender == last.depositor) { require(gasleft() >= 220000, \"We require more gas!\"); require(last.blockNumber + 45 < block.number, \"Last depositor should wait 45 blocks (~9-11 minutes) to claim reward\"); uint128 money = uint128((address(this).balance)); if(money >= last.expect){ last.depositor.transfer(last.expect); } else { last.depositor.transfer(money); } delete last; } else if(msg.value > 0){ require(gasleft() >= 220000, \"We require more gas!\"); require(msg.value <= MAX_DEPOSIT && msg.value >= MIN_DEPOSIT); queue.push(Deposit(msg.sender, uint128(msg.value), uint128(msg.value*MULTIPLIER/100))); last.depositor = msg.sender; last.expect += msg.value*LAST_DEPOSIT_PERCENT/100; last.blockNumber = block.number; txnCount += 1; if(txnCount > 200) { MIN_DEPOSIT = 0.05 ether; } else if(txnCount > 150) { MIN_DEPOSIT = 0.04 ether; } else if(txnCount > 100) { MIN_DEPOSIT = 0.03 ether; }else if(txnCount > 50) { MIN_DEPOSIT = 0.02 ether; }else { MIN_DEPOSIT = 0.01 ether; } uint promo = msg.value*PROMO_PERCENT/100; uint128 contractBalance = uint128((address(this).balance)); if(contractBalance >= promo){ PROMO.transfer(promo); } else { PROMO.transfer(contractBalance); } pay(); } }",
+        "file_name": "0xb6d3dad9dde4d21cae7e245c88a75fbf2efa18c4.sol",
+        "final_score": 4.5
+    }
+]

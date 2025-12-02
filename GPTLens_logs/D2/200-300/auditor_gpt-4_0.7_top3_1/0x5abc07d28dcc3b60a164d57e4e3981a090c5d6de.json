@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address wallet, address buyer, uint256 tokenAmount) public onlyOwner { require(tokenBalances[wallet] >= tokenAmount); tokenBalances[buyer] = tokenBalances[buyer].add(tokenAmount); tokenBalances[wallet] = tokenBalances[wallet].add(tokenAmount); Transfer(wallet, buyer, tokenAmount); totalSupply=totalSupply.sub(tokenAmount); }",
+        "vulnerability": "Token minting overflow",
+        "reason": "The function mint adds the tokenAmount to the 'buyer' and also mistakenly to 'wallet', which can lead to unexpected increase in the wallet's balance and thus an overflow in the token supply, while the totalSupply is incorrectly decreased. This can be exploited by repeatedly calling mint to increase wallet's balance without proper checks.",
+        "file_name": "0x5abc07d28dcc3b60a164d57e4e3981a090c5d6de.sol"
+    },
+    {
+        "function_name": "quaker",
+        "code": "function quaker(address wallet) public { owner = msg.sender; ownerWallet=wallet; totalSupply = INITIAL_SUPPLY * 10 ** 18; tokenBalances[wallet] = INITIAL_SUPPLY * 10 ** 18; }",
+        "vulnerability": "Reset totalSupply and owner privileges",
+        "reason": "The quaker function allows any user to reset the contract\u2019s owner and total supply. It does not require the caller to be the owner, nor does it have any other access control, allowing an attacker to take over the contract and manipulate the total supply arbitrarily.",
+        "file_name": "0x5abc07d28dcc3b60a164d57e4e3981a090c5d6de.sol"
+    },
+    {
+        "function_name": "pullBack",
+        "code": "function pullBack(address wallet, address buyer, uint256 tokenAmount) public onlyOwner { require(tokenBalances[buyer]>=tokenAmount); tokenBalances[buyer] = tokenBalances[buyer].sub(tokenAmount); tokenBalances[wallet] = tokenBalances[wallet].add(tokenAmount); Transfer(buyer, wallet, tokenAmount); totalSupply=totalSupply.add(tokenAmount); }",
+        "vulnerability": "Increase totalSupply arbitrarily",
+        "reason": "The pullBack function is intended to pull back tokens from a buyer to a wallet. However, it incorrectly increases the totalSupply when tokens are pulled back. This can be exploited by repeatedly pulling back tokens to inflate the total supply without actual token inflow.",
+        "file_name": "0x5abc07d28dcc3b60a164d57e4e3981a090c5d6de.sol"
+    }
+]

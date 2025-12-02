@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Race Condition / Front-Running",
+        "reason": "The approve function does not safely handle the resetting of allowance. If the function is called twice in quick succession, it can lead to a condition where the spender can exceed the amount the owner intended to allow due to a race condition.",
+        "file_name": "0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "This function lacks validation to ensure '_amount' does not cause an overflow condition when added to 'balances[_to]'. Although SafeMath is used, there is no explicit check for overflow when updating 'balances[_to]', which can lead to an incorrect balance update.",
+        "file_name": "0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The 'distr' function is marked as private but is called from public functions like 'getTokens', making it accessible indirectly. This could potentially allow an attacker to distribute tokens arbitrarily under certain conditions, leading to an unexpected increase in 'totalDistributed'.",
+        "file_name": "0xe9cab365dd2c7d43982f7bc608d30a4c99c8b878.sol"
+    }
+]

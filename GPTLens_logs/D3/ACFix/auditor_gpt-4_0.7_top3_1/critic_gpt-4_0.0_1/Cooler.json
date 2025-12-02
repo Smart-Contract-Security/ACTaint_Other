@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "request",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The criticism is valid as the function does not check the return value of 'collateral.transferFrom', which is crucial for ensuring that the collateral is actually transferred. Failing to verify this can indeed lead to inconsistencies in the contract's state, where a request could be registered without the necessary collateral. This poses a significant risk to the integrity of the contract's operations. The severity is high due to potential financial implications, but profitability for an attacker is moderate as exploiting this directly for profit might not be straightforward.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function 'request' makes an external call with 'collateral.transferFrom' to transfer collateral tokens from the requester to the contract. However, it does not check the return value of this call, which can fail silently (returning false as per ERC20 standards) leading to a state where the request is registered without the actual transfer of collateral, potentially causing inconsistencies in the state of the contract and allowing requests to be made without proper collateral.",
+        "code": "function request (uint256 amount, uint256 interest, uint256 loanToCollateral, uint256 duration) external returns (uint256 reqID) { reqID = requests.length; factory.newEvent(reqID, CoolerFactory.Events.Request); requests.push(Request(amount, interest, loanToCollateral, duration, true)); collateral.transferFrom(msg.sender, address(this), collateralFor(amount, loanToCollateral)); }",
+        "file_name": "Cooler.sol"
+    },
+    {
+        "function_name": "roll",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a potential reentrancy issue due to the state changes preceding the external call 'collateral.transferFrom'. This could indeed allow an attacker to re-enter the contract and manipulate the state in a way that could be harmful. The severity is high because it could lead to financial losses or unintended behavior. The profitability is also high as an attacker could potentially exploit this to drain resources or manipulate loan terms to their advantage.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'roll' function allows the renewal or rollover of a loan by adjusting the loan's terms and updating the collateral. However, the function makes an external call with 'collateral.transferFrom' at the end of the function, after state changes have been made (loan.amount, loan.expiry, loan.collateral are updated). This can potentially allow reentrancy attacks where an attacker could call back into the contract before the first execution completes, leading to unexpected behavior or exploits.",
+        "code": "function roll (uint256 loanID) external { Loan storage loan = loans[loanID]; Request memory req = loan.request; if (block.timestamp > loan.expiry) revert Default(); if (!loan.rollable) revert NotRollable(); uint256 newCollateral = collateralFor(loan.amount, req.loanToCollateral) - loan.collateral; uint256 newDebt = interestFor(loan.amount, req.interest, req.duration); loan.amount += newDebt; loan.expiry += req.duration; loan.collateral += newCollateral; collateral.transferFrom(msg.sender, address(this), newCollateral); }",
+        "file_name": "Cooler.sol"
+    },
+    {
+        "function_name": "defaulted",
+        "vulnerability": "Use of delete on loan struct",
+        "criticism": "The criticism is somewhat valid but slightly misdirected. The use of 'delete' on a loan struct does reset the struct to its default values, but this alone does not necessarily lead to 'invalid loan indices' or an 'unsorted array' as the reasoning suggests. The main issue would be if the deletion is not handled correctly in subsequent accesses, potentially leading to null or default values being accessed. However, the severity and profitability are lower than suggested because this issue primarily leads to operational errors rather than direct financial exploitation.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The 'defaulted' function deletes a loan from the storage array using the 'delete' keyword, which resets the struct to its default values. This operation does not shift the array elements to fill the gap, resulting in invalid loan indices and an unsorted array. This can lead to confusion or wrong access to loans in future operations and might cause issues with array index management, potentially leading to unauthorized access or manipulation of loan data.",
+        "code": "function defaulted (uint256 loanID) external returns (uint256) { Loan memory loan = loans[loanID]; delete loans[loanID]; if (block.timestamp <= loan.expiry) revert NoDefault(); collateral.transfer(loan.lender, loan.collateral); return loan.collateral; }",
+        "file_name": "Cooler.sol"
+    }
+]

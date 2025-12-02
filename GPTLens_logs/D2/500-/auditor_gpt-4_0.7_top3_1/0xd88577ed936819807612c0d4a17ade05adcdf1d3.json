@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawBeneficiary",
+        "code": "function withdrawBeneficiary() public admin afterDeadline { ZTRToken t = ZTRToken(ZTRTokenContract); t.transfer(msg.sender, remaining); require(amountRaised >= fundingGoal); owner.transfer(amountRaised); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The `withdrawBeneficiary` function transfers the remaining ZTR tokens to the `msg.sender` and then transfers all raised ether to the owner without any reentrancy guard. This sequence allows an attacker, if they can trigger the token transfer to call back into this contract before the ether transfer is complete, potentially leading to multiple withdrawals if `amountRaised` is not set to zero before the transfers.",
+        "file_name": "0xd88577ed936819807612c0d4a17ade05adcdf1d3.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () payable public { require(now>start); require(now<deadline); require(amountRaised + msg.value < fundingMax); uint purchase = msg.value; ethBalance[msg.sender] = ethBalance[msg.sender].add(purchase); if(amountRaised < fundingGoal) { purchase = purchase.mul(ZTR_ETH_initial_price); amountRaised = amountRaised.add(msg.value); balanceOf[msg.sender] = balanceOf[msg.sender].add(purchase); remaining.sub(purchase); } else { purchase = purchase.mul(ZTR_ETH_extra_price); amountRaised = amountRaised.add(msg.value); balanceOf[msg.sender] = balanceOf[msg.sender].add(purchase); remaining.sub(purchase); } }",
+        "vulnerability": "Integer Underflow",
+        "reason": "The `remaining.sub(purchase)` is called without checking if `remaining` is greater than or equal to `purchase`. This might lead to an integer underflow where `remaining` becomes a very large number if `purchase` is greater than `remaining`. This would allow users to buy more tokens than what should be available, potentially draining the token supply.",
+        "file_name": "0xd88577ed936819807612c0d4a17ade05adcdf1d3.sol"
+    },
+    {
+        "function_name": "suicide",
+        "code": "function suicide() public afterUnlock { selfdestruct(owner); }",
+        "vulnerability": "Unexpected Ether Transfer",
+        "reason": "The `suicide` function allows the contract owner to kill the contract and send all remaining ether to the owner's address after the unlock time. This can be problematic if there are still ongoing operations or expected withdrawals by other participants, as it disregards the state of the contract and user balances, leading to potential loss of funds for other participants.",
+        "file_name": "0xd88577ed936819807612c0d4a17ade05adcdf1d3.sol"
+    }
+]

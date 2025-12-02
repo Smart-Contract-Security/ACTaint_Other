@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc585ddbf02254b3711dec711239e7241132b44a7.code
+Start time: 28/08/2022 06:32:55
+Building CFG...
+CFG generation time (secs): 52.23
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setInterval(uint256)
+	( 3975)  f87:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setRate(uint256)
+	( 5167) 142f:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function destroy()
+	( 6315) 18ab:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function initialize(bool)
+	( 7377) 1cd1:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function setDays(uint256)
+	( 8166) 1fe6:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function transferOwnership(address)
+Needed to protect following instruction in function destroy()
+( 6377) 18e9:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 60.67
+End time: 28/08/2022 06:34:48

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning is partially correct but lacks clarity on the actual vulnerability. The function does indeed allow changing an allowance from one non-zero value to another, which can lead to the 'approve/transferFrom' race condition. However, the function includes a check that prevents changing the allowance if the current allowance is non-zero and the new value is non-zero, which mitigates the race condition unless the allowance is first set to zero. The vulnerability is real but the severity is moderate because it requires specific conditions to exploit, and profitability is also moderate as it depends on the value of the tokens involved.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "This function allows changing an allowance with non-zero value to another non-zero value which is susceptible to the 'approve/transferFrom' race condition. An attacker could potentially exploit this by first getting approval and then front-running a transaction to drain the allowance.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0x17e5f19d430788323863c6798ecd762a40de29f5.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked Transfer",
+        "criticism": "The reasoning provided is incorrect. The function does check if the '_to' address is not zero, which is a basic validity check. The criticism about not checking if the '_to' address is a contract is not typically a vulnerability unless specific contract interaction is expected. Most token transfers do not need to differentiate between contract and EOA addresses. Therefore, the correctness of the vulnerability claim is low, and the severity and profitability are also low because this is not a typical vulnerability that can be exploited for profit.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "This function does not check if the 'to' address is a contract which might lead to tokens being locked in contracts that do not expect to receive them or do not have functionality to transfer them out.",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) {\n    require(_to != address(0));\n    require(_amount <= balances[msg.sender]);\n    balances[msg.sender] = balances[msg.sender].sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Transfer(msg.sender, _to, _amount);\n    return true;\n}",
+        "file_name": "0x17e5f19d430788323863c6798ecd762a40de29f5.sol",
+        "final_score": 1.5
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Re-entrancy",
+        "criticism": "The reasoning provided is incorrect. The 'distr' function is mentioned to call an external function 'emit Transfer', but 'emit Transfer' is an event emission, not an external function call that could lead to re-entrancy. The actual vulnerability of re-entrancy typically involves external calls that can be re-entered before the state is finalized. In this code snippet, there is no such external call being made before state changes are finalized. Therefore, the correctness of the vulnerability claim is low, and since the vulnerability does not exist, the severity and profitability are also low.",
+        "correctness": 2,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'distr' function alters state after calling an external function 'emit Transfer', which could lead to re-entrancy attacks where an attacker repeatedly calls 'getTokens' to drain the contract.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x17e5f19d430788323863c6798ecd762a40de29f5.sol",
+        "final_score": 1.0
+    }
+]

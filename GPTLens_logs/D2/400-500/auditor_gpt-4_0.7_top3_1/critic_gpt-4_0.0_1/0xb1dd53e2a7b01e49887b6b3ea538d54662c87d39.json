@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "ActiveAdmin",
+        "vulnerability": "Hardcoded ownership transfer",
+        "criticism": "The reasoning is incorrect. The function does not allow anyone to call it and change the owner; it simply sets the owner to a hardcoded address when the contract is deployed. This is not a vulnerability but a potential design flaw or oversight if the hardcoded address is not intended. The severity is low because it does not allow unauthorized control after deployment, and profitability is zero as it does not provide an attack vector.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "This function allows anyone to call it and change the owner of the contract to a hardcoded address. This can lead to unauthorized control of the contract.",
+        "code": "function ActiveAdmin () public { owner = 0x3653A2205971AD524Ea31746D917430469D3ca23; }",
+        "file_name": "0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "vulnerability": "Blockhash manipulation",
+        "criticism": "The reasoning is correct. Using the blockhash of the previous block as a source of randomness can indeed be manipulated by miners, potentially influencing the outcome of the lottery. This vulnerability is severe because it can compromise the fairness of the lottery, and it is moderately profitable for miners who have the capability to influence blockhashes.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function uses the previous block's hash to generate a random number, which can be manipulated by miners to their advantage, potentially allowing them to control the outcome of the lottery.",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "file_name": "0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.sol"
+    },
+    {
+        "function_name": "executeLottery",
+        "vulnerability": "Use of throw for error handling",
+        "criticism": "The reasoning is correct. The use of 'throw' for error handling is outdated and inefficient as it consumes all remaining gas. Using 'require' or 'revert' would be more appropriate for gas efficiency and clearer error handling. The severity is moderate because it can lead to unnecessary gas expenditure, but profitability is zero as it does not provide a direct benefit to an attacker.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 0,
+        "reason": "The function uses 'throw' to handle errors, which consumes all provided gas. It's recommended to use 'require' or 'revert' for a more gas-efficient way of handling errors and reverting transactions.",
+        "code": "function executeLottery() { if (lastIndex > SetPlayers) { uint randomNumber = uint(block.blockhash(block.number-1))%lastTicketNumber + 1; randomNumber = randomNumber; address winner; bool hasWon; for (uint8 i = 0; i < lastIndex; i++) { address player = players[i]; for (uint j = 0; j < ticketsMap[player].length; j++) { uint256 start = ticketsMap[player][j].startTicket; uint256 end = ticketsMap[player][j].endTicket; if (randomNumber >= start && randomNumber < end) { winner = player; hasWon = true; break; } } if(hasWon) break; } require(winner!=address(0) && hasWon); for (uint8 k = 0; k < lastIndex; k++) { delete ticketsMap[players[k]]; delete contributions[players[k]]; } lastIndex = 0; lastTicketNumber = 0; uint balance = this.balance; if (!owner.send(balance/devFeePercent)) throw; if (!winner.send(balance - balance/devFeePercent)) throw; newWinner(winner, randomNumber); } }",
+        "file_name": "0xb1dd53e2a7b01e49887b6b3ea538d54662c87d39.sol"
+    }
+]

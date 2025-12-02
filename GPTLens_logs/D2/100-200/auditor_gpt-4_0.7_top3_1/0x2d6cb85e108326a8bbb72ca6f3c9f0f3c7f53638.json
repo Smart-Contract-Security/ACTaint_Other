@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw_privatefund",
+        "code": "function withdraw_privatefund(bool _withdraw_en) afterDeadline onlyCreator{ if (_withdraw_en){ beneficiary.send(amountRaised); FundTransfer(beneficiary, amountRaised, false); } else { FundTransfer(0, 11, false); for (uint i = 0; i < funders.length; ++i) { funders[i].addr.send(funders[i].amount); FundTransfer(funders[i].addr, funders[i].amount, false); } } }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "In the `withdraw_privatefund` function, if `_withdraw_en` is false, the contract iterates over the `funders` array and sends Ether back to all funders. This can lead to a denial of service (DoS) condition because if the number of funders is large enough, the gas required to execute all these sends could exceed the block gas limit, causing the transaction to fail. This means the funds would remain locked in the contract indefinitely, as every attempt to execute this function could potentially run out of gas.",
+        "file_name": "0x2d6cb85e108326a8bbb72ca6f3c9f0f3c7f53638.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { suicide(beneficiary); }",
+        "vulnerability": "Suicidal",
+        "reason": "The `kill` function allows the contract to be destroyed by sending all remaining Ether to the `beneficiary` address and terminating the contract execution permanently using `suicide(beneficiary)`. This function is accessible without any restrictions beyond the contract being destructible by anyone who can provide a transaction. If misused or invoked maliciously, it can lead to loss of contract functionality and potentially loss of funds if not all funds were meant to be released at that point.",
+        "file_name": "0x2d6cb85e108326a8bbb72ca6f3c9f0f3c7f53638.sol"
+    },
+    {
+        "function_name": "deadline_modify",
+        "code": "function deadline_modify(uint256 _start ,uint256 _duration) onlyCreator { start = _start; deadline = _start + _duration * 1 days; }",
+        "vulnerability": "Arbitrary Deadline Modification",
+        "reason": "The `deadline_modify` function allows the `creator` to arbitrarily reset the `start` and `deadline` of the funding period. This can be exploited by extending the deadline to an unexpected future date after observing how much funds have been raised, potentially keeping the funds locked in the contract indefinitely or manipulating the funding period to the creator's advantage without consensus from the funders.",
+        "file_name": "0x2d6cb85e108326a8bbb72ca6f3c9f0f3c7f53638.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "balanceOf",
+        "code": "function balanceOf(address target) view public returns(uint256) { if (target != targetAddress) return 0; if (complete) return denominator * 100; return denominator * 100 * address(this).balance / targetAmount; }",
+        "vulnerability": "Unintended high token balance",
+        "reason": "The balanceOf function calculates the balance based on the contract's balance divided by targetAmount, multiplied by 100 * denominator. If the targetAmount is set to a very low value, this calculation could result in a very high balance. This is exploitable if an attacker can influence targetAmount or continuously send small amounts of Ether to increase the contract's balance artificially before the target is met.",
+        "file_name": "0x5dec8bed5b8a4e30c64d7bfc5a554fd7a7223101.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () public payable { emit Transfer(address(this), targetAddress, denominator * msg.value / targetAmount * 100); if (balanceOf(targetAddress) >= 100 * denominator) { complete = true; selfdestruct(targetAddress); } }",
+        "vulnerability": "Integer overflow and DoS via selfdestruct",
+        "reason": "The fallback function does not properly validate that msg.value is non-zero which may lead to denial of service (DoS) when it selfdestructs with an empty balance. Additionally, the calculation `denominator * msg.value / targetAmount * 100` could overflow if msg.value is extremely high, which could prevent the contract from reaching completion and selfdestructing properly.",
+        "file_name": "0x5dec8bed5b8a4e30c64d7bfc5a554fd7a7223101.sol"
+    },
+    {
+        "function_name": "constructor",
+        "code": "constructor( string goalName, uint256 goalAmount, address target ) public { name = goalName; targetAmount = goalAmount; targetAddress = target; }",
+        "vulnerability": "Immutable storage manipulation",
+        "reason": "The constructor sets the targetAmount which is used in critical calculations throughout the contract. If an attacker can deploy a contract or influence the deployment parameters, they can set an extremely low goalAmount, making it easier to reach the target and trigger selfdestruct, potentially draining the contract prematurely.",
+        "file_name": "0x5dec8bed5b8a4e30c64d7bfc5a554fd7a7223101.sol"
+    }
+]

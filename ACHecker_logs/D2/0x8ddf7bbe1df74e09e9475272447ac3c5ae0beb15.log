@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x8ddf7bbe1df74e09e9475272447ac3c5ae0beb15.code
+Start time: 26/08/2022 06:29:57
+Building CFG...
+CFG generation time (secs): 0.05
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Target of DELEGATECALL) Missing access control check in function delegate_2x(address,uint256[],address[],bytes32[])
+Needed to protect following instruction in function delegate_2x(address,uint256[],address[],bytes32[])
+(  636)  27c:	f4	-6 +1 = -5	DELEGATECALL
+
+(Controlable Target of DELEGATECALL) Missing access control check in function delegate_2x(address,uint256[],address[],bytes32[])
+Needed to protect following instruction in function delegate_2x(address,uint256[],address[],bytes32[])
+(  978)  3d2:	f4	-6 +1 = -5	DELEGATECALL
+
+Analysis time (secs): 3.02
+End time: 26/08/2022 06:30:00

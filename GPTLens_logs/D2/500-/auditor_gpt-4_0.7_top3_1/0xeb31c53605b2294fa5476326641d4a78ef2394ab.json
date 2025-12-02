@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "destroy",
+        "code": "function destroy(){ selfdestruct(owner); }",
+        "vulnerability": "Unauthorized access",
+        "reason": "The 'destroy' function allows to self-destruct the contract, sending all remaining Ether to the 'owner' address. However, this function lacks any access control mechanism, meaning that any user can call this function and destroy the contract, potentially leading to loss of contract functionality and funds unexpectedly.",
+        "file_name": "0xeb31c53605b2294fa5476326641d4a78ef2394ab.sol"
+    },
+    {
+        "function_name": "ReverseBugBounty",
+        "code": "function ReverseBugBounty(){ owner = msg.sender; }",
+        "vulnerability": "Constructor misnaming",
+        "reason": "The constructor is intended to be named 'ReverseBugBounty', matching the contract name for Solidity version ^0.4.24. However, due to Solidity's updates, constructors should be defined using the 'constructor' keyword to prevent them from being callable as regular functions after deployment. In its current form, anyone can call this function post-deployment and change the 'owner' state variable, thus taking control of functionalities restricted to the owner.",
+        "file_name": "0xeb31c53605b2294fa5476326641d4a78ef2394ab.sol"
+    },
+    {
+        "function_name": "<function_name_3>",
+        "code": "<original_function_code_3>",
+        "vulnerability": "<short_vulnera_desc_3>",
+        "reason": "<reason_3>",
+        "file_name": "0xeb31c53605b2294fa5476326641d4a78ef2394ab.sol"
+    }
+]

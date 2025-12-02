@@ -1,0 +1,33 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x1e5028fcb334d79633f5a6665347d2eaa02cb406.code
+Start time: 19/08/2022 17:18:54
+Building CFG...
+CFG generation time (secs): 0.16
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function removeCertificationDocumentFromSelf(bytes32)
+	( 8443) 20fb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function certify(address,bytes32)
++--Attacker can make changes to AC item {6} in function uncertify(address)
+
+Violated access control check in function addCertificationDocumentToSelf(bytes32)
+	( 9011) 2333:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function certify(address,bytes32)
++--Attacker can make changes to AC item {6} in function uncertify(address)
+
+Violated access control check in function addCertificationDocument(address,bytes32)
+	( 9011) 2333:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function certify(address,bytes32)
++--Attacker can make changes to AC item {6} in function uncertify(address)
+
+Violated access control check in function removeCertificationDocument(address,bytes32)
+	( 8443) 20fb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function certify(address,bytes32)
++--Attacker can make changes to AC item {6} in function uncertify(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 6.68
+End time: 19/08/2022 17:19:01

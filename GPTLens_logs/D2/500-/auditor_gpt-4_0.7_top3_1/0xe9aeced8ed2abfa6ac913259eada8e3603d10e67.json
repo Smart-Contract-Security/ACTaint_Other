@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawETH",
+        "code": "function withdrawETH() external onlyCAO { cfo.transfer(this.balance); }",
+        "vulnerability": "Unexpected fund transfer",
+        "reason": "This function allows the CAO to withdraw all ETH from the contract to the CFO's address. Although it restricts access to only the CAO, it does not have checks to ensure that the CFO address is still valid or under proper control. This can lead to potential loss of funds if the CFO address is compromised or mistakenly set to an incorrect address.",
+        "file_name": "0xe9aeced8ed2abfa6ac913259eada8e3603d10e67.sol"
+    },
+    {
+        "function_name": "changeAllowTransferState",
+        "code": "function changeAllowTransferState() public onlyCOO { if (allowTransfer) { allowTransfer = false; } else { allowTransfer = true; } }",
+        "vulnerability": "Toggle-based access control",
+        "reason": "This function toggles the state of 'allowTransfer' which is critical as it controls the ability to transfer skins. The toggling is controlled only by the COO and could potentially be misused to block or allow transfers arbitrarily without requiring consent or checks from other management members, thus manipulating the asset transfer capabilities.",
+        "file_name": "0xe9aeced8ed2abfa6ac913259eada8e3603d10e67.sol"
+    },
+    {
+        "function_name": "putOnSale",
+        "code": "function putOnSale(uint256 skinId, uint256 price) public whenNotPaused { require(skinIdToOwner[skinId] == msg.sender); require(skins[skinId].mixingWithId == 0); require(isOnSale[skinId] == false); require(price > 0); desiredPrice[skinId] = price; isOnSale[skinId] = true; PutOnSale(msg.sender, skinId); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows users to set a skin for sale. However, it lacks protections against reentrancy attacks where a callback function in an untrusted contract called by 'PutOnSale' event could re-enter 'putOnSale' or other critical functions before the first transaction is finished. This could lead to multiple unintended sales or other state inconsistencies.",
+        "file_name": "0xe9aeced8ed2abfa6ac913259eada8e3603d10e67.sol"
+    }
+]

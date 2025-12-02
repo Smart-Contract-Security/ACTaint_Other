@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "setAssetPrice",
+        "vulnerability": "No validation on newPrice",
+        "criticism": "The criticism is valid in highlighting the lack of validation on the newPrice parameter, which indeed allows the owner to set any arbitrary price. This could be a significant issue if the smart contract serves as a price oracle for other dependent systems, as it could lead to manipulated asset pricing. However, this is more of a design flaw than a vulnerability unless the contract is intended to have checks that were omitted. The severity is high if the oracle influences significant financial decisions, but profitability for an external attacker is low since only the owner can exploit this.",
+        "correctness": 7,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The setAssetPrice function allows the owner to set any arbitrary price without checks on the value of newPrice. This can be abused by the owner to manipulate the price reported by the oracle, potentially affecting any dependent contracts or systems relying on this oracle for asset pricing.",
+        "code": "function setAssetPrice(uint256 newPrice) external onlyOwner {\n    price = newPrice;\n    emit AnswerUpdated(SafeCast.toInt256(price), roundId, block.timestamp);\n    roundId += 1;\n}",
+        "file_name": "EmergencyOracle.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "turnOnOracle",
+        "vulnerability": "Single point of failure",
+        "criticism": "The reasoning correctly identifies the risk associated with having a single point of control, which is the owner. If the owner's account is compromised, it could indeed lead to misuse of the oracle. However, the severity is somewhat overstated as the function itself is designed to be controlled by the owner, which is a common pattern in smart contracts. The profitability is low because an external attacker would first need to compromise the owner's account, which is a significant barrier.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "Turning on the oracle is controlled solely by the owner. If the owner's account is compromised, the attacker can indefinitely turn on the oracle. This can lead to unauthorized use or abuse of the oracle when it should be inactive, especially in emergency scenarios where the oracle's data should not be trusted.",
+        "code": "function turnOnOracle() external onlyOwner {\n    turnOn = true;\n}",
+        "file_name": "EmergencyOracle.sol",
+        "final_score": 4.75
+    },
+    {
+        "function_name": "turnOffOracle",
+        "vulnerability": "Single point of failure",
+        "criticism": "Similar to the turnOnOracle function, this criticism is valid in pointing out the risks associated with centralized control. The impact of turning off the oracle could be severe if dependent systems require continuous data access. However, like the previous function, this design is intentional and common. The profitability remains low due to the need for compromising the owner's account first.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "Turning off the oracle is controlled solely by the owner. If the owner's account is compromised, the attacker can indefinitely turn off the oracle. This can prevent access to critical data provided by the oracle, affecting dependent functions and systems and potentially causing operational disruptions.",
+        "code": "function turnOffOracle() external onlyOwner {\n    turnOn = false;\n}",
+        "file_name": "EmergencyOracle.sol",
+        "final_score": 4.75
+    }
+]

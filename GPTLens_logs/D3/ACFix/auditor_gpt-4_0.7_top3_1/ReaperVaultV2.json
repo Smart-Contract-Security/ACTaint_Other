@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint256 assets, address receiver, address owner) external nonReentrant returns (uint256 shares) { require(assets != 0, 'please provide amount'); shares = previewWithdraw(assets); _withdraw(assets, shares, receiver, owner); return shares; }",
+        "vulnerability": "Reentrancy on external call",
+        "reason": "Although the function uses the 'nonReentrant' modifier, it indirectly calls '_withdraw' which performs external calls to strategies without reentrancy protection, potentially allowing reentrancy attacks.",
+        "file_name": "ReaperVaultV2.sol"
+    },
+    {
+        "function_name": "updateStrategyAllocBPS",
+        "code": "function updateStrategyAllocBPS(address strategy, uint256 allocBPS) external { _atLeastRole(STRATEGIST); require(strategies[strategy].activation != 0, 'Strategy must be active'); totalAllocBPS -= strategies[strategy].allocBPS; strategies[strategy].allocBPS = allocBPS; totalAllocBPS += allocBPS; require(totalAllocBPS <= PERCENT_DIVISOR, 'Total allocation points are over 100%'); emit StrategyAllocBPSUpdated(strategy, allocBPS); }",
+        "vulnerability": "Integer overflow/underflow",
+        "reason": "This function directly manipulates 'totalAllocBPS' by subtracting and then adding a potentially uncontrolled value 'allocBPS', which can lead to integer overflow/underflow if not properly validated.",
+        "file_name": "ReaperVaultV2.sol"
+    },
+    {
+        "function_name": "setEmergencyShutdown",
+        "code": "function setEmergencyShutdown(bool active) external { if (active == true) { _atLeastRole(GUARDIAN); } else { _atLeastRole(ADMIN); } emergencyShutdown = active; emit EmergencyShutdown(emergencyShutdown); }",
+        "vulnerability": "Authorization bypass",
+        "reason": "The function allows for toggling the emergency shutdown state, but it does not properly enforce role checks for deactivating the shutdown, allowing potentially unauthorized users to reactivate the contract functions.",
+        "file_name": "ReaperVaultV2.sol"
+    }
+]

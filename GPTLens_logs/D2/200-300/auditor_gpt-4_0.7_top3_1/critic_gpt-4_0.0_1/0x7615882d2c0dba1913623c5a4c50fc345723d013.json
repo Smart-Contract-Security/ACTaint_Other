@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "changeSeed",
+        "vulnerability": "Predictable RNG",
+        "criticism": "The reasoning is accurate in identifying the predictability of the RNG due to the use of block.blockhash and a modifiable seed. This could indeed allow an owner to manipulate outcomes, which is a significant security flaw in any randomized system, particularly in lotteries or games. The severity is high because it can undermine the fairness of the system, and the profitability is also high if the owner or an insider exploits this predictability for personal gain.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The random number generation (RNG) method used in this function is predictable because it relies on publicly available blockchain data (block.blockhash) and the seed that can be set by the owner. An attacker could potentially manipulate or predict the outcome of the random number result by setting the seed in a favorable way, influencing the lottery result.",
+        "code": "function changeSeed(uint32 n) public { if (msg.sender == owner) { seed = uint(n); seed = uint(block.blockhash(block.number-seed))%2000 + 1; } else { revert(); } }",
+        "file_name": "0x7615882d2c0dba1913623c5a4c50fc345723d013.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning correctly identifies a potential reentrancy attack due to the state variable 'entry' being set to false after external calls. This could indeed allow an attacker to re-enter the function and manipulate the flow or state of the contract, potentially leading to draining of funds or other unintended effects. The severity and profitability are both high because reentrancy can lead to significant losses and can be exploited for financial gain.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "This function allows for a reentrancy attack due to the fact that the state variable 'entry' is set to false after all the external calls (e.g., .transfer()). An attacker could call this function again as part of the fallback function invoked by the transfer, potentially leading to unexpected behaviors or draining of funds when tickets are purchased repeatedly within the same transaction.",
+        "code": "function buyTickets() public payable { if (entry == true) { revert(); } entry = true; if (msg.value != (price)) { entry = false; if (keccak256(status) == keccak256(\"Shutdown\")) { selfdestruct(owner); } revert(); } else { if (tickets == 5) { tickets -= 1; ticket1 = msg.sender; } else if(tickets == 4) { tickets -= 1; ticket2 = msg.sender; profit.transfer(price * 1/2); } else if(tickets == 3) { tickets -= 1; ticket3 = msg.sender; } else if(tickets == 2) { tickets -= 1; ticket4 = msg.sender; } else if(tickets == 1) { ticket5 = msg.sender; tickets = 5; round += 1; seed = uint(block.blockhash(block.number-seed))%2000 + 1; uint random_number = uint(block.blockhash(block.number-seed))%5 + 1; lastWiningTicketNumber = random_number; uint pay = (price * 9/2); if (random_number == 1) { ticket1.transfer(pay); lastWinner = ticket1; } else if(random_number == 2) { ticket2.transfer(pay); lastWinner = ticket2; } else if(random_number == 3) { ticket3.transfer(pay); lastWinner = ticket3; } else if(random_number == 4) { ticket4.transfer(pay); lastWinner = ticket4; } else if(random_number == 5) { ticket5.transfer(pay); lastWinner = ticket5; } } } entry = false; }",
+        "file_name": "0x7615882d2c0dba1913623c5a4c50fc345723d013.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "vulnerability": "Destructive Code",
+        "criticism": "The reasoning is correct in highlighting the risks associated with the selfdestruct function. This function can indeed be hazardous as it not only destroys the contract but also forcibly sends all remaining Ether to the owner, which might not be an intended or fair outcome for all parties involved. The severity is high due to the irreversible nature of selfdestruct, but the profitability is low as it does not necessarily result in financial gain for an attacker, unless the attacker is also the owner.",
+        "correctness": 7,
+        "severity": 8,
+        "profitability": 2,
+        "reason": "The selfdestruct function is invoked in the 'buyTickets' function upon checking the status of 'Shutdown'. This can be potentially hazardous as it destroys the contract and sends all remaining Ether to the owner address, which might not always be the desired behavior, especially if it is triggered without all participants' consent.",
+        "code": "function buyTickets() public payable { if (entry == true) { revert(); } entry = true; if (msg.value != (price)) { entry = false; if (keccak256(status) == keccak256(\"Shutdown\")) { selfdestruct(owner); } revert(); } else { if (tickets == 5) { tickets -= 1; ticket1 = msg.sender; } else if(tickets == 4) { tickets -= 1; ticket2 = msg.sender; profit.transfer(price * 1/2); } else if(tickets == 3) { tickets -= 1; ticket3 = msg.sender; } else if(tickets == 2) { tickets -= 1; ticket4 = msg.sender; } else if(tickets == 1) { ticket5 = msg.sender; tickets = 5; round += 1; seed = uint(block.blockhash(block.number-seed))%2000 + 1; uint random_number = uint(block.blockhash(block.number-seed))%5 + 1; lastWiningTicketNumber = random_number; uint pay = (price * 9/2); if (random_number == 1) { ticket1.transfer(pay); lastWinner = ticket1; } else if(random_number == 2) { ticket2.transfer(pay); lastWinner = ticket2; } else if(random_number == 3) { ticket3.transfer(pay); lastWinner = ticket3; } else if(random_number == 4) { ticket4.transfer(pay); lastWinner = ticket4; } else if(random_number == 5) { ticket5.transfer(pay); lastWinner = ticket5; } } } entry = false; }",
+        "file_name": "0x7615882d2c0dba1913623c5a4c50fc345723d013.sol"
+    }
+]

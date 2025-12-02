@@ -1,0 +1,29 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xfd645ad26d3cca2a65ef36877b55b84fda7b9012.code
+Start time: 01/09/2022 16:43:07
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function authenticate(bytes)
+Needed to protect following instruction in function authenticate(bytes)
+(  671)  29f:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Controlable Address of SELFDESTRUCT) Missing access control check in function authenticate(bytes)
+Needed to protect following instruction in function authenticate(bytes)
+(  880)  370:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function authenticate(bytes)
+Needed to protect following instruction in function authenticate(bytes)
+(  671)  29f:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function authenticate(bytes)
+Needed to protect following instruction in function authenticate(bytes)
+(  880)  370:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 1.37
+End time: 01/09/2022 16:43:09

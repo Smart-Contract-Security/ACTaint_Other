@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "WithrawDevToken",
+        "code": "function WithrawDevToken () public { owner = msg.sender; uint256 devTokens = 100000000e8; distr(owner, devTokens); }",
+        "vulnerability": "Ownership takeover",
+        "reason": "The function WithrawDevToken allows anyone to call it and set themselves as the owner without any checks. This allows an attacker to gain control over the smart contract, including the distribution of tokens, which can lead to unauthorized token minting or redirection.",
+        "file_name": "0xa4131ed44a6243148ff77b63876977b5805c10b4.sol"
+    },
+    {
+        "function_name": "transferTokenTo",
+        "code": "function transferTokenTo(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "vulnerability": "Unrestricted token minting",
+        "reason": "The function transferTokenTo allows the owner to mint an arbitrary amount of tokens to any address by calling doAirdrop. Since there are no checks on the _amount parameter against the totalSupply, it can lead to inflation and devaluation of the token, harming existing token holders.",
+        "file_name": "0xa4131ed44a6243148ff77b63876977b5805c10b4.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_PURCHASE ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Integer overflow",
+        "reason": "The calculation of tokens in getTokens uses the multiplication of tokensPerEth and msg.value, divided by 1 ether, without validating that the multiplication does not cause an overflow. If the values are large enough, it can lead to an overflow, resulting in fewer tokens being minted than expected, which can be exploited especially if tokensPerEth is set to a high value.",
+        "file_name": "0xa4131ed44a6243148ff77b63876977b5805c10b4.sol"
+    }
+]

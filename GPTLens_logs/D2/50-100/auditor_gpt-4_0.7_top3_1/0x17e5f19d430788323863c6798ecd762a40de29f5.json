@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Re-entrancy",
+        "reason": "The 'distr' function alters state after calling an external function 'emit Transfer', which could lead to re-entrancy attacks where an attacker repeatedly calls 'getTokens' to drain the contract.",
+        "file_name": "0x17e5f19d430788323863c6798ecd762a40de29f5.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval Race Condition",
+        "reason": "This function allows changing an allowance with non-zero value to another non-zero value which is susceptible to the 'approve/transferFrom' race condition. An attacker could potentially exploit this by first getting approval and then front-running a transaction to drain the allowance.",
+        "file_name": "0x17e5f19d430788323863c6798ecd762a40de29f5.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) {\n    require(_to != address(0));\n    require(_amount <= balances[msg.sender]);\n    balances[msg.sender] = balances[msg.sender].sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Transfer(msg.sender, _to, _amount);\n    return true;\n}",
+        "vulnerability": "Unchecked Transfer",
+        "reason": "This function does not check if the 'to' address is a contract which might lead to tokens being locked in contracts that do not expect to receive them or do not have functionality to transfer them out.",
+        "file_name": "0x17e5f19d430788323863c6798ecd762a40de29f5.sol"
+    }
+]

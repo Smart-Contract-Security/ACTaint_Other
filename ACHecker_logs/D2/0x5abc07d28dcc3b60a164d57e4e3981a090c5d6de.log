@@ -1,0 +1,28 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x5abc07d28dcc3b60a164d57e4e3981a090c5d6de.code
+Start time: 21/08/2022 13:08:40
+Building CFG...
+CFG generation time (secs): 8.98
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function pullBack(address,address,uint256)
+	( 1838)  72e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function quaker(address)
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function mint(address,address,uint256)
+	( 2433)  981:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function quaker(address)
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 2873)  b39:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function quaker(address)
++--Attacker can make changes to AC item {0} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 14.96
+End time: 21/08/2022 13:09:04

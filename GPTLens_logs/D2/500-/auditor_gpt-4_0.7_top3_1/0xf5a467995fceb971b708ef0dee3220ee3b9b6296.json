@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public { uint amount = msg.value.mul(tokensPerEther); _transfer(this, msg.sender, amount); require(owner.send(msg.value)); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'buy' function calls 'owner.send(msg.value)' after updating the state with '_transfer'. This could allow reentrancy where, if the owner is a contract, it could call back into the contract before the first transaction finishes, potentially leading to unexpected behaviors or draining of funds.",
+        "file_name": "0xf5a467995fceb971b708ef0dee3220ee3b9b6296.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require (_to != 0x0); require(!frozenAccount[_from]); require(!frozenAccount[_to]); balanceOf[_from] = balanceOf[_from].sub(_value); balanceOf[_to] = balanceOf[_to].add(_value); Transfer(_from, _to, _value); }",
+        "vulnerability": "Unchecked return value",
+        "reason": "In the '_transfer' function, there is no check to ensure that the 'sub' and 'add' operations on 'balanceOf' do not result in underflows or overflows beyond the re-entrancy concerns. Although SafeMath is used, additional checks for zero balances and transfer limits could prevent manipulation and unforeseen consequences in token balances.",
+        "file_name": "0xf5a467995fceb971b708ef0dee3220ee3b9b6296.sol"
+    },
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] = balanceOf[target].add(mintedAmount); totalSupply = totalSupply.add(mintedAmount); Transfer(0, this, mintedAmount); Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Arbitrary minting",
+        "reason": "The 'mintToken' function allows the owner to arbitrarily increase the balance of any account and the total supply of tokens. This poses a significant risk as it can lead to hyperinflation or devaluation of the token if misused by the contract owner or if the owner's account is compromised.",
+        "file_name": "0xf5a467995fceb971b708ef0dee3220ee3b9b6296.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyRecipient",
+        "code": "function buyRecipient(address recipient, uint8 v, bytes32 r, bytes32 s) { bytes32 hash = sha256(msg.sender); if (ecrecover(hash,v,r,s) != signer) throw; if (block.number<startBlock || block.number>endBlock || safeAdd(presaleEtherRaised,msg.value)>etherCap || halted) throw; uint tokens = safeMul(msg.value, price()); balances[recipient] = safeAdd(balances[recipient], tokens); totalSupply = safeAdd(totalSupply, tokens); presaleEtherRaised = safeAdd(presaleEtherRaised, msg.value); if (!founder.call.value(msg.value)()) throw; Buy(recipient, msg.value, tokens); }",
+        "vulnerability": "Re-entrancy",
+        "reason": "The function buyRecipient allows the founder to receive Ether (msg.value) via a direct call (founder.call.value(msg.value)()). If the founder's address is a contract, it could perform actions (like calling back into this contract) when it receives Ether, leading to re-entrancy. This can potentially allow actions to be performed while the contract's state (e.g., balances) is not yet updated, leading to unexpected behaviors or exploits such as draining the contract\u2019s Ether.",
+        "file_name": "0x22cd4b95c325b55a63e856d2d30e69f8c259e56b.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) returns (bool success) { if (block.number <= endBlock + transferLockup && msg.sender!=founder) throw; return super.transfer(_to, _value); }",
+        "vulnerability": "Privilege Misuse",
+        "reason": "The transfer function has a condition that allows the founder to bypass the transferLockup time check. This special privilege granted to the founder allows them to transfer tokens even during the lockup period, which regular users cannot. This could be exploited by the founder to manipulate the market or disadvantage other token holders.",
+        "file_name": "0x22cd4b95c325b55a63e856d2d30e69f8c259e56b.sol"
+    },
+    {
+        "function_name": "allocateBountyAndEcosystemTokens",
+        "code": "function allocateBountyAndEcosystemTokens() { if (msg.sender!=founder) throw; if (block.number <= endBlock) throw; if (bountyAllocated || ecosystemAllocated) throw; presaleTokenSupply = totalSupply; balances[founder] = safeAdd(balances[founder], presaleTokenSupply * ecosystemAllocation / (1 ether)); totalSupply = safeAdd(totalSupply, presaleTokenSupply * ecosystemAllocation / (1 ether)); balances[founder] = safeAdd(balances[founder], bountyAllocation); totalSupply = safeAdd(totalSupply, bountyAllocation); bountyAllocated = true; ecosystemAllocated = true; AllocateBountyAndEcosystemTokens(msg.sender); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The allocateBountyAndEcosystemTokens function allocates tokens to the founder without checking if the founder's address is a contract or an externally owned account (EOA). If the founder is a contract, the allocation increases its balance, which could trigger its fallback function if it exists. This might lead to unwanted behaviors or re-entrancy attacks if the fallback function interacts with the contract in a malicious manner.",
+        "file_name": "0x22cd4b95c325b55a63e856d2d30e69f8c259e56b.sol"
+    }
+]

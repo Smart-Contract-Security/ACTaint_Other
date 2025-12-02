@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "revealNumber",
+        "code": "function revealNumber(address _requestor) public payable { assert(_canReveal(_requestor, msg.sender)); _revealNumber(_requestor); }",
+        "vulnerability": "Incorrect Access Control",
+        "reason": "The function 'revealNumber' uses an assert statement to check if the number can be revealed with '_canReveal(_requestor, msg.sender)'. However, '_canReveal' only checks if the requestor or the proxy is the same as the sender, without validating if the sender has the right permissions or the request is valid. This could allow unauthorized access to reveal numbers prematurely or incorrectly.",
+        "file_name": "0x2cbc88071f7c0eff084332b8acaa01f1f33eba50.sol"
+    },
+    {
+        "function_name": "requestNumber",
+        "code": "function requestNumber(address _requestor, uint256 _max, uint8 _waitTime) payable public { if (!whiteList[msg.sender]) { require(!(msg.value < cost)); } assert(!checkNumber(_requestor)); pendingNumbers[_requestor] = PendingNumber({ requestProxy: tx.origin, renderedNumber: 0, max: max, originBlock: block.number, waitTime: waitTime }); if (_max > 1) { pendingNumbers[_requestor].max = _max; } if (_waitTime > 0 && _waitTime < 250) { pendingNumbers[_requestor].waitTime = _waitTime; } EventLuckyNumberRequested(_requestor, pendingNumbers[_requestor].max, pendingNumbers[_requestor].originBlock, pendingNumbers[_requestor].waitTime, pendingNumbers[_requestor].requestProxy); }",
+        "vulnerability": "Reentrancy",
+        "reason": "In 'requestNumber', after checking for whitelist and cost, the function proceeds to create or modify a PendingNumber struct without any lock or state commitment mechanism. This could lead to reentrancy issues where a malicious user could call this function recursively before the previous execution finishes, potentially leading to incorrect or unexpected states.",
+        "file_name": "0x2cbc88071f7c0eff084332b8acaa01f1f33eba50.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address _recipient, uint256 _balance) onlyOwner public returns (bool) { _recipient.transfer(_balance); return true; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'withdraw' function directly transfers Ether to a recipient without checking the success of the transfer. In Solidity, if the call to 'transfer' fails, it will throw an error, but the function does not handle potential exceptions nor does it return any indication of failure, potentially leading to loss of funds or incorrect assumptions about the state of balances.",
+        "file_name": "0x2cbc88071f7c0eff084332b8acaa01f1f33eba50.sol"
+    }
+]

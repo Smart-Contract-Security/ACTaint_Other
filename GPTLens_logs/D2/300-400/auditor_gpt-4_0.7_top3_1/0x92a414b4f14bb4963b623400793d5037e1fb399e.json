@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createTokens",
+        "code": "function createTokens() payable public { require(msg.value > 0); require(whitelisted[msg.sender]); uint256 tokens = msg.value.mul(RATE); balances[msg.sender] = balances[msg.sender].add(tokens); _totalSupply = _totalSupply.add(tokens); owner.transfer(msg.value); }",
+        "vulnerability": "Unbounded Token Minting",
+        "reason": "The function allows an address that has been whitelisted to create an arbitrary amount of tokens based on the amount of Ether sent and the current RATE. Since there is no cap on how much Ether can be sent or how high the RATE can be set, an attacker can mint an excessive amount of tokens, potentially leading to hyperinflation or devaluation of the token.",
+        "file_name": "0x92a414b4f14bb4963b623400793d5037e1fb399e.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _amount) hasMintPermission canMint public returns (bool) { uint256 tokens = _amount.mul(RATE); require( _currentSupply.add(tokens) < MAXUM_SUPPLY && whitelisted[msg.sender] ); if (_currentSupply >= INITIAL_SUPPLY) { _totalSupply = _totalSupply.add(tokens); } _currentSupply = _currentSupply.add(tokens); balances[_to] = balances[_to].add(tokens); emit Mint(_to, tokens); emit Transfer(address(0), _to, tokens); return true; }",
+        "vulnerability": "Rate Manipulation in Minting",
+        "reason": "The mint function uses the RATE variable to calculate the number of tokens to mint. However, there is no restriction on who can set the RATE or its upper limit. If an attacker gains control over the account that can set the RATE or if the RATE is set negligently high by the owner, they could mint a massive number of tokens, leading to similar issues as the first vulnerability.",
+        "file_name": "0x92a414b4f14bb4963b623400793d5037e1fb399e.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) { require( balances[msg.sender] >= _value && balances[_from] >= _value && _value > 0 && whitelisted[msg.sender] ); balances[_from] -= _value; balances[_to] += _value; allowed[_from][msg.sender] -= _value; emit Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Incorrect Balance Check",
+        "reason": "The 'transferFrom' function incorrectly checks 'balances[msg.sender] >= _value' which should actually be 'allowed[_from][msg.sender] >= _value'. This mistake allows a user to transfer tokens from any account that has a balance greater than the value being transferred, as long as the sender is whitelisted, without considering the actual allowance set. This could lead to unauthorized token transfers.",
+        "file_name": "0x92a414b4f14bb4963b623400793d5037e1fb399e.sol"
+    }
+]

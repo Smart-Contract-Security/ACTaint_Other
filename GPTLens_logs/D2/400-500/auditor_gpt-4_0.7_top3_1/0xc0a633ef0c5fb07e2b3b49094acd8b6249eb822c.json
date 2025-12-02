@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferETH",
+        "code": "function transferETH(address _to, uint _value) external onlyowner returns (bytes32 _r) { if (underLimit(_value)) { emit SingleTransact(msg.sender, _value, _to); _to.transfer(_value); return 0; } _r = keccak256(abi.encodePacked(msg.data, block.number)); if (!confirmETH(_r) && m_txs[_r].to == 0) { m_txs[_r].to = _to; m_txs[_r].value = _value; emit ConfirmationETHNeeded(_r, msg.sender, _value, _to); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transferETH' function allows transferring Ether to an address. However, the function does not mark the transaction as completed until after the external call to '_to.transfer(_value)'. If the recipient is a contract, it could potentially perform a reentrancy attack by calling back into 'transferETH' or other state-changing functions in this contract within the same transaction, leading to unexpected behavior or double-spending.",
+        "file_name": "0xc0a633ef0c5fb07e2b3b49094acd8b6249eb822c.sol"
+    },
+    {
+        "function_name": "confirmERC20",
+        "code": "function confirmERC20(bytes32 _h, address from) onlymanyowners(_h) public returns (bool) { if (m_txs[_h].to != 0) { ERC20Basic token = ERC20Basic(m_txs[_h].token); token.transferFrom(from, m_txs[_h].to, m_txs[_h].value); emit MultiTransact(msg.sender, _h, m_txs[_h].value, m_txs[_h].to); delete m_txs[_h]; return true; } }",
+        "vulnerability": "ERC20 Reentrancy",
+        "reason": "In the 'confirmERC20' function, ERC20 tokens are transferred from one address to another using 'token.transferFrom'. Similar to the Ether transfer, this external call can be exploited for a reentrancy attack if the token contract is malicious or has a fallback function. The state of the transaction is not finalized (transaction entry is not deleted) until after this call, which could lead to inconsistencies or reentrancy vulnerabilities.",
+        "file_name": "0xc0a633ef0c5fb07e2b3b49094acd8b6249eb822c.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill(address _to) onlymanyowners(keccak256(abi.encodePacked(msg.data))) external { selfdestruct(_to); }",
+        "vulnerability": "Arbitrary Destruction",
+        "reason": "The 'kill' function can be used by owners to self-destruct the contract, sending all remaining Ether to the specified address. This poses a severe risk as it allows owners to terminate the contract suddenly, potentially leading to loss of funds or disruption of service. Additionally, if the '_to' address is not carefully managed or verified, it could lead to unintentional loss of control over the funds.",
+        "file_name": "0xc0a633ef0c5fb07e2b3b49094acd8b6249eb822c.sol"
+    }
+]

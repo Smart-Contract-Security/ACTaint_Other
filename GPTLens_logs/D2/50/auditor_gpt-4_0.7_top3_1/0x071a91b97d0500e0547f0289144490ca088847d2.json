@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function transfers ether to an external address without taking precautions against reentrancy attacks. This could allow an attacker to drain the contract's funds by recursively calling the function during the transfer execution.",
+        "file_name": "0x071a91b97d0500e0547f0289144490ca088847d2.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approve/Allowance Attack",
+        "reason": "The 'approve' function has a potential attack when resetting allowances. If '_value' is not zero and there's already an allowance, the function will return false but won't update the allowance, potentially leaving it open to a double-spend issue if not properly handled by the user.",
+        "file_name": "0x071a91b97d0500e0547f0289144490ca088847d2.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'getTokens' function calls 'distr' which emits a Transfer event to address(0). This can be manipulated by an attacker especially if the recipient is a contract that can perform actions in its fallback function, potentially leading to unexpected behaviors or reentrancy attacks.",
+        "file_name": "0x071a91b97d0500e0547f0289144490ca088847d2.sol"
+    }
+]

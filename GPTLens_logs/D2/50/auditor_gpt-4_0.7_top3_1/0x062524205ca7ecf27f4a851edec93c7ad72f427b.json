@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "enter",
+        "code": "function enter() { if (msg.value < 100 finney) { msg.sender.send(msg.value); return; } uint deposited_value; if (msg.value > 2 ether) { msg.sender.send(msg.value - 2 ether); deposited_value = 2 ether; } else { deposited_value = msg.value; } uint new_id = persons.length; persons.length += 1; persons[new_id].etherAddress = msg.sender; persons[new_id].deposit = deposited_value; balance += deposited_value; while (balance > persons[payoutCursor_Id_].deposit / 100 * 115) { uint MultipliedPayout = persons[payoutCursor_Id_].deposit / 100 * 115; persons[payoutCursor_Id].etherAddress.send(MultipliedPayout); balance -= MultipliedPayout; payoutCursor_Id_++; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'enter' allows for a reentrancy attack because it sends Ether to external addresses while still executing. The send() function on the line 'persons[payoutCursor_Id].etherAddress.send(MultipliedPayout);' can be exploited by a malicious contract to re-enter the 'enter' function, potentially leading to unexpected behavior such as draining the contract funds.",
+        "file_name": "0x062524205ca7ecf27f4a851edec93c7ad72f427b.sol"
+    },
+    {
+        "function_name": "quick",
+        "code": "function quick() { owner = msg.sender; }",
+        "vulnerability": "Unauthorized Access",
+        "reason": "The function 'quick' allows any user to take ownership of the contract without any restrictions. This means any attacker can call 'quick' and subsequently take over the contract by changing the owner address, allowing them full control over sensitive functions protected by the 'onlyowner' modifier.",
+        "file_name": "0x062524205ca7ecf27f4a851edec93c7ad72f427b.sol"
+    },
+    {
+        "function_name": "enter",
+        "code": "function enter() { if (msg.value < 100 finney) { msg.sender.send(msg.value); return; } uint deposited_value; if (msg.value > 2 ether) { msg.sender.send(msg.value - 2 ether); deposited_value = 2 ether; } else { deposited_value = msg.value; } uint new_id = persons.length; persons.length += 1; persons[new_id].etherAddress = msg.sender; persons[new_id].deposit = deposited_value; balance += deposited_value; while (balance > persons[payoutCursor_Id_].deposit / 100 * 115) { uint MultipliedPayout = persons[payoutCursor_Id_].deposit / 100 * 115; persons[payoutCursor_Id].etherAddress.send(MultipliedPayout); balance -= MultipliedPayout; payoutCursor_Id_++; } }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The calculation 'persons[payoutCursor_Id_].deposit / 100 * 115' in the 'enter' function can lead to integer overflow if the deposit value is large enough. This could potentially allow attackers to manipulate payouts or disrupt the payout logic, affecting the contract's integrity.",
+        "file_name": "0x062524205ca7ecf27f4a851edec93c7ad72f427b.sol"
+    }
+]

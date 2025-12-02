@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createOracle",
+        "code": "function createOracle(bytes calldata data_) external returns (OracleImpl oracle) { oracle = new OracleImpl(data_); return oracle; }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'createOracle' creates a new OracleImpl instance using potentially untrusted input data. External calls are made without checking if the OracleImpl constructor properly handles the input data, which could lead to unexpected behavior or manipulation of the oracle instance. If the OracleImpl constructor or the initialization data is malicious or poorly implemented, it could lead to vulnerabilities like reentrancy or denial of service in the oracle contract.",
+        "file_name": "IOracleFactory.sol"
+    },
+    {
+        "function_name": "createOracle",
+        "code": "function createOracle(bytes calldata data_) external returns (OracleImpl oracle) { oracle = new OracleImpl(data_); return oracle; }",
+        "vulnerability": "Unrestricted Factory Pattern",
+        "reason": "The function allows anyone to create new OracleImpl instances without any form of access control. This lack of restrictions could be exploited by attackers who can flood the system with numerous oracle instances, potentially leading to a denial of service by exhausting system or network resources. Additionally, malicious users could deploy oracles with incorrect or malicious data, impacting the integrity of the system if these oracles are used by unsuspecting users.",
+        "file_name": "IOracleFactory.sol"
+    },
+    {
+        "function_name": "createOracle",
+        "code": "function createOracle(bytes calldata data_) external returns (OracleImpl oracle) { oracle = new OracleImpl(data_); return oracle; }",
+        "vulnerability": "No Validation on Input Data",
+        "reason": "The function takes a 'bytes calldata' input and directly passes it to the OracleImpl constructor without any form of validation or sanitization. This could allow attackers to input data that causes the OracleImpl to behave in unexpected ways or trigger vulnerabilities within the OracleImpl code. Proper validation or checks should be implemented to ensure that only valid and safe data is used to create oracle instances.",
+        "file_name": "IOracleFactory.sol"
+    }
+]

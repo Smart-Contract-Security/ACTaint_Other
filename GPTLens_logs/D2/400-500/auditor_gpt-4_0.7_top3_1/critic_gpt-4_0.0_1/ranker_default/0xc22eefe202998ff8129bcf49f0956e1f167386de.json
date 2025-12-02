@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the order of operations in the 'getTokens' function. The 'distr' function is called before updating the 'blacklist' and modifying 'value', which could indeed allow an attacker to re-enter the function during the execution of 'distr'. This could lead to multiple distributions to the same address, potentially draining the contract's resources if not properly managed. The severity is high due to the potential impact on token distribution integrity and the profitability is moderate as an attacker could gain additional tokens.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attack. After distributing tokens to the sender, the 'blacklist' is updated and the 'value' is decremented, which are intended as security measures. However, because the actual transfer of tokens ('distr' function call) occurs before these security controls and there is no reentrancy guard, an attacker could potentially re-enter the function and exploit it to get more tokens than intended.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "file_name": "0xc22eefe202998ff8129bcf49f0956e1f167386de.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Logical error",
+        "criticism": "The reasoning is correct in pointing out a critical logical error in the 'distr' function. The condition to check if 'totalDistributed' has reached or exceeded 'totalSupply' is indeed placed after the 'return true;' statement, rendering it ineffective. This could lead to the serious issue of over-distribution of tokens, violating the contract's intended constraints on token supply. The severity of this issue is very high as it directly affects the token economics, and the correctness of the reasoning is also high. However, the profitability for an external attacker is low, as exploiting this would require control over internal function calls.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 1,
+        "reason": "The function 'distr' contains a logical error where the condition to check if 'totalDistributed' has reached or exceeded 'totalSupply' is placed after the 'return true;' statement, which means this condition will never be executed. This could lead to over-distribution of tokens beyond the intended total supply.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0xc22eefe202998ff8129bcf49f0956e1f167386de.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "burn",
+        "vulnerability": "Inappropriate burning mechanism",
+        "criticism": "The reasoning correctly identifies a potential issue with the 'burn' function's handling of 'totalDistributed'. Reducing 'totalDistributed' along with 'totalSupply' could indeed lead to inconsistencies in tracking the distribution of tokens, especially if distribution continues after burning. This could result in a scenario where the reported distribution exceeds the actual supply. The severity is moderate because it affects the integrity of token tracking, but the profitability for an attacker is low as this issue does not directly result in a gain for them.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 0,
+        "reason": "The 'burn' function is intended to reduce both 'totalSupply' and 'totalDistributed' by a specified '_value'. However, reducing 'totalDistributed' could lead to inconsistencies where the total distributed surpasses the intended limit if tokens continue to be distributed after burning. This can cause confusion and potential errors in tracking the actual distribution of tokens.",
+        "code": "function burn(uint256 _value) onlyOwner public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply = totalSupply.sub(_value); totalDistributed = totalDistributed.sub(_value); Burn(burner, _value); }",
+        "file_name": "0xc22eefe202998ff8129bcf49f0956e1f167386de.sol",
+        "final_score": 4.75
+    }
+]

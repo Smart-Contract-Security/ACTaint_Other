@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x00e2c3b903bec1131fb05283c92df8a94613ca4a.code
+Start time: 18/08/2022 19:08:50
+Building CFG...
+CFG generation time (secs): 0.35
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawItem(address,uint256)
+	( 4490) 118a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function withdrawItem(address,uint256)
++--Attacker can make changes to AC item {8} in function buyWithETH(address,uint256)
++--Attacker can make changes to AC item {8} in function onERC721Received(address,uint256,bytes)
+
+Violated access control check in function extendItem(address,uint256)
+	( 5715) 1653:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function withdrawItem(address,uint256)
++--Attacker can make changes to AC item {8} in function buyWithETH(address,uint256)
++--Attacker can make changes to AC item {8} in function onERC721Received(address,uint256,bytes)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 19.52
+End time: 18/08/2022 19:09:10

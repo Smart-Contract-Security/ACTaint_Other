@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "buyPiece",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate. The function 'buyPiece' does indeed transfer Ether to external addresses before updating the state variables, which is a classic reentrancy vulnerability scenario. This could allow a malicious contract to re-enter the 'buyPiece' function and manipulate the state to buy the piece multiple times with the same Ether, leading to unexpected behavior and potential financial loss. The severity is high due to the financial implications, and the profitability is also high as an attacker could exploit this to drain Ether.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'buyPiece' function transfers Ether to external addresses (owner, lowestAskAddress, registrar) before updating the state variables (piecesOwned, pieceForSale). This ordering can be exploited by a malicious contract at one of these addresses to re-enter the 'buyPiece' function and potentially buy the piece multiple times with the same Ether by manipulating state changes.",
+        "code": "function buyPiece() payable { if (pieceForSale && msg.value >= lowestAskPrice) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; _amountOwner = msg.value / 10000 * ownerCommission; _amountEthart = msg.value / 40; _amountSeller = msg.value - _amountOwner - _amountEthart; owner.transfer(_amountOwner); lowestAskAddress.transfer(_amountSeller); registrar.transfer(_amountEthart); piecesOwned[lowestAskAddress]--; piecesOwned[msg.sender]++; Interface a = Interface(registrar); a.issuePatrons(msg.sender, msg.value / 5 * 2); pieceSold (lowestAskAddress, msg.sender, msg.value); pieceForSale = false; lowestAskPrice = 0; lowestAskAddress = 0x0; } else {throw;} }",
+        "file_name": "0xc14971b19a39327c032ccffbd1b714c0f886dc76.sol"
+    },
+    {
+        "function_name": "setProof",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The reasoning about the potential for integer overflow in the 'setProof' function is plausible but slightly misdirected. The division and increment operations are indeed susceptible to overflow, but Solidity uses safe math operations by default from version 0.8.0 onwards, which would revert the transaction in case of an overflow. If the contract is using an older version, this would be a valid concern. The severity and profitability are moderate because exploiting such a vulnerability would depend on the contract's version and could potentially alter the distribution of piecesOwned.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The calculation of 'ethartAward' in the 'setProof' function can lead to integer overflow. Specifically, the division and subsequent addition operations (ethartAward++) are not checked for overflow, potentially allowing the award calculation to wrap around and be less than intended. This can be manipulated to alter the distribution of piecesOwned.",
+        "code": "function setProof (string _proofLink) onlyBy (owner) { if (!proofSet) { uint256 remainder; proofLink = _proofLink; proofSet = true; remainder = editionSize % 40; ethartAward = (editionSize - remainder) / 40; if (remainder > 0 && now % 39 <= remainder) {ethartAward++;} piecesOwned[registrar] = ethartAward; piecesOwned[owner] = editionSize - ethartAward; } else {throw;} }",
+        "file_name": "0xc14971b19a39327c032ccffbd1b714c0f886dc76.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "ERC-20 Race Condition",
+        "criticism": "The reasoning is correct regarding the race condition vulnerability in the 'approve' function of ERC-20 tokens. This issue arises because the function does not mandate the previous allowance to be zero before a new one can be set, allowing a spender to potentially use both the old and new allowances in quick succession if they can front-run the transaction. This is a well-known issue in the ERC-20 standard and can lead to unexpected spending of tokens. The severity is high due to potential loss of tokens, but profitability depends on the ability to exploit the race condition effectively.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "The 'approve' function is vulnerable to a known race condition in ERC-20 tokens where a spender could potentially spend an old allowance and the new one. This race condition can occur because there is no requirement to set the current allowance to zero before setting a new one. A malicious spender can take advantage of this by front-running a transaction that tries to set a new allowance, using the old one just before it changes.",
+        "code": "function approve(address _spender, uint256 _amount) returns (bool success) { allowed[msg.sender][_spender] = _amount; Approval(msg.sender, _spender, _amount); return true; }",
+        "file_name": "0xc14971b19a39327c032ccffbd1b714c0f886dc76.sol"
+    }
+]

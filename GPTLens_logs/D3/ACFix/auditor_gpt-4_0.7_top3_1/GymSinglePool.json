@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setOnlyRunnerScript",
+        "code": "function setOnlyRunnerScript(address _onlyRunnerScript) external onlyOwner { runnerScriptAddress = _onlyRunnerScript; }",
+        "vulnerability": "Arbitrary Control",
+        "reason": "The function allows the owner to change the runner script address arbitrarily which could lead to unauthorized control of the functions that can only be accessed by the runner script.",
+        "file_name": "GymSinglePool.sol"
+    },
+    {
+        "function_name": "updatePool",
+        "code": "function updatePool() public { PoolInfo storage pool = poolInfo; if (block.number <= pool.lastRewardBlock) { return; } uint256 sharesTotal = totalGymnetLocked-totalGymnetUnlocked; if (sharesTotal == 0) { pool.lastRewardBlock = block.number; return; } uint256 multiplier = block.number - pool.lastRewardBlock; if (multiplier <= 0) { return; } uint256 _rewardPerBlock = pool.rewardPerBlock; uint256 _reward = (multiplier * _rewardPerBlock); pool.accRewardPerShare = pool.accRewardPerShare + ((_reward * 1e18) / sharesTotal); pool.lastRewardBlock = block.number; }",
+        "vulnerability": "DoS by Block Gas Limit",
+        "reason": "The function requires operations over all shares which could potentially exceed the block gas limit when the number of shares is very large, hence preventing further operations and updates on the pool.",
+        "file_name": "GymSinglePool.sol"
+    },
+    {
+        "function_name": "safeRewardTransfer",
+        "code": "function safeRewardTransfer( address _rewardToken, address _to, uint256 _amount ) internal { uint256 _bal = IERC20Upgradeable(_rewardToken).balanceOf(address(this)); if (_amount > _bal) { require(IERC20Upgradeable(_rewardToken).transfer(_to, _bal), \"GymSinglePool:: Transfer failed\"); } else { require(IERC20Upgradeable(_rewardToken).transfer(_to, _amount), \"GymSinglePool:: Transfer failed\"); } }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function's transfer calls do not check the return value. Although `require` is used, it only checks against the transfer function throwing an error and does not handle false returns which might mean tokens did not actually get transferred.",
+        "file_name": "GymSinglePool.sol"
+    }
+]

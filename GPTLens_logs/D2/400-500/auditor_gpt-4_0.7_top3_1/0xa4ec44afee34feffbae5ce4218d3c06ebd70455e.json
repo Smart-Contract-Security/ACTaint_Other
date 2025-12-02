@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "closeBallot",
+        "code": "function closeBallot() public returns (uint) { require(!closed); require(now > votingEnd); if((phiWon.mul(100000).div(totalVoters) == neWon.mul(100000).div(totalVoters)) && (threshold == 50000)) { validResult = 9; closed = true; tie = true; return validResult; } else if(phiWon.mul(100000).div(totalVoters) >= threshold) { validResult = 1; votingReward = bettingContract.getLosersOnePercent(2); majorityReward = (neWon * 50 finney).add(votingReward).div(phiWon); } else if (neWon.mul(100000).div(totalVoters) >= threshold) { validResult = 2; votingReward = bettingContract.getLosersOnePercent(3); majorityReward = (phiWon * 50 finney).add(votingReward).div(neWon); } else { if (neWon.mul(100000).div(totalVoters) > 50000) majorityReward = (phiWon * 50 finney).div(neWon); else if (phiWon.mul(100000).div(totalVoters) > 50000) majorityReward = (neWon * 50 finney).div(phiWon); else { tie = true; majorityReward = 0; } validResult = 0; } closed = true; return validResult; }",
+        "vulnerability": "Integer Division Error",
+        "reason": "The function closeBallot uses integer division to calculate percentages (e.g., phiWon.mul(100000).div(totalVoters)). In Solidity, integer division truncates towards zero, which can lead to inaccuracies when calculating close percentages, potentially affecting the outcome of the ballot decisively.",
+        "file_name": "0xa4ec44afee34feffbae5ce4218d3c06ebd70455e.sol"
+    },
+    {
+        "function_name": "getLosersOnePercent",
+        "code": "function getLosersOnePercent(uint loser) public returns (uint) { require(votingOpen); require(msg.sender == address(ballot)); if(loser==1) { ballot.transfer(philadelphiaBets.div(100)); return philadelphiaBets.div(100); } else if (loser==2) { ballot.transfer(newEnglandBets.div(100)); return newEnglandBets.div(100); } else { return 0; } }",
+        "vulnerability": "Unchecked Transfer",
+        "reason": "This function transfers funds from the Superbowl52 contract to the BallotSB52 contract without checking the success of the transfer operation. Since Solidity's transfer method reverts on failure, any failed transfer will revert the entire transaction. An attacker could potentially exploit this by making the contract's balance zero when this function is called, causing the transfer to fail and preventing the rest of the function's logic from executing.",
+        "file_name": "0xa4ec44afee34feffbae5ce4218d3c06ebd70455e.sol"
+    },
+    {
+        "function_name": "voteResult",
+        "code": "function voteResult(uint team) public payable { require(votingStart <= now && votingEnd >= now); require(voted[msg.sender] == false); require(msg.value == 50 finney); require(!closed); if(team == 1) { phiWon += 1; } else if (team == 2) { neWon += 1; } else revert(); voted[msg.sender] = true; votes[msg.sender] = team; totalVoters += 1; stake[msg.sender] = msg.value; }",
+        "vulnerability": "Denial of Service by Gas Limitation",
+        "reason": "By requiring an exact msg.value of 50 finney, this function is vulnerable to denial of service if the network's condition changes (e.g., gas price increase) or due to user mistakes in sending value. Users who intend to vote might be prevented from doing so if they do not send exactly 50 finney, potentially skewing the voting results.",
+        "file_name": "0xa4ec44afee34feffbae5ce4218d3c06ebd70455e.sol"
+    }
+]

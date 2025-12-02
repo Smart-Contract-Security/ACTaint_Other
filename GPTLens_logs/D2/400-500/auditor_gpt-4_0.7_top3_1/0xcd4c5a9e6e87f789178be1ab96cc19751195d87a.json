@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Unreachable code",
+        "reason": "The line that sets `distributionFinished = true;` within the `distr` function will never execute because it follows a return statement. This means that even if the total distributed tokens reach the total supply, the distribution will not be marked as finished, potentially leading to unintended token oversupply.",
+        "file_name": "0xcd4c5a9e6e87f789178be1ab96cc19751195d87a.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Improper approval handling",
+        "reason": "This function should reset the allowance to zero before setting it to a new value, to prevent a race condition described in the ERC20 standard known as the 'approve/transferFrom' attack. The current implementation does not handle this, and simply returns false if trying to change non-zero allowance, which can result in unexpected behavior and potential security risks in dapps interacting with this contract.",
+        "file_name": "0xcd4c5a9e6e87f789178be1ab96cc19751195d87a.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "DoS via unbounded loop",
+        "reason": "The function `getTokens` automatically blacklists users after receiving tokens, which can lead to a denial of service (DoS) if all potential users are blacklisted. This means new or existing users would be unable to interact with the token distribution function, limiting functionality and access to the token.",
+        "file_name": "0xcd4c5a9e6e87f789178be1ab96cc19751195d87a.sol"
+    }
+]

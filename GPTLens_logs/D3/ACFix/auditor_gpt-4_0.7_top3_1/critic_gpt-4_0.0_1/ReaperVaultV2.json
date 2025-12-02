@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Reentrancy on external call",
+        "criticism": "The criticism of the 'withdraw' function for reentrancy vulnerability is incorrect. The function is protected by a 'nonReentrant' modifier, which should prevent reentrancy attacks effectively. The claim that '_withdraw' performs external calls without reentrancy protection is speculative without evidence of how '_withdraw' is implemented. Therefore, the correctness of this vulnerability claim is low, and the severity and profitability are also low as the primary protection mechanism is in place.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "Although the function uses the 'nonReentrant' modifier, it indirectly calls '_withdraw' which performs external calls to strategies without reentrancy protection, potentially allowing reentrancy attacks.",
+        "code": "function withdraw(uint256 assets, address receiver, address owner) external nonReentrant returns (uint256 shares) { require(assets != 0, 'please provide amount'); shares = previewWithdraw(assets); _withdraw(assets, shares, receiver, owner); return shares; }",
+        "file_name": "ReaperVaultV2.sol"
+    },
+    {
+        "function_name": "updateStrategyAllocBPS",
+        "vulnerability": "Integer overflow/underflow",
+        "criticism": "The reasoning about potential integer overflow/underflow in 'updateStrategyAllocBPS' is valid. The function manipulates 'totalAllocBPS' without explicit checks on the bounds of 'allocBPS' before performing arithmetic operations. This could indeed lead to overflow/underflow conditions if 'allocBPS' is not controlled. However, the severity depends on the impact of such an overflow/underflow in the system's context, which is not detailed in the reasoning. Profitability is uncertain without knowing if an attacker can exploit this for gain.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "This function directly manipulates 'totalAllocBPS' by subtracting and then adding a potentially uncontrolled value 'allocBPS', which can lead to integer overflow/underflow if not properly validated.",
+        "code": "function updateStrategyAllocBPS(address strategy, uint256 allocBPS) external { _atLeastRole(STRATEGIST); require(strategies[strategy].activation != 0, 'Strategy must be active'); totalAllocBPS -= strategies[strategy].allocBPS; strategies[strategy].allocBPS = allocBPS; totalAllocBPS += allocBPS; require(totalAllocBPS <= PERCENT_DIVISOR, 'Total allocation points are over 100%'); emit StrategyAllocBPSUpdated(strategy, allocBPS); }",
+        "file_name": "ReaperVaultV2.sol"
+    },
+    {
+        "function_name": "setEmergencyShutdown",
+        "vulnerability": "Authorization bypass",
+        "criticism": "The reasoning provided for the 'setEmergencyShutdown' function is partially correct. The function does check roles based on the state of 'active', but the criticism assumes that the role check for deactivating the shutdown is insufficient without specifying why the ADMIN role is inappropriate for this action. The severity of this vulnerability would be high if unauthorized role activation/deactivation could occur, but the reasoning does not convincingly establish that this is the case. Profitability is also not clear from the provided reasoning.",
+        "correctness": 4,
+        "severity": 6,
+        "profitability": 2,
+        "reason": "The function allows for toggling the emergency shutdown state, but it does not properly enforce role checks for deactivating the shutdown, allowing potentially unauthorized users to reactivate the contract functions.",
+        "code": "function setEmergencyShutdown(bool active) external { if (active == true) { _atLeastRole(GUARDIAN); } else { _atLeastRole(ADMIN); } emergencyShutdown = active; emit EmergencyShutdown(emergencyShutdown); }",
+        "file_name": "ReaperVaultV2.sol"
+    }
+]

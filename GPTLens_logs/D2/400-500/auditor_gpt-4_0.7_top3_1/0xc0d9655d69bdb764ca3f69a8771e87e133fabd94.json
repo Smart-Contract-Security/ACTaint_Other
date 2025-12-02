@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address receiver, uint amount) public { if (msg.sender != minter) return; balances[receiver] += amount; Mint(amount); }",
+        "vulnerability": "Unchecked minting",
+        "reason": "The `mint` function allows the contract owner (minter) to create an arbitrary number of tokens and assign them to any account. There is no upper limit or cap on the total supply which can lead to hyperinflation or devaluation of the tokens. Malicious minter or if the minter's account is compromised, this can be exploited to disrupt the token economy.",
+        "file_name": "0xc0d9655d69bdb764ca3f69a8771e87e133fabd94.sol"
+    },
+    {
+        "function_name": "send",
+        "code": "function send(address receiver, uint amount) public { if (balances[msg.sender] < amount) return; balances[msg.sender] -= amount; balances[receiver] += amount; Sent(msg.sender, receiver, amount); }",
+        "vulnerability": "No Re-entrancy Guard",
+        "reason": "The `send` function lacks any mechanism to prevent re-entrancy attacks. A malicious contract can call `send` during a transaction, potentially leading to effects such as multiple withdrawals. This could be exploited by a crafted receiver contract that recursively calls the `send` function to drain funds.",
+        "file_name": "0xc0d9655d69bdb764ca3f69a8771e87e133fabd94.sol"
+    },
+    {
+        "function_name": "MyCoin",
+        "code": "function MyCoin() public { minter = msg.sender; }",
+        "vulnerability": "Incorrect Constructor Name",
+        "reason": "The `MyCoin` function is intended to be a constructor for the contract, but due to a mismatch between the function name and the contract name (`Serum`), it does not behave as a constructor. This allows any user to change the `minter` by calling `MyCoin` post-deployment, gaining control over token minting capabilities.",
+        "file_name": "0xc0d9655d69bdb764ca3f69a8771e87e133fabd94.sol"
+    }
+]

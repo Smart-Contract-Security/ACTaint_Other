@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(5000).mul(5000); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'getTokens' calls another function 'distr' which changes the state of the contract while there are still actions (blacklisting the investor, manipulating value, and checking distribution completion) to be performed post the call. This setup can lead to reentrancy attacks where an attacker can recursively call 'getTokens' to exploit the logical flow.",
+        "file_name": "0x8504242784fe16739ee100e348ab969031570bff.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply = totalSupply.sub(_value); totalDistributed = totalDistributed.sub(_value); emit Burn(burner, _value); }",
+        "vulnerability": "Unexpected Token Burn",
+        "reason": "The 'burn' function reduces 'totalSupply' and 'totalDistributed' but does not consider that this could result in mismatched tracking of distributed tokens or manipulation of token economics by the owner. An owner could burn tokens to manipulate market conditions or token scarcity, impacting normal users.",
+        "file_name": "0x8504242784fe16739ee100e348ab969031570bff.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { if (newOwner != address(0)) { owner = newOwner; } }",
+        "vulnerability": "Ownership Takeover",
+        "reason": "The 'transferOwnership' function allows the current owner to transfer control to a new owner without any checks or validations beyond the zero address check. This could lead to scenarios where the ownership is transferred to an unintended or malicious address if misused or called by mistake.",
+        "file_name": "0x8504242784fe16739ee100e348ab969031570bff.sol"
+    }
+]

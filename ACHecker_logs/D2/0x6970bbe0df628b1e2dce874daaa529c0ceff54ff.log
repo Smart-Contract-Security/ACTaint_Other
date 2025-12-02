@@ -1,0 +1,48 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.code
+Start time: 21/08/2022 23:29:13
+Building CFG...
+CFG generation time (secs): 17.25
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 2158)  86e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2254)  8ce:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2559)  9ff:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distributeAmounts(address[],uint256[])
+	( 2661)  a65:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 3435)  d6b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3774)  ebe:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distribution(address[],uint256)
+	( 3859)  f13:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function XVOTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 15.63
+End time: 21/08/2022 23:29:46

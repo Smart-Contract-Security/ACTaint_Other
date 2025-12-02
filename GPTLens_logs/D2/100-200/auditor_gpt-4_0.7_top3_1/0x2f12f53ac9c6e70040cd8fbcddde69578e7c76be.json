@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) returns (bool success) { if (balances[msg.sender] < _amount) { Error('transfer: the amount to transfer is higher than your token balance'); return false; } balances[msg.sender] -= _amount; balances[_to] += _amount; Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Integer Underflow",
+        "reason": "The function does not validate if the subtraction operation (balances[msg.sender] -= _amount) results in an underflow. This can allow a malicious user to transfer tokens they do not own if the balance of msg.sender is zero, potentially resulting in large, incorrect balance entries.",
+        "file_name": "0x2f12f53ac9c6e70040cd8fbcddde69578e7c76be.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) returns (bool success) { if (balances[_from] < _amount) { Error('transfer: the amount to transfer is higher than the token balance of the source'); return false; } if (allowed[_from][msg.sender] < _amount) { Error('transfer: the amount to transfer is higher than the maximum token transfer allowed by the source'); return false; } balances[_from] -= _amount; balances[_to] += _amount; allowed[_from][msg.sender] -= _amount; Transfer(_from, _to, _amount); return true; }",
+        "vulnerability": "Integer Underflow",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' does not protect against integer underflow when decrementing balances[_from] and allowed[_from][msg.sender]. A malicious user could exploit this to transfer more tokens than they are allowed or the sender has, leading to incorrect balance or allowance entries.",
+        "file_name": "0x2f12f53ac9c6e70040cd8fbcddde69578e7c76be.sol"
+    },
+    {
+        "function_name": "Asset",
+        "code": "function Asset(address _SCIssuers) { SCIssuers = _SCIssuers; }",
+        "vulnerability": "Unchecked constructor parameter",
+        "reason": "The constructor of 'Asset' contract does not check whether the passed address (_SCIssuers) is a valid address of an 'IFIssuers' contract. This can lead to the deployment of an 'Asset' contract with an invalid 'SCIssuers' address, which would fail to properly check issuers' permissions in the 'onlyIssuer' modifier, affecting the integrity of assets issued through this contract.",
+        "file_name": "0x2f12f53ac9c6e70040cd8fbcddde69578e7c76be.sol"
+    }
+]

@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x44600dbc85b6b991b21ca515279b5647ba79998d.code
+Start time: 20/08/2022 19:57:30
+Building CFG...
+CFG generation time (secs): 43.21
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	( 7929) 1ef9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function burnFrom(address,uint256)
+
+Violated access control check in function transferFrom(address,address,uint256)
+	( 7929) 1ef9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function burnFrom(address,uint256)
+
+Violated access control check in function manualWithdrawToken(uint256)
+	( 7929) 1ef9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function burnFrom(address,uint256)
+
+Violated access control check in function transfer(address,uint256)
+	( 7929) 1ef9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function burnFrom(address,uint256)
+
+Violated access control check in function stopICO()
+	( 7929) 1ef9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function burnFrom(address,uint256)
+
+Violated access control check in function startIco(uint256,uint256,uint256,uint256)
+	( 7929) 1ef9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function burnFrom(address,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 45.93
+End time: 20/08/2022 19:58:59

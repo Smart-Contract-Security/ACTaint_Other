@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "play",
+        "code": "function play(uint256 _number) public payable {\n    if(msg.value >= minBet && _number <= 1) {\n        GameHistory gameHistory;\n        gameHistory.player = msg.sender;\n        gameHistory.number = _number;\n        log.push(gameHistory);\n        if (_number == randomNumber) {\n            selfdestruct(msg.sender);\n        }else{\n            selfdestruct(owner);\n        }\n    }\n}",
+        "vulnerability": "Predictable Randomness",
+        "reason": "The 'randomNumber' is calculated as 'uint256( keccak256(now) ) % 2', which uses the 'now' keyword. This is predictable as 'now' refers to the timestamp of the block, which can be influenced by miners and anticipated by an observer. An attacker might predict the value by observing the block timestamp or colluding with a miner, making the game unfair.",
+        "file_name": "0x29d6cf436c893c7e44ea926411d5fd4dd763d9b3.sol"
+    },
+    {
+        "function_name": "play",
+        "code": "function play(uint256 _number) public payable {\n    if(msg.value >= minBet && _number <= 1) {\n        GameHistory gameHistory;\n        gameHistory.player = msg.sender;\n        gameHistory.number = _number;\n        log.push(gameHistory);\n        if (_number == randomNumber) {\n            selfdestruct(msg.sender);\n        }else{\n            selfdestruct(owner);\n        }\n    }\n}",
+        "vulnerability": "Selfdestruct Misuse",
+        "reason": "The 'play' function uses 'selfdestruct' to send all contract balance either to the player or the owner based on a game result. This is hazardous as it can destruct the contract unpredictably, causing loss of funds and denial of service for other users who might want to interact with the contract thereafter. It also prevents any further interactions or audits of the contract post self-destruction.",
+        "file_name": "0x29d6cf436c893c7e44ea926411d5fd4dd763d9b3.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint256 amount) public onlyOwner {\n    owner.transfer(amount);\n}",
+        "vulnerability": "Unchecked Withdrawal",
+        "reason": "The 'withdraw' function transfers an amount to the owner without checking if the contract balance is sufficient. This can lead to a reentrancy attack where an attacker might call this function repeatedly in a fallback function to drain the contract's funds before the balance is updated. Although protected by the onlyOwner modifier, it's still a risky pattern without checks.",
+        "file_name": "0x29d6cf436c893c7e44ea926411d5fd4dd763d9b3.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' is vulnerable to reentrancy because it calls 'owner.transfer(msg.value)' and then 'owner.transfer(this.balance)' before updating the state variable 'owner' to '_newowner'. An attacker can exploit this by creating a fallback function in their contract that calls 'changeOwner' again when it receives Ether, potentially allowing them to drain the contract balance.",
+        "file_name": "0x9432f91bfc2335b0485aa4967d0acff3e34ae134.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The 'killContract' function can be called by anyone who sends a sufficient amount of Ether (500 Ether), allowing them to force the contract to self-destruct. This can lead to a denial of service (DoS) as it will render the contract unusable and all funds and tokens could be lost or stuck permanently.",
+        "file_name": "0x9432f91bfc2335b0485aa4967d0acff3e34ae134.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Arbitrary Modification",
+        "reason": "The function 'changeNameSymbol' allows anyone who sends at least 400 Ether to change the 'name' and 'symbol' of the token, potentially misleading or confusing token holders. This can be exploited by an attacker to impersonate or create a false representation of the token, affecting its credibility and market value.",
+        "file_name": "0x9432f91bfc2335b0485aa4967d0acff3e34ae134.sol"
+    }
+]

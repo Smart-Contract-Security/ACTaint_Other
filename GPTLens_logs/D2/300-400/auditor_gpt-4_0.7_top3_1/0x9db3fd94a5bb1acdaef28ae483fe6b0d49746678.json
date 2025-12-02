@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks because it calls 'distr', which emits a Transfer event before updating the 'blacklist'. An attacker can use the reentrancy to call 'getTokens' again during the Transfer event handling, potentially allowing them to claim more tokens than intended.",
+        "file_name": "0x9db3fd94a5bb1acdaef28ae483fe6b0d49746678.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function is susceptible to the race condition vulnerability. It allows changing non-zero allowance which can be exploited by a front-running attack. An attacker can call transferFrom between the checks and the actual set of approval, which can lead to unexpected transfers.",
+        "file_name": "0x9db3fd94a5bb1acdaef28ae483fe6b0d49746678.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "vulnerability": "Underflow risk",
+        "reason": "The 'burn' function reduces the 'totalDistributed' without checking if '_value' is greater than 'totalDistributed'. This can lead to an underflow in 'totalDistributed' if '_value' is greater than the amount distributed, potentially destabilizing the token economics.",
+        "file_name": "0x9db3fd94a5bb1acdaef28ae483fe6b0d49746678.sol"
+    }
+]

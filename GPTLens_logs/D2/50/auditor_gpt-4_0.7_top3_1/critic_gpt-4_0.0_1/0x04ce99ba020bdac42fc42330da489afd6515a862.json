@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition",
+        "criticism": "The reasoning correctly identifies the potential for a race condition in the approve function due to the lack of a requirement to reset the allowance to zero before setting a new value. However, the function does include a check that prevents setting a new non-zero allowance if a non-zero allowance already exists, which mitigates the risk somewhat. The severity is moderate because if exploited, it could lead to unauthorized token transfers, but the profitability is low as it requires specific conditions and timing to exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "This vulnerability arises due to the potential for a user to exploit the race condition between the approval and transferFrom functions. If a user first sets an allowance, and then resets it to a different value, a malicious actor could potentially call transferFrom after the approval but before the allowance reset, effectively transferring potentially unauthorized tokens. The approve function does not safely handle changing non-zero allowances without setting them to zero first\u2014which should be enforced to mitigate this issue.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x04ce99ba020bdac42fc42330da489afd6515a862.sol"
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Unchecked external calls",
+        "criticism": "The reasoning is partially incorrect. The function is private and uses SafeMath for addition, which prevents overflow issues. The criticism about totalDistributed potentially exceeding totalSupply is valid, but since the function is private, it can only be called by trusted functions within the contract. This reduces the risk of malicious exploitation. The severity is low because it depends on how the function is used internally, and profitability is also low as it cannot be directly exploited by an external attacker.",
+        "correctness": 4,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "The distr function, which is private and only callable internally, automatically increments the balances and totalDistributed without proper checks on whether the distribution causes an overflow of the totalSupply. Although SafeMath is used, totalDistributed could exceed totalSupply due to the lack of checks after additions. This could lead to an inconsistent state where more tokens are distributed than actually exist.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; }",
+        "file_name": "0x04ce99ba020bdac42fc42330da489afd6515a862.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with revert",
+        "criticism": "The reasoning is correct in identifying a potential DoS attack if the owner's fallback function fails. This is a significant issue as it could lock all funds within the contract. The severity is high because it affects the availability of the contract's funds. However, the profitability is low for an attacker unless they can somehow benefit from the contract's inability to disburse funds.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "This function transfers all Ether stored in the contract to the owner's address. If the transfer fails (for example, if the owner's fallback function reverts or runs out of gas), the entire withdraw function will revert. This could lock all the funds in the contract permanently, especially if the fallback function is designed to always revert or consume more gas than provided.",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "file_name": "0x04ce99ba020bdac42fc42330da489afd6515a862.sol"
+    }
+]

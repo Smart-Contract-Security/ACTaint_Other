@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "addGame",
+        "code": "function addGame(address _gameAddress) public {\n    require(gameIDs_[_gameAddress] == 0, \"derp, that games already been registered\");\n    gID_++;\n    gameIDs_[_gameAddress] = gID_;\n    games_[gID_] = PlayerBookReceiverInterface(_gameAddress);\n    games_[gID_].receivePlayerInfo(1, plyr_[1].addr);\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'addGame' makes an external call to 'games_[gID_].receivePlayerInfo(1, plyr_[1].addr)' without checking the execution result. If the called contract is malicious or has an error, it could lead to unexpected behavior or denial of service.",
+        "file_name": "0xf2940f868fcd1fbe8d1e1c02d2eaf68d8d7db338.sol"
+    },
+    {
+        "function_name": "getPlayerID",
+        "code": "function getPlayerID(address _addr) isRegisteredGame() external returns (uint256) {\n    determinePID(_addr);\n    return (pIDxAddr_[_addr]);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getPlayerID' function calls 'determinePID', which updates the state by potentially increasing 'pID_' and updating mapping 'pIDxAddr_'. As this function is external and not protected against reentrancy, a malicious contract could call it again (recursively) before the first execution finishes, potentially leading to errors like incorrect player IDs being assigned or state inconsistency.",
+        "file_name": "0xf2940f868fcd1fbe8d1e1c02d2eaf68d8d7db338.sol"
+    },
+    {
+        "function_name": "addGame",
+        "code": "function addGame(address _gameAddress) public {\n    require(gameIDs_[_gameAddress] == 0, \"derp, that games already been registered\");\n    gID_++;\n    gameIDs_[_gameAddress] = gID_;\n    games_[gID_] = PlayerBookReceiverInterface(_gameAddress);\n    games_[gID_].receivePlayerInfo(1, plyr_[1].addr);\n}",
+        "vulnerability": "Authorization Flaw",
+        "reason": "The function 'addGame' can be called by any user as it lacks access control mechanisms to check if the caller is authorized (e.g., admin or authorized game developer). This can allow any attacker to register any address as a game, potentially leading to misuse or insertion of malicious games.",
+        "file_name": "0xf2940f868fcd1fbe8d1e1c02d2eaf68d8d7db338.sol"
+    }
+]

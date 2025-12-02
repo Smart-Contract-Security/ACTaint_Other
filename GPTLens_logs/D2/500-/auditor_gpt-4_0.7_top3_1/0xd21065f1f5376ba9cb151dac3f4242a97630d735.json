@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawContract",
+        "code": "function withdrawContract() public onlyOwner { msg.sender.transfer(address(this).balance); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'withdrawContract' directly transfers the balance of the contract to the owner without any checks to prevent reentrancy attack. An attacker could potentially exploit this by creating a fallback function in their contract that calls 'withdrawContract' repeatedly, draining the contract's funds.",
+        "file_name": "0xd21065f1f5376ba9cb151dac3f4242a97630d735.sol"
+    },
+    {
+        "function_name": "buyAuction",
+        "code": "function buyAuction(uint256 _tokenId) external payable isNotFromContract { AuctionEntry storage entry = auctions.data[_tokenId]; require(entry.keyIndex > 0); Auction storage auction = entry.value; address sender = msg.sender; address tokenOwner = auction.tokenOwner; uint256 auctionPrice = calculateCurrentPrice(auction); uint256 pricePaid = msg.value; require(pricePaid >= auctionPrice); deleteAuction(_tokenId, entry); refundSender(sender, pricePaid, auctionPrice); payTokenOwner(tokenOwner, auctionPrice); erc721Contract.transferFrom(address(this), sender, _tokenId); emit AuctionBoughtEvent(_tokenId, tokenOwner, sender, auctionPrice); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyAuction' performs multiple external calls (refundSender, payTokenOwner, transferFrom) after changing the state (deleting the auction). This could be exploited by an attacker to perform a reentrancy attack where the external calls could call back into the contract and interact with it while it's in an inconsistent state.",
+        "file_name": "0xd21065f1f5376ba9cb151dac3f4242a97630d735.sol"
+    },
+    {
+        "function_name": "createAuction",
+        "code": "function createAuction(uint256 _tokenId, uint128 _startPrice, uint128 _endPrice, uint128 _duration) external { require(msg.sender == address(erc721Contract)); AuctionEntry storage entry = auctions.data[_tokenId]; require(entry.keyIndex == 0); address tokenOwner = erc721Contract.ownerOf(_tokenId); erc721Contract.transferFrom(tokenOwner, address(this), _tokenId); entry.value = Auction({ tokenOwner: tokenOwner, startTime: block.timestamp, startPrice: _startPrice, endPrice: _endPrice, duration: _duration }); entry.keyIndex = ++auctions.keys.length; auctions.keys[entry.keyIndex - 1] = _tokenId; emit AuctionCreatedEvent(_tokenId, _startPrice, _endPrice, _duration); }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'createAuction' does not check the return value of the 'transferFrom' call to ERC721 contract. Failure of this call will not revert the transaction, potentially leading to inconsistencies where the auction is created without the actual transfer of the token.",
+        "file_name": "0xd21065f1f5376ba9cb151dac3f4242a97630d735.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "deposit",
+        "code": "function deposit() payable {\n    if (msg.value < minimum_deposit_amount) throw;\n    if (balances[msg.sender] == 0) deposit_fee = 0 ether;\n    if ( msg.sender == thebank ){\n        balances[thebank] += msg.value;\n    } else {\n        count_customer_deposits += 1;\n        balances[msg.sender] += msg.value - deposit_fee;\n        balances[thebank] += deposit_fee;\n        term_deposit_end_block[msg.sender] = block.number + 30850;\n    }\n}",
+        "vulnerability": "Deposit Fee Manipulation",
+        "reason": "The 'deposit_fee' variable is modified to 0 ether if the balance of the sender is 0, which could be exploited by an attacker who could repeatedly deposit small amounts such as 1 wei (which is less than the 'minimum_deposit_amount') to the contract without paying any fee. This would allow the attacker to increment the 'count_customer_deposits' without proper fees, potentially leading to financial discrepancies.",
+        "file_name": "0xc99b3615724b7c4d3e4b348cfc8a25b9e2133828.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint256 withdraw_amount) {\n    if (withdraw_amount < 10 ether) throw;\n    if ( withdraw_amount > balances[msg.sender] ) throw;\n    if (block.number < term_deposit_end_block[msg.sender] ) throw;\n    uint256 interest = 1 ether;\n    if (msg.sender == thebank){\n        interest = 0 ether;\n    }\n    if (interest > balances[thebank]) interest = balances[thebank];\n    balances[thebank] -= interest;\n    balances[msg.sender] -= withdraw_amount;\n    if (!msg.sender.send(withdraw_amount)) throw;\n    if (!msg.sender.send(interest)) throw;\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function sends ether to the caller without updating their balance first which could lead to reentrancy attacks. An attacker could recursively call the withdraw function within a fallback function to drain the bank's ether before the balances are updated, leading to a potential depletion of all contract funds.",
+        "file_name": "0xc99b3615724b7c4d3e4b348cfc8a25b9e2133828.sol"
+    },
+    {
+        "function_name": "close_bank",
+        "code": "function close_bank(){\n    if (contract_alive_until_this_block < block.number || count_customer_deposits == 0) selfdestruct(thebank);\n}",
+        "vulnerability": "Premature Self-Destruct",
+        "reason": "The 'close_bank' function allows the contract to be destroyed either when the contract's designated block limit is reached or if there are no customer deposits. This can be exploited by an attacker by either waiting for the block limit to be reached or ensuring 'count_customer_deposits' is zero (by creating and then closing accounts) to prematurely trigger the 'selfdestruct', potentially causing loss of funds or denial of service for legitimate users.",
+        "file_name": "0xc99b3615724b7c4d3e4b348cfc8a25b9e2133828.sol"
+    }
+]

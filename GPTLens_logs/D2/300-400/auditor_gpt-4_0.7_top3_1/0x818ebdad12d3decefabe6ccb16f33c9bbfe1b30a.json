@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' transfers the entire contract balance to the current owner before updating the owner state variable. If the 'owner' is a malicious contract, it can call back into this contract during the transfer, potentially calling 'changeOwner' again and causing issues like draining extra funds or corrupting state.",
+        "file_name": "0x818ebdad12d3decefabe6ccb16f33c9bbfe1b30a.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Privilege escalation",
+        "reason": "The 'killContract' function allows any user to self-destruct the contract by sending a sufficient amount of ether. This could be misused by attackers to prematurely destroy the contract, possibly causing loss of funds or denial of service for legitimate users.",
+        "file_name": "0x818ebdad12d3decefabe6ccb16f33c9bbfe1b30a.sol"
+    },
+    {
+        "function_name": "mintTo",
+        "code": "function mintTo(address _to, uint256 _value) public returns (bool) { balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Unauthorized Token Minting",
+        "reason": "The 'mintTo' function allows any caller to mint an arbitrary amount of tokens to any address without restrictions. This can lead to inflation of the token supply and devaluation of the token, affecting all token holders negatively.",
+        "file_name": "0x818ebdad12d3decefabe6ccb16f33c9bbfe1b30a.sol"
+    }
+]

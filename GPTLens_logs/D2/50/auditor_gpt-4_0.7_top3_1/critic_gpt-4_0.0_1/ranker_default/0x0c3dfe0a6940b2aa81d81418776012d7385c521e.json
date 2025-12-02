@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getWinnings",
+        "vulnerability": "Integer Overflow/Underflow",
+        "criticism": "The reasoning is valid as the function does perform arithmetic operations without explicit checks for overflow or underflow. However, the severity depends on the implementation details of the 'mul' and 'div' functions used (assuming SafeMath is used, the risk would be mitigated). If not using SafeMath or similar, this could indeed lead to severe issues in calculating winnings. Profitability could be high if an attacker can manipulate the inputs to exploit the overflow/underflow.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'getWinnings' computes winnings based on the proportion of bets without safeguarding against potential integer overflow/underflow issues. This could lead to incorrect computation of winnings, particularly if the values of 'winningPot', 'philadelphiaBets', or 'newEnglandBets' are manipulated or reach extreme values.",
+        "code": "function getWinnings(address winner, uint donation) public { require(donation<=100); require(withdrawalOpen); require(bets[winner].claimed == false); uint winnings = 0; if (result == 1) winnings = (getPhiladelphiaBets(winner).mul(winningPot)).div(philadelphiaBets); else if (result == 2) winnings = (getNewEnglandBets(winner).mul(winningPot)).div(newEnglandBets); else revert(); wins[winner] = winnings; uint donated = winnings.mul(donation).div(100); bets[winner].claimed = true; winner.transfer(winnings-donated); }",
+        "file_name": "0x0c3dfe0a6940b2aa81d81418776012d7385c521e.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "getLosersOnePercent",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is partially correct in identifying a reentrancy risk due to the transfer call before state updates. However, the severity and profitability are overstated. The function requires that the sender is a specific address ('address(ballot)'), which limits the ability of an external attacker to exploit this vulnerability. This constraint significantly reduces the risk and potential profit from the vulnerability.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 2,
+        "reason": "The function 'getLosersOnePercent' is vulnerable to reentrancy attacks because it performs a transfer of funds (using 'ballot.transfer()') based on external calls before updating its state. An attacker could potentially re-enter this function during the transfer, leading to unexpected behavior such as draining funds.",
+        "code": "function getLosersOnePercent(uint loser) public returns (uint) { require(votingOpen); require(msg.sender == address(ballot)); if(loser==1) { ballot.transfer(philadelphiaBets.div(100)); return philadelphiaBets.div(100); } else if (loser==2) { ballot.transfer(newEnglandBets.div(100)); return newEnglandBets.div(100); } else { return 0; } }",
+        "file_name": "0x0c3dfe0a6940b2aa81d81418776012d7385c521e.sol",
+        "final_score": 3.75
+    },
+    {
+        "function_name": "voteResult",
+        "vulnerability": "Denial of Service",
+        "criticism": "The reasoning is incorrect as the function 'voteResult' does handle the case where 'team' is neither 1 nor 2 by reverting the transaction. This is a valid and common pattern to prevent invalid inputs. The revert prevents further execution and state changes, which is not a vulnerability but a feature to ensure data integrity. Therefore, the severity and profitability of this supposed vulnerability are non-existent.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'voteResult' does not handle the case where 'team' is neither 1 nor 2 except for reverting the transaction. This could be exploited by an attacker to cause a denial of service by repeatedly sending transactions with an invalid 'team' value, causing all transactions to fail after consuming gas.",
+        "code": "function voteResult(uint team) public payable { require(votingStart <= now && votingEnd >= now); require(voted[msg.sender] == false); require(msg.value == 50 finney); require(!closed); if(team == 1) { phiWon += 1; } else if (team == 2) { neWon += 1; } else revert(); voted[msg.sender] = true; votes[msg.sender] = team; totalVoters += 1; stake[msg.sender] = msg.value; }",
+        "file_name": "0x0c3dfe0a6940b2aa81d81418776012d7385c521e.sol",
+        "final_score": 0.5
+    }
+]

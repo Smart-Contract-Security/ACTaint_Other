@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "claimToken",
+        "code": "function claimToken( address to, string memory name ) public returns (bool) { require(containsOnlyLower(name)); uint256 tokenId = (uint256) (keccak256(abi.encodePacked(name))); require( reservedTokenId[tokenId] == address(0x0) || reservedTokenId[tokenId] == to ); _mint(to, tokenId); _setTokenURI(tokenId, name); return true; }",
+        "vulnerability": "Front-running",
+        "reason": "In the claimToken function, tokens are minted based on the hash of a name provided by the user. This function is vulnerable to front-running, where a malicious user can watch the pending transaction pool and issue a transaction with a higher gas price to mint a desired token before the original transaction is processed, effectively stealing the token reservation.",
+        "file_name": "0x3c642be0bb6cb9151652b999b26d80155bcea7de.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom( address from, address to, uint256 tokenId ) public { require(_isApprovedOrOwner(msg.sender, tokenId)); require(to != address(0)); _clearApproval(from, tokenId); _removeTokenFrom(from, tokenId); _addTokenTo(to, tokenId); emit Transfer(from, to, tokenId); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The transferFrom function transfers a token from one address to another. It calls _clearApproval, _removeTokenFrom, and _addTokenTo in sequence. If the to address is a contract, it could potentially re-enter the contract in the _addTokenTo function before the transfer is complete. This can lead to unexpected behavior or exploits where the state may be manipulated by a re-entrant contract.",
+        "file_name": "0x3c642be0bb6cb9151652b999b26d80155bcea7de.sol"
+    },
+    {
+        "function_name": "_addTokenTo",
+        "code": "function _addTokenTo(address to, uint256 tokenId) internal { require(_tokenOwner[tokenId] == address(0)); _tokenOwner[tokenId] = to; _ownedTokensCount[to] = _ownedTokensCount[to].add(1); }",
+        "vulnerability": "Unchecked return value",
+        "reason": "The _addTokenTo function does not check the return value of the .add operation from the SafeMath library when incrementing _ownedTokensCount. While SafeMath protects against overflows, ignoring its return value could potentially lead to state inconsistencies if used improperly elsewhere in the contract or future changes introduce errors.",
+        "file_name": "0x3c642be0bb6cb9151652b999b26d80155bcea7de.sol"
+    }
+]

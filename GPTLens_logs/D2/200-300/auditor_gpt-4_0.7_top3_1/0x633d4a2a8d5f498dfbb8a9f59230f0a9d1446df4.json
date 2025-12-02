@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "selfdestructs",
+        "code": "function selfdestructs() payable public { selfdestruct(owner); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The selfdestructs function is public and does not have any access control mechanisms (e.g., onlyOwner modifier). Any user can call this function, which will destroy the contract and send all remaining Ether to the owner. This can lead to denial of service (DoS) where legitimate users cannot interact with the contract anymore.",
+        "file_name": "0x633d4a2a8d5f498dfbb8a9f59230f0a9d1446df4.sol"
+    },
+    {
+        "function_name": "getEth",
+        "code": "function getEth(uint num) payable public { owner.send(num); }",
+        "vulnerability": "Arbitrary Ether withdrawal",
+        "reason": "The getEth function allows any caller to send an arbitrary amount of Ether (specified by 'num') from the contract to the owner's address without any checks or limitations. This can be exploited by an attacker to drain the contract of Ether.",
+        "file_name": "0x633d4a2a8d5f498dfbb8a9f59230f0a9d1446df4.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public { uint amount = msg.value / buyPrice; _transfer(this, msg.sender, amount); }",
+        "vulnerability": "Integer division leading to incorrect token amount",
+        "reason": "In the buy function, the amount of tokens to transfer is calculated using integer division of the sent Ether value by the buyPrice. If msg.value is less than buyPrice, the result of the division will be zero, leading to no tokens being transferred despite Ether being sent. This could be misused in scenarios where the buyPrice is set very high accidentally or maliciously, causing users to lose Ether without receiving any tokens.",
+        "file_name": "0x633d4a2a8d5f498dfbb8a9f59230f0a9d1446df4.sol"
+    }
+]

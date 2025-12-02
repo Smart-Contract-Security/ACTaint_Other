@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Unchecked return value",
+        "reason": "The distr function, which is used to distribute tokens and transfer them to the target address, does not check the return value of the 'add' function from the SafeMath library. If there's an overflow in 'balances[_to].add(_amount)', it could lead to incorrect balances without reverting the transaction.",
+        "file_name": "0xc84fd2ef1fe4ae7269da00c074d5625447c3f879.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The getTokens function allows for ETH to be sent and tokens to be received in exchange. The function first calculates the number of tokens to be distributed and then calls distr to transfer these tokens. However, since the state variable 'distributionFinished' is only set after calling distr, this could allow for reentrancy where an attacker could repeatedly call getTokens before distributionFinished is updated, potentially exhausting the token supply.",
+        "file_name": "0xc84fd2ef1fe4ae7269da00c074d5625447c3f879.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) onlyPayloadSize(3 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[_from]); require(_amount <= allowed[_from][msg.sender]); balances[_from] = balances[_from].sub(_amount); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); Transfer(_from, _to, _amount); return true; }",
+        "vulnerability": "Missing zero-value check for approvals",
+        "reason": "In the transferFrom function, there is no explicit check for _amount being greater than zero. This can lead to unnecessary gas usage and event emissions when zero tokens are transferred. Moreover, it does not prevent users from setting zero allowances, which could be used to exploit potential bugs in client implementations that do not expect an allowance of zero.",
+        "file_name": "0xc84fd2ef1fe4ae7269da00c074d5625447c3f879.sol"
+    }
+]

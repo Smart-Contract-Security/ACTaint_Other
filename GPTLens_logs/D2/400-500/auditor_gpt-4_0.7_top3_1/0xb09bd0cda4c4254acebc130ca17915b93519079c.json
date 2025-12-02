@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'changeOwner' function allows an external caller to become the new owner of the contract by sending a large amount of Ether. Within this function, there is a transfer of Ether to the current owner before the owner state is updated. This could allow the previous owner to re-enter and call this function again, potentially draining the contract's balance if the conditions are met multiple times.",
+        "file_name": "0xb09bd0cda4c4254acebc130ca17915b93519079c.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized self-destruction",
+        "reason": "The 'killContract' function allows the contract to be destroyed either by the current owner or by any external entity providing enough Ether. This creates a risk where an external attacker can permanently disable the contract by simply sending a large amount of Ether, without needing any prior authorization or authentication.",
+        "file_name": "0xb09bd0cda4c4254acebc130ca17915b93519079c.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Arbitrary contract modification",
+        "reason": "The 'changeNameSymbol' function allows the name and symbol of the token to be changed either by the owner or by any external address that sends enough Ether. This can lead to confusion, misleading token identity, and potential fraud if malicious parties change these fundamental properties to impersonate other tokens.",
+        "file_name": "0xb09bd0cda4c4254acebc130ca17915b93519079c.sol"
+    }
+]

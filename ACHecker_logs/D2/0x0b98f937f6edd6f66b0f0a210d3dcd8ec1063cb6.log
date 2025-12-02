@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x0b98f937f6edd6f66b0f0a210d3dcd8ec1063cb6.code
+Start time: 19/08/2022 03:29:46
+Building CFG...
+CFG generation time (secs): 0.04
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function transferKing(address)
+	( 1233)  4d1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function mintForwarder(uint256,bytes32,address[])
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.26
+End time: 19/08/2022 03:29:51

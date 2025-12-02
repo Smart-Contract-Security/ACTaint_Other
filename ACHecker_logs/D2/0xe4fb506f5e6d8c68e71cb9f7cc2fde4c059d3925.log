@@ -1,0 +1,45 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xe4fb506f5e6d8c68e71cb9f7cc2fde4c059d3925.code
+Start time: 31/08/2022 04:57:33
+Building CFG...
+CFG generation time (secs): 0.06
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function StartPaymens()
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function initEthMultiplicator(address)
+
+Violated access control check in function StartPaymens()
+	( 1762)  6e2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function initEthMultiplicator(address)
+
+Violated access control check in function ChangeManager(address)
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function initEthMultiplicator(address)
+
+Violated access control check in function ChangeManager(address)
+	( 2366)  93e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function initEthMultiplicator(address)
+
+Violated access control check in function SetPrcntRate(uint256)
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function initEthMultiplicator(address)
+
+Violated access control check in function SetPrcntRate(uint256)
+	( 2821)  b05:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function initEthMultiplicator(address)
+
+Violated access control check in function StopPaymens()
+	( 4496) 1190:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {3} in function initEthMultiplicator(address)
+
+Violated access control check in function StopPaymens()
+	( 4017)  fb1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function initEthMultiplicator(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.84
+End time: 31/08/2022 04:57:38

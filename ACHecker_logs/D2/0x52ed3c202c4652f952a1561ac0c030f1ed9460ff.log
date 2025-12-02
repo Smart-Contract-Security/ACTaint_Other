@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x52ed3c202c4652f952a1561ac0c030f1ed9460ff.code
+Start time: 21/08/2022 06:34:31
+Building CFG...
+CFG generation time (secs): 0.08
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function addSignature(uint256)
+Needed to protect following instruction in function kill()
+( 2748)  abc:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 12.26
+End time: 21/08/2022 06:34:43

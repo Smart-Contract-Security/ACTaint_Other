@@ -1,0 +1,49 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb17df4a656505570ad994d023f632d48de04edf2.code
+Start time: 27/08/2022 14:04:56
+Building CFG...
+CFG generation time (secs): 0.08
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw(address,address,uint256)
+	( 2031)  7ef:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {102} in function initialize(address)
+
+Violated access control check in function disableTokenUpgradability()
+	( 1712)  6b0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+Violated access control check in function disable()
+	(  687)  2af:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+Violated access control check in function isManagerOrOwner()
+	( 2031)  7ef:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {102} in function initialize(address)
+
+Violated access control check in function withdraw(address,address,uint256)
+	( 2947)  b83:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+Violated access control check in function transferManagement(address)
+	( 3456)  d80:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3651)  e43:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+Violated access control check in function changeTokenDelegate(address)
+	( 2247)  8c7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+Violated access control check in function renounceOwnership()
+	( 2059)  80b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {51} in function initialize(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.58
+End time: 27/08/2022 14:05:02

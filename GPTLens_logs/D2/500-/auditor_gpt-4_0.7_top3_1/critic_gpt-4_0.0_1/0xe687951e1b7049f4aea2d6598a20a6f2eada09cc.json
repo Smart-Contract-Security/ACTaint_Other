@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "lend",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism is valid as the function does indeed make an external call to 'target.call(data)' which can potentially re-enter the contract. However, the function sets '_inLendingMode' to true at the beginning which should prevent reentrancy if properly checked in all other functions. The severity is moderate because if other functions do not check this flag properly, it could lead to state corruption. The profitability is also moderate because exploiting this could allow an attacker to manipulate the lending process.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The 'lend' function sets '_inLendingMode' to true at the beginning and false at the end, but there's an external call to 'target.call(data)' in the middle. This external call can potentially call back into any of InstaLend's functions including 'lend' itself if '_inLendingMode' is reset before the external call is made. This would allow reentrancy attack where the state may be manipulated unexpectedly.",
+        "code": "function lend( IERC20[] memory tokens, uint256[] memory amounts, address target, bytes memory data ) public notInLendingMode { _inLendingMode = true; uint256[] memory prevAmounts = new uint256[](tokens.length); for (uint i = 0; i < tokens.length; i++) { prevAmounts[i] = tokens[i].balanceOf(address(this)); require(tokens[i].transfer(target, amounts[i])); } (bool res,) = target.call(data); require(res, 'Invalid arbitrary call'); for (uint i = 0; i < tokens.length; i++) { uint256 expectedFees = amounts[i].mul(_feesPercent).div(100); require(tokens[i].balanceOf(address(this)) >= prevAmounts[i].add(expectedFees)); if (_feesReceiver != address(this)) { require(tokens[i].transfer(_feesReceiver, expectedFees)); } } _inLendingMode = false; }",
+        "file_name": "0xe687951e1b7049f4aea2d6598a20a6f2eada09cc.sol"
+    },
+    {
+        "function_name": "redeemWithFee",
+        "vulnerability": "Integer Overflow",
+        "criticism": "The reasoning is somewhat correct, but modern smart contract platforms like Ethereum use safe math operations to prevent integer overflows by default. If the contract uses such libraries, this vulnerability might not exist. The severity and profitability are both low assuming safe math operations are used, as they would revert any transaction that tries to cause an overflow.",
+        "correctness": 4,
+        "severity": 2,
+        "profitability": 2,
+        "reason": "The calculation 'reward.mul(feePrecent).div(100)' in 'redeemWithFee' does not adequately handle cases where 'feePrecent' can be an unexpectedly high value, possibly leading to integer overflow. This can be manipulated to alter the fee amount drastically, potentially draining the contract or affecting payout calculations.",
+        "code": "function redeemWithFee( IKyberNetwork kyber, address receiver, uint256 feePrecent, bytes calldata signature, bytes calldata merkleProof ) external notInLendingMode { (uint160 root, uint256 index) = calcRootAndIndex(signature, merkleProof, abi.encodePacked(receiver, feePrecent)); Distribution storage distribution = distributions[root]; require(distribution.bitMask[index / 32] & (1 << (index % 32)) == 0); distribution.bitMask[index / 32] = distribution.bitMask[index / 32] | (1 << (index % 32)); uint256 reward = distribution.sumAmount.div(distribution.codesCount); uint256 fee = reward.mul(feePrecent).div(100); distribution.token.checkedTransfer(receiver, reward.sub(fee)); emit Redeemed(root, index, msg.sender); uint256 gotEther = _processPayment(kyber, address(distribution.token), fee); msg.sender.transfer(gotEther); }",
+        "file_name": "0xe687951e1b7049f4aea2d6598a20a6f2eada09cc.sol"
+    },
+    {
+        "function_name": "abort",
+        "vulnerability": "Unchecked Loop",
+        "criticism": "The reasoning is correct in identifying a potential gas limit issue due to the large loop. However, the severity depends on the actual gas cost per iteration and the gas limit of the block. If the loop's execution cost is optimized or if the gas limit is sufficiently high, this might not be a practical issue. The profitability is low as this vulnerability would mainly cause denial of service rather than a direct financial gain for an attacker.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "The 'abort' function iterates over a large array (up to 1024 elements) which can cause gas limit issues, leading to denial of service. If the loop consumes all available gas, it may prevent the function from successful execution, effectively locking funds or preventing state updates necessary for the contract's operation.",
+        "code": "function abort(uint160 root) public notInLendingMode { Distribution storage distribution = distributions[root]; require(now > distribution.deadline); uint256 count = 0; for (uint i = 0; i < 1024; i++) { if (distribution.bitMask[i / 32] & (1 << (i % 32)) != 0) { count += distribution.sumAmount / distribution.codesCount; } } distribution.token.checkedTransfer(distribution.sponsor, distribution.sumAmount.sub(count)); delete distributions[root]; }",
+        "file_name": "0xe687951e1b7049f4aea2d6598a20a6f2eada09cc.sol"
+    }
+]

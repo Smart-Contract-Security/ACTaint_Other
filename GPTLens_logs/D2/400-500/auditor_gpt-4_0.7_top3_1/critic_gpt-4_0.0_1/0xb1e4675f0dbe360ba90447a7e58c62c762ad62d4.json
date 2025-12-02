@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setAccessPolicy",
+        "vulnerability": "Arbitrary Access Control Change",
+        "criticism": "The reasoning is partially correct in identifying the potential for a malicious policy to be set. However, the function does include a check with 'require(newPolicy.allowed(newAccessController, ROLE_ACCESS_CONTROLLER, this, msg.sig));' which is intended to verify the legitimacy of the new policy. The effectiveness of this check depends on the implementation of the 'allowed' method in the new policy. If the new policy is malicious and always returns true, then the check is bypassed, but this requires the attacker to have control over the deployment of the new policy. The severity is moderate because if exploited, it could lead to full control over the contract, but the profitability is lower because it requires specific conditions (control over policy deployment) to exploit.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The function allows the change of the access policy controller without sufficient checks on the authenticity of the new policy. An attacker could deploy a malicious policy that always returns true on checks, effectively gaining full control over the contract.",
+        "code": "function setAccessPolicy(IAccessPolicy newPolicy, address newAccessController) public only(ROLE_ACCESS_CONTROLLER) {\n    require(newPolicy.allowed(newAccessController, ROLE_ACCESS_CONTROLLER, this, msg.sig));\n    IAccessPolicy oldPolicy = _accessPolicy;\n    _accessPolicy = newPolicy;\n    LogAccessPolicyChanged(msg.sender, oldPolicy, newPolicy);\n}",
+        "file_name": "0xb1e4675f0dbe360ba90447a7e58c62c762ad62d4.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is incorrect. The function 'transferFrom' does alter the allowance before calling 'transferInternal()', but this alone does not necessarily lead to reentrancy attacks. Reentrancy vulnerabilities typically occur when external calls are made to untrusted contracts before all internal state changes are completed. The provided code does not show what 'transferInternal()' does, and without knowing whether it makes external calls, it's speculative to assume reentrancy. Therefore, the correctness is low. The severity and profitability are also low due to the speculative nature of the vulnerability without further information on 'transferInternal()'.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "This function alters the allowance state before completing the token transfer. If the `transferInternal()` method includes external calls, it could potentially lead to reentrancy attacks where the allowance is manipulated while the transfer is in process.",
+        "code": "function transferFrom(address from, address to, uint256 amount) public returns (bool) {\n    var allowance = _allowed[from][msg.sender];\n    _allowed[from][msg.sender] = sub(allowance, amount);\n    transferInternal(from, to, amount);\n    return true;\n}",
+        "file_name": "0xb1e4675f0dbe360ba90447a7e58c62c762ad62d4.sol"
+    },
+    {
+        "function_name": "enableMigration",
+        "vulnerability": "Unchecked Migration Target",
+        "criticism": "The reasoning is correct in pointing out that there is no explicit check on the legitimacy of the migration target. This could indeed lead to severe issues if a malicious contract is set as the migration target. However, the severity and profitability depend on the implementation of the 'MigrationSource.enableMigration()' and the 'migrate()' function. If these functions have additional checks or limited capabilities, the impact might be less severe. Without more details on these implementations, the severity and profitability cannot be accurately assessed but are potentially high if the migration process is critical.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "This function does not check if the migration address provided as the target is a legitimate contract or not. An attacker could set a malicious contract as the migration target, potentially leading to loss or theft of tokens when the `migrate()` function is called.",
+        "code": "function enableMigration(IMigrationTarget migration) public onlyStates(LockState.AcceptingLocks, LockState.AcceptingUnlocks) {\n    MigrationSource.enableMigration(migration);\n}",
+        "file_name": "0xb1e4675f0dbe360ba90447a7e58c62c762ad62d4.sol"
+    }
+]

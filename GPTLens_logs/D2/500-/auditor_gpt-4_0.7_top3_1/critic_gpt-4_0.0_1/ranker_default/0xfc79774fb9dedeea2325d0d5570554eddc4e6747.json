@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Unchecked external call",
+        "criticism": "The criticism of the 'distr' function not checking its return value is valid, as ignoring the result of an external call can lead to inconsistencies in the contract's state if the call fails. However, the severity is not extremely high because the function still performs checks before making the call, such as ensuring the 'value' is less than 'totalRemaining'. The profitability of exploiting this vulnerability is also low because it primarily results in failed distributions rather than direct financial gain for an attacker.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'distr' is called without checking the return value which could lead to unexpected behaviors if 'distr' fails silently. This can be particularly dangerous as it involves token distribution logic that might not execute as intended.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xfc79774fb9dedeea2325d0d5570554eddc4e6747.sol",
+        "final_score": 4.75
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition",
+        "criticism": "The reasoning correctly identifies a potential race condition in the 'approve' function. However, the actual risk is somewhat mitigated by the fact that the function checks if the current allowance is zero before setting a new one, which is a common pattern to prevent the classic ERC20 race condition. The severity is moderate because it could lead to incorrect allowances being set, but the profitability is low as it requires specific conditions and timing to exploit effectively.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "This function is susceptible to a race condition known as the 'approval race condition'. An attacker can take advantage of the time window after the check and before the setting of the allowance, to change the allowance of a spender. This can result in incorrect or unintended allowance being set.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xfc79774fb9dedeea2325d0d5570554eddc4e6747.sol",
+        "final_score": 4.25
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with (unexpected) revert",
+        "criticism": "The reasoning is partially correct. The 'transfer' method indeed reverts the transaction if it fails, which could prevent the owner from withdrawing funds. However, the severity is overstated because the owner can mitigate this by ensuring there is enough gas for the transaction. The profitability is zero as this vulnerability does not provide a direct way for an attacker to profit, but rather it disrupts the contract's functionality.",
+        "correctness": 5,
+        "severity": 3,
+        "profitability": 0,
+        "reason": "In the 'withdraw' function, if the 'transfer' fails (for instance, if the gas cost of the transfer exceeds the available gas), it will cause the transaction to revert. This could lead to denial of service where the legitimate owner cannot withdraw funds because the transaction consistently fails.",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0xfc79774fb9dedeea2325d0d5570554eddc4e6747.sol",
+        "final_score": 3.25
+    }
+]

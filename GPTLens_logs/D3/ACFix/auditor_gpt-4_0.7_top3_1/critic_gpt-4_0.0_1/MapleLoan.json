@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setImplementation",
+        "vulnerability": "Centralized control risk",
+        "criticism": "The reasoning is accurate in identifying the centralized control risk due to the factory's ability to change the contract's implementation. This is a significant vulnerability as it could allow a compromised factory address to alter the contract's behavior maliciously. The severity is high because such changes can fundamentally alter the contract's operations or logic. However, the profitability is moderate because exploiting this vulnerability requires control over the factory address, which might not be easily achievable by an external attacker.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The function 'setImplementation' allows the factory (centralized entity) to change the contract's implementation. If the factory address is compromised, it could lead to undesirable changes in the contract logic, jeopardizing the integrity and security of the contract.",
+        "code": "function setImplementation(address newImplementation_) external override { require(msg.sender == _factory(), \"ML:SI:NOT_FACTORY\"); require(_setImplementation(newImplementation_), \"ML:SI:FAILED\"); }",
+        "file_name": "MapleLoan.sol"
+    },
+    {
+        "function_name": "migrate",
+        "vulnerability": "Centralized control risk",
+        "criticism": "The reasoning correctly identifies the risk associated with the centralized control in the 'migrate' function. The severity of this vulnerability is high as it allows the redirection of the contract's functionalities to potentially malicious addresses, which could lead to severe consequences such as loss of funds or compromised contract integrity. The profitability, similar to 'setImplementation', is moderate due to the requirement of controlling the factory address.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "Similarly to 'setImplementation', the 'migrate' function also permits the factory to migrate the contract to a new address. This function poses a centralization risk, where if the factory's security is breached, an attacker could redirect the contract's functionalities or state to a malicious contract.",
+        "code": "function migrate(address migrator_, bytes calldata arguments_) external override { require(msg.sender == _factory(), \"ML:M:NOT_FACTORY\"); require(_migrate(migrator_, arguments_), \"ML:M:FAILED\"); }",
+        "file_name": "MapleLoan.sol"
+    },
+    {
+        "function_name": "skim",
+        "vulnerability": "Funds redirection",
+        "criticism": "The reasoning correctly points out the potential for misuse in the 'skim' function, where tokens can be redirected under certain conditions. However, the severity is somewhat overstated as the function requires authorization from either the borrower or lender, and only non-critical assets can be transferred. This reduces the overall impact of the vulnerability. The profitability is low because exploiting this function requires specific roles (borrower or lender) and does not affect the primary assets of the contract.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "The 'skim' function allows either the borrower or lender to transfer any ERC20 tokens (not the predefined funds or collateral assets) from the contract to any address. While this aims to remove any mistakenly sent tokens, it could be exploited if sensitive access controls or checks are bypassed, leading to potential loss of valuable tokens stored in the contract.",
+        "code": "function skim(address token_, address destination_) external override whenProtocolNotPaused returns (uint256 skimmed_) { require((msg.sender == _borrower) || (msg.sender == _lender), \"L:S:NO_AUTH\"); require((token_ != _fundsAsset) && (token_ != _collateralAsset), \"L:S:INVALID_TOKEN\"); emit Skimmed(token_, skimmed_ = IERC20(token_).balanceOf(address(this)), destination_); require(ERC20Helper.transfer(token_, destination_, skimmed_), \"L:S:TRANSFER_FAILED\"); }",
+        "file_name": "MapleLoan.sol"
+    }
+]

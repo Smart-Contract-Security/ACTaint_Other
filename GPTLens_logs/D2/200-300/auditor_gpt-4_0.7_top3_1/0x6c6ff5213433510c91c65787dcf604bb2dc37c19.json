@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { if(msg.sender.balance < minBalanceForAccounts) sell((minBalanceForAccounts - msg.sender.balance) / sellPrice); _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function calls 'sell' function when the sender's balance is below a minimum threshold. The 'sell' function in turn can lead to a call to an external address via 'msg.sender.transfer(revenue);'. This external call could be exploited by a malicious contract to re-enter the 'transfer' function, potentially leading to issues like draining the contract's funds or other state corruption.",
+        "file_name": "0x6c6ff5213433510c91c65787dcf604bb2dc37c19.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require(!frozenAccount[_from]); require(_to != 0x0); initialize(_from); require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value > balanceOf[_to]); uint previousBalances = balanceOf[_from] + balanceOf[_to]; balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); assert(balanceOf[_from] + balanceOf[_to] == previousBalances); initialize(_to); }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The '_transfer' function does not check the return value of 'initialize(_from)' and 'initialize(_to)' function calls. This negligence can lead to unexpected behavior if 'initialize' fails for any reason, as the state updates in '_transfer' function will proceed regardless of whether the initialization was successful or not, potentially leading to incorrect token balances or other inconsistencies.",
+        "file_name": "0x6c6ff5213433510c91c65787dcf604bb2dc37c19.sol"
+    },
+    {
+        "function_name": "buy",
+        "code": "function buy() payable returns (uint amount){ amount = msg.value / buyPrice; require(balanceOf[this] >= amount); balanceOf[msg.sender] += amount; balanceOf[this] -= amount; Transfer(this, msg.sender, amount); return amount; }",
+        "vulnerability": "Integer Division",
+        "reason": "In the 'buy' function, there is a division operation ('msg.value / buyPrice') to determine the amount of tokens to transfer. If 'buyPrice' is set very high, it can cause the division to result in zero, leading to situations where users pay ethers but receive no tokens in return. This can be exploited by setting an extremely high 'buyPrice'. Moreover, there's no validation that 'buyPrice' is greater than zero, which can lead to division by zero errors.",
+        "file_name": "0x6c6ff5213433510c91c65787dcf604bb2dc37c19.sol"
+    }
+]

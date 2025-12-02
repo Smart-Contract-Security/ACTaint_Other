@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is vulnerable to reentrancy attacks. It updates the 'blacklist' and 'distributionFinished' status after the call to 'distr', which is an external call. If the function is called again (re-entered) before these statuses are updated, it could potentially lead to incorrect distribution behavior or even multiple distributions to the same investor.",
+        "file_name": "0xcca92f4e45f6cea3b1ce39c14ce3218f94a1f9fa.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) {\n    require(_to != address(0));\n    require(_amount <= balances[msg.sender]);\n    balances[msg.sender] = balances[msg.sender].sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Transfer(msg.sender, _to, _amount);\n    return true;\n}",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The 'transfer' function of the smart contract does not ensure that '_amount' is non-zero before subtracting it from 'balances[msg.sender]'. If '_amount' is zero and an underflow occurs, it could lead to arbitrary large balances, allowing users to transfer more tokens than they own.",
+        "file_name": "0xcca92f4e45f6cea3b1ce39c14ce3218f94a1f9fa.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "vulnerability": "Incorrect Balance Update",
+        "reason": "The 'burn' function reduces 'totalSupply' and 'totalDistributed' without validating that the '_value' to burn is actually available in excess of what has been distributed. This could lead to inconsistencies in totalSupply and totalDistributed calculations, potentially allowing for the burning of tokens that are considered as distributed.",
+        "file_name": "0xcca92f4e45f6cea3b1ce39c14ce3218f94a1f9fa.sol"
+    }
+]

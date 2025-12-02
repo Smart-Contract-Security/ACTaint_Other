@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); emit Distr(_to, _amount); emit Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Logic error in distribution check",
+        "reason": "The logic to check if 'totalDistributed' is greater or equal to 'totalSupply' and setting 'distributionFinished' to true is placed after the 'return true;' statement, which makes this part of the code unreachable. This could result in over-distribution of the tokens beyond the intended 'totalSupply'.",
+        "file_name": "0x62d6655db4d29a38e3fa588bcd4137c6d330c2a2.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "ERC20 race condition",
+        "reason": "The function does not reset the spender's allowance to 0 before setting it to a new value, which is susceptible to the known ERC20 race condition. An attacker can exploit this by calling 'transferFrom' twice quickly before the 'approve' transaction is mined, potentially allowing double spending.",
+        "file_name": "0x62d6655db4d29a38e3fa588bcd4137c6d330c2a2.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { uint256 etherBalance = address(this).balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Lack of check for transfer success",
+        "reason": "The function directly transfers Ether to 'owner' without checking if the transfer was successful. In case of a failure (e.g., if the contract balance is 0), the function will still execute without errors, potentially leading to misleading assumptions about the contract state.",
+        "file_name": "0x62d6655db4d29a38e3fa588bcd4137c6d330c2a2.sol"
+    }
+]

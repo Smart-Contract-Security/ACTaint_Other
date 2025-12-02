@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Kill",
+        "code": "function Kill() { selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The Kill function allows any user to destroy the contract because it does not check if the sender is authorized (e.g., owner or admin). This can result in loss of contract and any funds or assets it holds without any restrictions.",
+        "file_name": "0x8a630b2d1e25f1ad066feaa090f5bdb63a1451cc.sol"
+    },
+    {
+        "function_name": "Test2",
+        "code": "function Test2() returns(address) { return msg.sender; }",
+        "vulnerability": "Missing function visibility",
+        "reason": "The function Test2 lacks a visibility specifier (e.g., public, private), which means it defaults to 'public'. Not specifying visibility explicitly can lead to unintentional exposure of contract methods and potentially allow an attacker to interact with the contract in unintended ways.",
+        "file_name": "0x8a630b2d1e25f1ad066feaa090f5bdb63a1451cc.sol"
+    },
+    {
+        "function_name": "Test4",
+        "code": "function Test4() returns(uint) { return a.length; }",
+        "vulnerability": "Missing function visibility",
+        "reason": "Similar to the Test2 function, Test4 also lacks a visibility specifier and defaults to 'public'. This could inadvertently expose internal state details such as the length of array 'a', which should ideally be kept private or accessed via a controlled method to protect against potential information leakage and misuse.",
+        "file_name": "0x8a630b2d1e25f1ad066feaa090f5bdb63a1451cc.sol"
+    }
+]

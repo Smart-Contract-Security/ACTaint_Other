@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "authenticate",
+        "code": "function authenticate(bytes _publicKey) { address signer = address(keccak256(_publicKey)); bytes32 publicKey1; bytes32 publicKey2; assembly { publicKey1 := mload(add(_publicKey,0x20)) publicKey2 := mload(add(_publicKey,0x40)) } bytes32 symmetricKey1 = proof_of_symmetric_key1 ^ publicKey1; bytes32 symmetricKey2 = proof_of_symmetric_key2 ^ publicKey2; bytes32 r = proof_of_public_key1 ^ symmetricKey1; bytes32 s = proof_of_public_key2 ^ symmetricKey2; bytes32 msgHash = keccak256(\"\\x19Ethereum Signed Message:\\n64\", _publicKey); if(ecrecover(msgHash, 27, r, s) == signer) suicide(msg.sender); if(ecrecover(msgHash, 28, r, s) == signer) suicide(msg.sender); }",
+        "vulnerability": "Use of Deprecated Function",
+        "reason": "The function suicide(msg.sender) is used in the authenticate function, which is deprecated and should be replaced with selfdestruct(msg.sender). Using deprecated functions can lead to unpredictability in behavior and should be avoided. Moreover, it poses security risks as it may not behave as expected on newer versions of the Ethereum Virtual Machine.",
+        "file_name": "0xfd645ad26d3cca2a65ef36877b55b84fda7b9012.sol"
+    },
+    {
+        "function_name": "authenticate",
+        "code": "function authenticate(bytes _publicKey) { address signer = address(keccak256(_publicKey)); bytes32 publicKey1; bytes32 publicKey2; assembly { publicKey1 := mload(add(_publicKey,0x20)) publicKey2 := mload(add(_publicKey,0x40)) } bytes32 symmetricKey1 = proof_of_symmetric_key1 ^ publicKey1; bytes32 symmetricKey2 = proof_of_symmetric_key2 ^ publicKey2; bytes32 r = proof_of_public_key1 ^ symmetricKey1; bytes32 s = proof_of_public_key2 ^ symmetricKey2; bytes32 msgHash = keccak256(\"\\x19Ethereum Signed Message:\\n64\", _publicKey); if(ecrecover(msgHash, 27, r, s) == signer) suicide(msg.sender); if(ecrecover(msgHash, 28, r, s) == signer) suicide(msg.sender); }",
+        "vulnerability": "Arbitrary Code Execution",
+        "reason": "The authenticate function contains a dangerous logic where if certain conditions of ecrecover function are met, it will execute suicide(msg.sender), which destroys the contract and sends remaining funds to the caller's address. This can be exploited by an attacker who can generate or find a public key that satisfies these conditions, allowing them to destruct the contract arbitrarily and seize control of any contract funds.",
+        "file_name": "0xfd645ad26d3cca2a65ef36877b55b84fda7b9012.sol"
+    },
+    {
+        "function_name": "authenticate",
+        "code": "function authenticate(bytes _publicKey) { address signer = address(keccak256(_publicKey)); bytes32 publicKey1; bytes32 publicKey2; assembly { publicKey1 := mload(add(_publicKey,0x20)) publicKey2 := mload(add(_publicKey,0x40)) } bytes32 symmetricKey1 = proof_of_symmetric_key1 ^ publicKey1; bytes32 symmetricKey2 = proof_of_symmetric_key2 ^ publicKey2; bytes32 r = proof_of_public_key1 ^ symmetricKey1; bytes32 s = proof_of_public_key2 ^ symmetricKey2; bytes32 msgHash = keccak256(\"\\x19Ethereum Signed Message:\\n64\", _publicKey); if(ecrecover(msgHash, 27, r, s) == signer) suicide(msg.sender); if(ecrecover(msgHash, 28, r, s) == signer) suicide(msg.sender); }",
+        "vulnerability": "Inline Assembly Usage",
+        "reason": "The use of inline assembly to manually load data bypasses various high-level security checks provided by Solidity. This makes the code prone to errors and security vulnerabilities such as incorrect memory handling or buffer overflows. Additionally, inline assembly code is hard to read and maintain, increasing the risk of introducing further vulnerabilities upon updates or modifications.",
+        "file_name": "0xfd645ad26d3cca2a65ef36877b55b84fda7b9012.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "enter",
+        "code": "function enter() { if (msg.value < 0.01 ether) { msg.sender.send(msg.value); return; } uint amount; if (msg.value > 50 ether) { msg.sender.send(msg.value - 50 ether); amount = 50 ether; } else { amount = msg.value; } uint idx = persons.length; persons.length += 1; persons[idx].etherAddress = msg.sender; persons[idx].amount = amount; if (idx != 0) { collectedFees += amount / 10; owner.send(collectedFees); collectedFees = 0; balance += amount - amount / 10; } else { balance += amount; } while (balance > persons[payoutIdx].amount / 100 * 300) { uint transactionAmount = persons[payoutIdx].amount / 100 * 300; persons[payoutIdx].etherAddress.send(transactionAmount); balance -= transactionAmount; payoutIdx += 1; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'enter' sends Ether to the owner and to payout participants within the same transaction as updating the state. This can be exploited by a malicious contract that calls 'enter' again when it receives Ether, leading to reentrancy attacks where the state updates can be bypassed or corrupted.",
+        "file_name": "0x5e84c1a6e8b7cd42041004de5cd911d537c5c007.sol"
+    },
+    {
+        "function_name": "enter",
+        "code": "function enter() { if (msg.value < 0.01 ether) { msg.sender.send(msg.value); return; } uint amount; if (msg.value > 50 ether) { msg.sender.send(msg.value - 50 ether); amount = 50 ether; } else { amount = msg.value; } uint idx = persons.length; persons.length += 1; persons[idx].etherAddress = msg.sender; persons[idx].amount = amount; if (idx != 0) { collectedFees += amount / 10; owner.send(collectedFees); collectedFees = 0; balance += amount - amount / 10; } else { balance += amount; } while (balance > persons[payoutIdx].amount / 100 * 300) { uint transactionAmount = persons[payoutIdx].amount / 100 * 300; persons[payoutIdx].etherAddress.send(transactionAmount); balance -= transactionAmount; payoutIdx += 1; } }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The function 'enter' does not perform safe math operations which might lead to integer overflow/underflow. For example, calculations such as 'amount / 10' or 'amount / 100 * 300' could potentially overflow if 'amount' is very large.",
+        "file_name": "0x5e84c1a6e8b7cd42041004de5cd911d537c5c007.sol"
+    },
+    {
+        "function_name": "setOwner",
+        "code": "function setOwner(address _owner) onlyowner { owner = _owner; }",
+        "vulnerability": "Arbitrary Ownership Takeover",
+        "reason": "The function 'setOwner' allows the owner to be changed by the current owner. This poses a risk if the owner account is compromised, as an attacker could take full control of the contract by changing the owner to an address under their control.",
+        "file_name": "0x5e84c1a6e8b7cd42041004de5cd911d537c5c007.sol"
+    }
+]

@@ -1,0 +1,29 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x013620bf5142f9d8487e92c1d514c38e1b086613.code
+Start time: 18/08/2022 19:16:40
+Building CFG...
+CFG generation time (secs): 0.08
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function callback()
+	(  796)  31c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function Lottery()
+
+Violated access control check in function withrawFee()
+	(  823)  337:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function Lottery()
+
+Violated access control check in function destroykill()
+	(  999)  3e7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function Lottery()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function Lottery()
+Needed to protect following instruction in function destroykill()
+( 1017)  3f9:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 1.62
+End time: 18/08/2022 19:16:41

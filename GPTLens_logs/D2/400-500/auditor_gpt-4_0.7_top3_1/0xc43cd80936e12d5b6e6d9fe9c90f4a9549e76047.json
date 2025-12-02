@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _tokenId) external payable { if(_from != msg.sender){ require(_to == msg.sender); require(raceListed[_tokenId]==false); require(_from==SaddleOwnerIndex[_tokenId]); _sell(_from, _tokenId, msg.value); }else{ _to.transfer(msg.value); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function allows for external calls (e.g., '_to.transfer(msg.value)') before all internal state updates are finalized (e.g., changing ownership in '_sell' function), which can lead to reentrancy attacks. An attacker can potentially call this function again as part of the fallback function called by the 'transfer', leading to unexpected behavior like transferring tokens more than once.",
+        "file_name": "0xc43cd80936e12d5b6e6d9fe9c90f4a9549e76047.sol"
+    },
+    {
+        "function_name": "buySaddleShop",
+        "code": "function buySaddleShop(uint256 id) payable external { require(SaddleShopForSale[id]==true); uint256 price = SaddleShopPrice[id]; require(price<=msg.value); uint256 Fee = price / SaddleShopSaleFee ; uint256 oPrice= price - Fee; address _to = msg.sender; address _from = SaddleShopO[id]; SaddleShopOwnCount[_to]++; SaddleShopO[id] = _to; SaddleShopForSale[id]=false; SaddleShopOwnCount[_from]--; emit Transfer(_from, _to, id); ceoAddress.transfer(Fee); if(_from!=0){ _from.transfer(oPrice); }else{ ceoAddress.transfer(oPrice); } uint256 buyExcess = msg.value - oPrice - Fee; _to.transfer(buyExcess); }",
+        "vulnerability": "Unchecked return values",
+        "reason": "The function does not check the return values of 'transfer' calls to addresses, which can lead to loss of funds if the transfer fails (e.g., if the recipient is a contract that rejects ether). Solidity allows specifying that a function call must succeed, and failure to do so could lead to funds being lost or locked.",
+        "file_name": "0xc43cd80936e12d5b6e6d9fe9c90f4a9549e76047.sol"
+    },
+    {
+        "function_name": "setSaleFee",
+        "code": "function setSaleFee(uint256 val) external onCTO { saleFee = val; }",
+        "vulnerability": "Arbitrary Fee Setting",
+        "reason": "This function allows the CTO to arbitrarily set the sale fee without any upper limit, potentially setting it to a very high value which could amount to an unfair or abusive fee level. This could be used to drain funds from users when they perform transactions that involve fees.",
+        "file_name": "0xc43cd80936e12d5b6e6d9fe9c90f4a9549e76047.sol"
+    }
+]

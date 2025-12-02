@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "voteSuicide",
+        "code": "function voteSuicide(address beneficiary) multisig(sha3(msg.data)) { selfdestruct(beneficiary); }",
+        "vulnerability": "Destructive action control",
+        "reason": "The 'voteSuicide' function allows the contract to be destroyed if the multisig conditions are met. This could lead to loss of funds or denial of service if abused by attackers who manage to manipulate or bypass the multisig condition.",
+        "file_name": "0x815a46107e5ee2291a76274dc879ce947a3f0850.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) returns (bool success) { assert(allowTransactions); assert(!frozenAccount[msg.sender]); assert(!frozenAccount[_from]); assert(balanceOf[_from] >= _amount); assert(balanceOf[_to] + _amount >= balanceOf[_to]); assert(_amount <= allowance[_from][msg.sender]); balanceOf[_from] -= _amount; balanceOf[_to] += _amount; allowance[_from][msg.sender] -= _amount; activateAccount(_from); activateAccount(_to); activateAccount(msg.sender); Transfer(_from, _to, _amount); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transferFrom' function in the contract does not protect against reentrancy attacks. Since the balance updates and event emissions occur after the state changes, an attacker could potentially call this function recursively, leading to unexpected behaviors or exploits.",
+        "file_name": "0x815a46107e5ee2291a76274dc879ce947a3f0850.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address _spender, uint256 _amount, bytes _extraData) returns (bool success) { assert(allowTransactions); assert(!frozenAccount[msg.sender]); allowance[msg.sender][_spender] = _amount; activateAccount(msg.sender); activateAccount(_spender); activateAllowanceRecord(msg.sender, _spender); TokenRecipient spender = TokenRecipient(_spender); spender.receiveApproval(msg.sender, _amount, this, _extraData); Approval(msg.sender, _spender, _amount); return true; }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'approveAndCall' makes an external call to an arbitrary address without checking the return value. This could potentially allow an attacker to execute malicious code in the context of the contract if the external call fails silently or behaves unexpectedly.",
+        "file_name": "0x815a46107e5ee2291a76274dc879ce947a3f0850.sol"
+    }
+]

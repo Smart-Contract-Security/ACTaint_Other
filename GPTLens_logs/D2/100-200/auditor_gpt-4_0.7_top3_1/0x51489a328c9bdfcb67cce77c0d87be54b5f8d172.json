@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Unprotected Ownership Transfer",
+        "reason": "The changeOwner function allows anyone who sends at least 1000 ether to unilaterally take ownership of the contract. This can lead to a malicious user gaining control and potentially altering contract behavior or draining assets.",
+        "file_name": "0x51489a328c9bdfcb67cce77c0d87be54b5f8d172.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Selfdestruct Abuse",
+        "reason": "The killContract function allows the owner or anyone who sends at least 500 ether to permanently disable the contract using selfdestruct, removing all code and data. This can be abused by attackers to halt the functionality after manipulating the contract state or to disrupt service.",
+        "file_name": "0x51489a328c9bdfcb67cce77c0d87be54b5f8d172.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Public Symbol and Name Tampering",
+        "reason": "The changeNameSymbol function allows anyone who sends at least 400 ether to change the token's name and symbol. This could be misused to mislead users or impersonate other tokens, potentially leading to fraud or loss of trust in the token.",
+        "file_name": "0x51489a328c9bdfcb67cce77c0d87be54b5f8d172.sol"
+    }
+]

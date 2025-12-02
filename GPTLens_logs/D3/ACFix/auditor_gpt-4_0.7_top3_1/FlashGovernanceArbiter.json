@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "assertGovernanceApproved",
+        "code": "function assertGovernanceApproved( address sender, address target, bool emergency ) public { if ( IERC20(flashGovernanceConfig.asset).transferFrom(sender, address(this), flashGovernanceConfig.amount) && pendingFlashDecision[target][sender].unlockTime < block.timestamp ) { require( emergency || (block.timestamp - security.lastFlashGovernanceAct > security.epochSize), \"Limbo: flash governance disabled for rest of epoch\" ); pendingFlashDecision[target][sender] = flashGovernanceConfig; pendingFlashDecision[target][sender].unlockTime += block.timestamp; security.lastFlashGovernanceAct = block.timestamp; emit flashDecision(sender, flashGovernanceConfig.asset, flashGovernanceConfig.amount, target); } else { revert(\"LIMBO: governance decision rejected.\"); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The `assertGovernanceApproved` function transfers tokens from the sender to the contract without updating state before the transfer, using `transferFrom`. An attacker can exploit this by creating a malicious token that triggers a fallback function when `transferFrom` is called. This fallback function could call `assertGovernanceApproved` again, leading to a reentrancy attack because the state update (`pendingFlashDecision`) occurs after the transfer.",
+        "file_name": "FlashGovernanceArbiter.sol"
+    },
+    {
+        "function_name": "burnFlashGovernanceAsset",
+        "code": "function burnFlashGovernanceAsset( address targetContract, address user, address asset, uint256 amount ) public virtual onlySuccessfulProposal { if (pendingFlashDecision[targetContract][user].assetBurnable) { Burnable(asset).burn(amount); } pendingFlashDecision[targetContract][user] = flashGovernanceConfig; }",
+        "vulnerability": "Arbitrary Asset Burning",
+        "reason": "The `burnFlashGovernanceAsset` function allows burning of any asset specified by the `asset` parameter if the asset is marked as burnable in `pendingFlashDecision`. However, it does not check whether the `asset` passed to the function is the same as `pendingFlashDecision[targetContract][user].asset`. This allows an attacker who can influence the input to burn any asset that implements the Burnable interface, not just the intended asset associated with the governance.",
+        "file_name": "FlashGovernanceArbiter.sol"
+    },
+    {
+        "function_name": "withdrawGovernanceAsset",
+        "code": "function withdrawGovernanceAsset(address targetContract, address asset) public virtual { require( pendingFlashDecision[targetContract][msg.sender].asset == asset && pendingFlashDecision[targetContract][msg.sender].amount > 0 && pendingFlashDecision[targetContract][msg.sender].unlockTime < block.timestamp, \"Limbo: Flashgovernance decision pending.\" ); IERC20(pendingFlashDecision[targetContract][msg.sender].asset).transfer( msg.sender, pendingFlashDecision[targetContract][msg.sender].amount ); delete pendingFlashDecision[targetContract][msg.sender]; }",
+        "vulnerability": "Asset Theft by Timing Attack",
+        "reason": "The `withdrawGovernanceAsset` function allows users to withdraw assets from `pendingFlashDecision` after the unlock time. However, the function does not prevent multiple withdrawals if the user can call the function again before the state (`pendingFlashDecision[targetContract][msg.sender]`) is deleted. An attacker can potentially issue multiple fast transactions to withdraw more assets than they are entitled to, leading to asset theft.",
+        "file_name": "FlashGovernanceArbiter.sol"
+    }
+]

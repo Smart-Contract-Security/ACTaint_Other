@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "refund",
+        "code": "function refund() private { uint256 weiValue = this.balance; if (weiValue == 0) throw; uint256 weiRefunded; weiRefunded = safeAdd(weiRefunded, weiValue); refund(); if (!msg.sender.send(weiValue)) throw; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The refund function is susceptible to a reentrancy attack because it calls msg.sender.send(weiValue) before setting weiRefunded, potentially allowing an attacker to re-enter and drain the contract if the fallback function of the attacker's contract calls refund again. Additionally, the recursive call to refund() before actually sending ether creates an infinite loop, leading to out-of-gas errors, making this function unusable.",
+        "file_name": "0xea7cbf19027087ba91ad110e95a5c2a532d35100.sol"
+    },
+    {
+        "function_name": "claim_bounty",
+        "code": "function claim_bounty(){ if (bought_tokens) return; if (kill_switch) throw; bought_tokens = true; time_bought = now + 1 days; token.proxyPayment.value(this.balance - bounty)(address(this)); if(this.balance > ETH_to_end) { msg.sender.transfer(bounty); } else { time_bought = now + 1 days * 9; if(this.balance > ETH_to_end) { msg.sender.transfer(bounty); } } }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function claim_bounty makes an external call to token.proxyPayment without checking the return value. This external call could fail silently, leading to unexpected behavior in the contract. Additionally, the function manipulates the state after the external call (setting 'bought_tokens' and 'time_bought'), which violates the checks-effects-interactions pattern and can lead to reentrancy issues.",
+        "file_name": "0xea7cbf19027087ba91ad110e95a5c2a532d35100.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(){ if (!bought_tokens) { uint256 eth_amount = balances[msg.sender]; balances[msg.sender] = 0; msg.sender.transfer(eth_amount); } else { uint256 ZBR_amount = balances[msg.sender] * ZBR_per_eth; balances[msg.sender] = 0; uint256 fee = 0; if (!checked_in[msg.sender]) { fee = ZBR_amount / 100; if(!token.transfer(developer_address, fee)) throw; } if(!token.transfer(msg.sender, ZBR_amount - fee)) throw; } }",
+        "vulnerability": "Denial of Service (DoS) via unchecked external call",
+        "reason": "In the function withdraw, the external calls to token.transfer are not checked for failure except through a 'throw' statement, which can lead to denial of service if the external call fails. This failure could be maliciously induced or accidental, but either way, it can prevent legitimate operations of the contract. Also, the function modifies state before these external calls, which can be exploited in reentrancy attacks.",
+        "file_name": "0xea7cbf19027087ba91ad110e95a5c2a532d35100.sol"
+    }
+]

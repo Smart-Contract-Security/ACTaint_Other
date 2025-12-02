@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyItem",
+        "code": "function buyItem( address _nftAddress, uint256 _tokenId, address _owner, uint256 _quantity ) external nonReentrant isListed(_nftAddress, _tokenId, _owner) validListing(_nftAddress, _tokenId, _owner) { require(_msgSender() != _owner, 'Cannot buy your own item'); Listing memory listedItem = listings[_nftAddress][_tokenId][_owner]; require(listedItem.quantity >= _quantity, 'not enough quantity'); if (IERC165(_nftAddress).supportsInterface(INTERFACE_ID_ERC721)) { IERC721(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId); } else { IERC1155(_nftAddress).safeTransferFrom(_owner, _msgSender(), _tokenId, _quantity, bytes('')); } if (listedItem.quantity == _quantity) { delete (listings[_nftAddress][_tokenId][_owner]); } else { listings[_nftAddress][_tokenId][_owner].quantity -= _quantity; } emit ItemSold( _owner, _msgSender(), _nftAddress, _tokenId, _quantity, listedItem.pricePerItem ); TreasureNFTOracle(oracle).reportSale(_nftAddress, _tokenId, paymentToken, listedItem.pricePerItem); _buyItem(listedItem.pricePerItem, _quantity, _owner); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyItem' modifies the state after calling an external contract (IERC721.safeTransferFrom or IERC1155.safeTransferFrom) and before the end of its execution, which can lead to reentrancy attacks where the state may be manipulated before the function finishes execution. Although nonReentrant modifier is used, the state changes after calling external contracts makes it vulnerable.",
+        "file_name": "TreasureMarketplace.sol"
+    },
+    {
+        "function_name": "setFeeRecipient",
+        "code": "function setFeeRecipient(address _feeRecipient) public onlyOwner { feeReceipient = _feeRecipient; emit UpdateFeeRecipient(_feeRecipient); }",
+        "vulnerability": "Arbitrary Redirection of Funds",
+        "reason": "The function 'setFeeRecipient' allows the owner to change the recipient address of the fees at any time without restrictions or notifications to the users, potentially redirecting funds to an unintended or malicious address, thereby misappropriating user funds.",
+        "file_name": "TreasureMarketplace.sol"
+    },
+    {
+        "function_name": "cancelListing",
+        "code": "function cancelListing(address _nftAddress, uint256 _tokenId) external nonReentrant isListed(_nftAddress, _tokenId, _msgSender()) { _cancelListing(_nftAddress, _tokenId, _msgSender()); }",
+        "vulnerability": "Front-Running",
+        "reason": "The 'cancelListing' function allows sellers to cancel their listings, but due to blockchain's transparent nature, malicious users can watch the mempool for pending cancel transactions and front-run these transactions with buy orders, purchasing items right before they are canceled.",
+        "file_name": "TreasureMarketplace.sol"
+    }
+]

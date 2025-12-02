@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "toggleAuctionLive",
+        "vulnerability": "Owner manipulation",
+        "criticism": "The reasoning correctly identifies that the owner can toggle the auction state, which could indeed lead to potential disruptions or manipulations. However, this is not inherently a vulnerability but a feature that gives control to the owner, which is common in many smart contracts. The severity depends on the specific auction mechanics and what depends on the 'isAuctionLive' state. The profitability is low as it does not directly lead to financial gain but could be used to influence other outcomes beneficial to the owner.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'toggleAuctionLive' allows the contract owner to toggle the auction state at any time, potentially leading to disruptions during an ongoing auction or enabling manipulation by allowing or disallowing withdrawals and other actions dependent on the auction state.",
+        "code": "function toggleAuctionLive() external onlyOwner {\n    isAuctionLive = !isAuctionLive;\n    emit ToggledAuctionLive(isAuctionLive);\n}",
+        "file_name": "CrabNetting.sol"
+    },
+    {
+        "function_name": "withdrawUSDC",
+        "vulnerability": "Re-entrancy",
+        "criticism": "The reasoning is accurate in identifying a classic re-entrancy vulnerability pattern where state updates (user balance decrement) happen after an external call (token transfer). This could indeed allow an attacker to drain more funds than they should be able to. The severity is high due to the potential direct financial loss. The profitability is also high as an attacker can exploit this to extract more funds than their balance permits.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The 'withdrawUSDC' function does not protect against re-entrancy attacks. The function adjusts the user's balance and interacts with an external contract (IERC20) to transfer funds. The lack of re-entrancy protection could allow an attacker to perform multiple withdrawals in a single transaction before the balance is effectively reduced, potentially leading to a loss of funds.",
+        "code": "function withdrawUSDC(uint256 _amount) external {\n    require(!isAuctionLive, \"auction is live\");\n    usdBalance[msg.sender] = usdBalance[msg.sender] - _amount;\n    require( usdBalance[msg.sender] >= minUSDCAmount || usdBalance[msg.sender] == 0, \"remaining amount smaller than minimum, consider removing full balance\" );\n    uint256 toRemove = _amount;\n    uint256 lastIndexP1 = userDepositsIndex[msg.sender].length;\n    for (uint256 i = lastIndexP1; i > 0; i--) {\n        Receipt storage r = deposits[userDepositsIndex[msg.sender][i - 1]];\n        if (r.amount > toRemove) {\n            r.amount -= toRemove;\n            toRemove = 0;\n            break;\n        } else {\n            toRemove -= r.amount;\n            delete deposits[userDepositsIndex[msg.sender][i - 1]];\n        }\n    }\n    IERC20(usdc).transfer(msg.sender, _amount);\n    emit USDCDeQueued(msg.sender, _amount, usdBalance[msg.sender]);\n}",
+        "file_name": "CrabNetting.sol"
+    },
+    {
+        "function_name": "_checkOrder",
+        "vulnerability": "Nonce mishandling",
+        "criticism": "The reasoning suggests a potential vulnerability related to nonce management. However, the provided code snippet shows that a nonce is used and checked with '_useNonce' function, which typically marks the nonce as used. Without evidence of improper nonce management or resetting, the claim is speculative. The severity and profitability are low unless there's clear evidence of nonce misuse or reset mechanisms that could be exploited.",
+        "correctness": 3,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "The '_checkOrder' function uses a nonce for each order to ensure that an order cannot be replayed. However, if the nonce is not properly managed or if the nonces are reset or reused after a certain condition, it can potentially allow an old or already processed order to be executed again, leading to unexpected trading actions or financial discrepancies.",
+        "code": "function _checkOrder(Order memory _order) internal {\n    _useNonce(_order.trader, _order.nonce);\n    bytes32 structHash = keccak256( abi.encode( _CRAB_NETTING_TYPEHASH, _order.bidId, _order.trader, _order.quantity, _order.price, _order.isBuying, _order.expiry, _order.nonce ) );\n    bytes32 hash = _hashTypedDataV4(structHash);\n    address offerSigner = ECDSA.recover(hash, _order.v, _order.r, _order.s);\n    require(offerSigner == _order.trader, \"Signature not correct\");\n    require(_order.expiry >= block.timestamp, \"order expired\");\n}",
+        "file_name": "CrabNetting.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "RefundDeposit",
+        "vulnerability": "Lack of checks on amount to refund",
+        "criticism": "The reasoning is accurate in identifying a critical flaw where the function does not verify if the 'amt' to be refunded is less than or equal to the deposited amount. This oversight can indeed lead to negative balances in the 'Available' state variable, potentially allowing more ETH to be withdrawn than was deposited. This vulnerability is severe as it directly affects the financial integrity of the contract and can be highly profitable for an attacker if exploited.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The function does not check if the amount 'amt' to be refunded is less than or equal to the amount deposited by the address 'addr'. This can lead to negative balances in the contract's 'Available' state variable and allow more ETH to be withdrawn than was deposited.",
+        "code": "function RefundDeposit(address addr, uint amt) public { if(Depositors[addr] > 0) { if(msg.sender == Ho1der) { addr.send(amt); Available -= amt; Withdrew(addr, amt); } } }",
+        "file_name": "0xacb8a40073d0a7e041b29381debcafc2b538cd7c.sol"
+    },
+    {
+        "function_name": "RefundDeposit",
+        "vulnerability": "Reentrancy via direct ETH transfer",
+        "criticism": "The reasoning correctly identifies a reentrancy vulnerability due to the use of 'addr.send(amt)'. This method of sending ETH does not prevent the called contract from executing its fallback function, which could potentially call back into 'RefundDeposit'. This can lead to multiple unauthorized withdrawals if not properly mitigated, making this a severe and potentially profitable attack vector. The criticism is well-founded and highlights a significant risk.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 8,
+        "reason": "The function uses 'addr.send(amt)' for transferring ether, which is susceptible to reentrancy attacks. If the address 'addr' is a contract, it can execute fallback function upon receiving ETH and call RefundDeposit again leading to multiple unauthorized withdrawals.",
+        "code": "function RefundDeposit(address addr, uint amt) public { if(Depositors[addr] > 0) { if(msg.sender == Ho1der) { addr.send(amt); Available -= amt; Withdrew(addr, amt); } } }",
+        "file_name": "0xacb8a40073d0a7e041b29381debcafc2b538cd7c.sol"
+    },
+    {
+        "function_name": "Close",
+        "vulnerability": "Use of deprecated 'suicide' function",
+        "criticism": "The reasoning correctly points out the use of a deprecated function, 'suicide', which should be replaced with 'selfdestruct'. However, the severity of this issue is relatively low as it does not directly lead to a vulnerability but rather pertains to best practices and code clarity. The profitability of exploiting this is non-existent as it does not provide a direct avenue for an attacker to benefit financially or disrupt the contract operation in a beneficial manner to the attacker.",
+        "correctness": 7,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "The function uses the 'suicide' function which is deprecated and should be replaced with 'selfdestruct' for better clarity and understanding in the context of smart contracts. Using deprecated functions can lead to unintended behaviors and vulnerabilities in the smart contract.",
+        "code": "function Close() public { if (msg.sender == Ho1der) { suicide(Ho1der); } }",
+        "file_name": "0xacb8a40073d0a7e041b29381debcafc2b538cd7c.sol"
+    }
+]

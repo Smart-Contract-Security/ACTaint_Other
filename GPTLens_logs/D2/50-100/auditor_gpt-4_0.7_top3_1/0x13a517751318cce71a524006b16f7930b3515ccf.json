@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "finishDistribution",
+        "code": "function finishDistribution() onlyOwner canDistr public returns (bool) { distributionFinished = true; emit DistrFinished(); return true; distributionFinished = false; emit DistrFinished(); return false; }",
+        "vulnerability": "Unreachable code",
+        "reason": "After the 'return true;' statement is executed, the function will exit, making the subsequent statements 'distributionFinished = false;' and 'emit DistrFinished(); return false;' unreachable. This could create a false sense of security as it is meant to reset the distribution status, but it never executes.",
+        "file_name": "0x13a517751318cce71a524006b16f7930b3515ccf.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval race condition",
+        "reason": "The function does not properly handle the race condition that could occur if a client calls approve() again before a previous approval is used. An attacker could exploit this behavior by potentially manipulating allowances in between transaction calls to drain funds.",
+        "file_name": "0x13a517751318cce71a524006b16f7930b3515ccf.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Reentrancy attack potential",
+        "reason": "The function does not implement any measures to prevent reentrancy attacks. It directly transfers Ether to an owner without changing any state beforehand or using a reentrancy guard. This could potentially be exploited by a malicious contract that receives Ether from this contract and calls back into it before the initial execution is complete.",
+        "file_name": "0x13a517751318cce71a524006b16f7930b3515ccf.sol"
+    }
+]

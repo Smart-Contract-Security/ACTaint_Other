@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "voteProposal",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is valid as the function 'voteProposal' does indeed call 'executeProposal', which interacts with an external contract. This interaction can potentially lead to reentrancy attacks if the external contract is malicious or poorly implemented. However, the severity is not the highest because the function includes checks for proposal status and voting status which might mitigate the impact. The profitability of exploiting this vulnerability depends on the ability to influence significant contract states or extract value, which is not directly clear from the provided code.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The voteProposal function can lead to reentrancy vulnerabilities because it calls executeProposal, which further invokes external contracts (handler.executeProposal). If the external contract includes malicious code, it may allow reentrant calls back into voteProposal before the initial transaction is completed, thus potentially altering the state (e.g., double voting) in an unintended manner.",
+        "code": "function voteProposal(uint8 originDomainID, uint64 depositNonce, bytes32 resourceID, bytes calldata data) external onlyRelayers notPaused {\n    address handlerAddress = resourceIDToHandlerAddress[resourceID];\n    require(handlerAddress != address(0), \"QBridge: invalid handler\");\n    uint72 proposalID = combinedProposalId(originDomainID, depositNonce);\n    bytes32 dataHash = keccak256(abi.encodePacked(handlerAddress, data));\n    Proposal memory proposal = _proposals[proposalID][dataHash];\n    if (proposal._status == ProposalStatus.Passed) {\n        executeProposal(originDomainID, depositNonce, resourceID, data, true);\n        return;\n    }\n    require(uint(proposal._status) <= 1, \"QBridge: proposal already executed/cancelled\");\n    require(!_hasVoted(proposal, msg.sender), \"QBridge: relayer already voted\");\n    if (proposal._status == ProposalStatus.Inactive) {\n        proposal = Proposal({_status : ProposalStatus.Active, _yesVotes : 0, _yesVotesTotal : 0, _proposedBlock : uint40(block.number)});\n        emit ProposalEvent(originDomainID, depositNonce, ProposalStatus.Active, data);\n    }\n    if (proposal._status != ProposalStatus.Cancelled) {\n        proposal._yesVotes = _bitmap(proposal._yesVotes, _relayerBit(msg.sender));\n        proposal._yesVotesTotal++;\n        emit ProposalVote(originDomainID, depositNonce, proposal._status, dataHash);\n        if (proposal._yesVotesTotal >= relayerThreshold) {\n            proposal._status = ProposalStatus.Passed;\n            emit ProposalEvent(originDomainID, depositNonce, ProposalStatus.Passed, data);\n        }\n    }\n    _proposals[proposalID][dataHash] = proposal;\n    if (proposal._status == ProposalStatus.Passed) {\n        executeProposal(originDomainID, depositNonce, resourceID, data, false);\n    }\n}",
+        "file_name": "QBridge.sol",
+        "final_score": 6.25
+    },
+    {
+        "function_name": "deposit",
+        "vulnerability": "Denial of Service (DoS)",
+        "criticism": "The reasoning is correct in pointing out the potential for a DoS attack if the handler address is not a contract or is a contract that does not support the required function. This could indeed make the deposit function unusable if not properly managed. The severity is relatively high because it affects the availability of the function. However, the profitability is low as this type of attack does not yield direct financial benefits but disrupts service.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The deposit function does not validate whether the handler contract (IQBridgeHandler) at handlerAddress is indeed a contract or a valid address. If handler is incorrectly set (either non-contract address or contract without deposit function), the call to IQBridgeHandler(handler).deposit will fail, causing the whole transaction to revert and making the deposit function unusable. This could lead to a denial of service if an incorrect resourceID is set by the admin and not caught.",
+        "code": "function deposit(uint8 destinationDomainID, bytes32 resourceID, bytes calldata data) external payable notPaused {\n    require(msg.value == fee, \"QBridge: invalid fee\");\n    address handler = resourceIDToHandlerAddress[resourceID];\n    require(handler != address(0), \"QBridge: invalid resourceID\");\n    uint64 depositNonce = ++_depositCounts[destinationDomainID];\n    IQBridgeHandler(handler).deposit(resourceID, msg.sender, data);\n    emit Deposit(destinationDomainID, resourceID, depositNonce, msg.sender, data);\n}",
+        "file_name": "QBridge.sol",
+        "final_score": 6.0
+    },
+    {
+        "function_name": "executeProposal",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The criticism is accurate in identifying the risk associated with the unchecked external call when 'revertOnFail' is false. This could indeed lead to the contract continuing execution even if the external call fails, which might result in incorrect state updates or logical errors. The severity is moderate because it could affect the integrity of the contract's state, but the profitability is low as it does not directly lead to financial gain for an attacker unless combined with other vulnerabilities.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "In the executeProposal function, there is an external call to handler.executeProposal without proper checking of the return value when revertOnFail is false. This can lead to unexpected behavior if the external call fails but the contract continues to execute as if the call succeeded. The external call failure does not revert the transaction, potentially leading to incorrect state updates.",
+        "code": "function executeProposal(uint8 originDomainID, uint64 depositNonce, bytes32 resourceID, bytes calldata data, bool revertOnFail) public onlyRelayers notPaused {\n    address handlerAddress = resourceIDToHandlerAddress[resourceID];\n    uint72 proposalID = combinedProposalId(originDomainID, depositNonce);\n    bytes32 dataHash = keccak256(abi.encodePacked(handlerAddress, data));\n    Proposal storage proposal = _proposals[proposalID][dataHash];\n    require(proposal._status == ProposalStatus.Passed, \"QBridge: Proposal must have Passed status\");\n    proposal._status = ProposalStatus.Executed;\n    IQBridgeHandler handler = IQBridgeHandler(handlerAddress);\n    if (revertOnFail) {\n        handler.executeProposal(resourceID, data);\n    } else {\n        try handler.executeProposal(resourceID, data) { }\n        catch (bytes memory lowLevelData) {\n            proposal._status = ProposalStatus.Passed;\n            emit FailedHandlerExecution(lowLevelData);\n            return;\n        }\n    }\n    emit ProposalEvent(originDomainID, depositNonce, ProposalStatus.Executed, data);\n}",
+        "file_name": "QBridge.sol",
+        "final_score": 5.75
+    }
+]

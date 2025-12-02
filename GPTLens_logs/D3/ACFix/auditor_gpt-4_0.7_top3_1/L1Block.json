@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setL1BlockValues",
+        "code": "function setL1BlockValues( uint64 _number, uint64 _timestamp, uint256 _basefee, bytes32 _hash, uint64 _sequenceNumber, bytes32 _batcherHash, uint256 _l1FeeOverhead, uint256 _l1FeeScalar ) external { require( msg.sender == DEPOSITOR_ACCOUNT, \"L1Block: only the depositor account can set L1 block values\" ); number = _number; timestamp = _timestamp; basefee = _basefee; hash = _hash; sequenceNumber = _sequenceNumber; batcherHash = _batcherHash; l1FeeOverhead = _l1FeeOverhead; l1FeeScalar = _l1FeeScalar; }",
+        "vulnerability": "Centralized control",
+        "reason": "This function allows only one predefined address, DEPOSITOR_ACCOUNT, to update critical parameters of the block. If the private key of this account is compromised, an attacker could manipulate block values, which could affect the functioning and integrity of the entire contract or system relying on these values.",
+        "file_name": "L1Block.sol"
+    },
+    {
+        "function_name": "setL1BlockValues",
+        "code": "function setL1BlockValues( uint64 _number, uint64 _timestamp, uint256 _basefee, bytes32 _hash, uint64 _sequenceNumber, bytes32 _batcherHash, uint256 _l1FeeOverhead, uint256 _l1FeeScalar ) external { require( msg.sender == DEPOSITOR_ACCOUNT, \"L1Block: only the depositor account can set L1 block values\" ); number = _number; timestamp = _timestamp; basefee = _basefee; hash = _hash; sequenceNumber = _sequenceNumber; batcherHash = _batcherHash; l1FeeOverhead = _l1FeeOverhead; l1FeeScalar = _l1FeeScalar; }",
+        "vulnerability": "Lack of input validation",
+        "reason": "The function does not validate the input parameters before setting them. This can lead to setting incorrect or even malicious values for block parameters such as basefee, timestamp, or sequenceNumber, which can disrupt the proper functioning of associated processes or contracts that depend on these values.",
+        "file_name": "L1Block.sol"
+    },
+    {
+        "function_name": "setL1BlockValues",
+        "code": "function setL1BlockValues( uint64 _number, uint64 _timestamp, uint256 _basefee, bytes32 _hash, uint64 _sequenceNumber, bytes32 _batcherHash, uint256 _l1FeeOverhead, uint256 _l1FeeScalar ) external { require( msg.sender == DEPOSITOR_ACCOUNT, \"L1Block: only the depositor account can set L1 block values\" ); number = _number; timestamp = _timestamp; basefee = _basefee; hash = _hash; sequenceNumber = _sequenceNumber; batcherHash = _batcherHash; l1FeeOverhead = _l1FeeOverhead; l1FeeScalar = _l1FeeScalar; }",
+        "vulnerability": "Single point of failure",
+        "reason": "The entire function's security relies on the integrity of the DEPOSITOR_ACCOUNT. If this account's key is lost or compromised, no new block values can be set, potentially halting operations that depend on updates from this function. Moreover, if compromised, the account could be used maliciously to input detrimental values.",
+        "file_name": "L1Block.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "depositToGauge",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the interaction with external contracts without reentrancy guards. However, the severity and profitability might not be as high as suggested unless the external contracts are indeed malicious or compromised. The function does involve multiple state-changing external calls which increase the risk, but without specific details on the behavior of these external contracts, the overall risk assessment might be slightly speculative.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The 'depositToGauge' function transfers tokens and interacts with external contracts (gauge.deposit and depositReceipt.safeMint) without using reentrancy guards. If the external contract is malicious or compromised, it could call back into this or other functions in this contract before the first call finishes, potentially leading to effects such as double withdrawals, balance manipulation, or other unintended interactions.",
+        "code": "function depositToGauge(uint256 _amount) onlyOwner() external returns(uint256){ AMMToken.transferFrom(msg.sender, address(this), _amount); AMMToken.safeIncreaseAllowance(address(gauge), _amount); gauge.deposit(_amount, 0); uint256 NFTId = depositReceipt.safeMint(_amount); depositReceipt.safeTransferFrom(address(this), msg.sender, NFTId); return(NFTId); }",
+        "file_name": "Depositor.sol"
+    },
+    {
+        "function_name": "withdrawFromGauge",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is consistent with common concerns regarding reentrancy in functions interacting with multiple external contracts. The identification of potential reentrancy through state-changing functions is valid. However, the actual exploitability depends on the implementation details of the external contracts involved. The severity is appropriately rated as moderate to high, given that successful exploitation could lead to significant asset loss. Profitability is also potentially high if an attacker can manipulate the state to their advantage.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "The 'withdrawFromGauge' function similarly suffers from a reentrancy vulnerability. It interacts with the depositReceipt and gauge external contracts for state-changing functions (like burn, getReward, withdraw) and does not implement reentrancy guards. This can be exploited in similar ways to the 'depositToGauge' function.",
+        "code": "function withdrawFromGauge(uint256 _NFTId, address[] memory _tokens) public { uint256 amount = depositReceipt.pooledTokens(_NFTId); depositReceipt.burn(_NFTId); gauge.getReward(address(this), _tokens); gauge.withdraw(amount); AMMToken.transfer(msg.sender, amount); }",
+        "file_name": "Depositor.sol"
+    },
+    {
+        "function_name": "multiWithdrawFromGauge",
+        "vulnerability": "Missing Access Control",
+        "criticism": "The reasoning correctly identifies a lack of access control in a function that could lead to unauthorized withdrawals. This is a significant oversight in smart contract security, especially for functions that handle asset transfers. The severity of this vulnerability is high as it could directly lead to asset loss. Profitability for an attacker is also high, assuming they can access and exploit this function. The correctness of the reasoning is well-founded, and the risk to the contract's integrity is substantial.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The 'multiWithdrawFromGauge' function allows batch withdrawal of tokens by calling 'withdrawFromGauge' multiple times. However, it is marked as 'external' without any further access control checks such as 'onlyOwner', potentially allowing any external entity to trigger withdrawals. This could lead to unauthorized asset transfers if exploited.",
+        "code": "function multiWithdrawFromGauge( uint256[] memory _NFTIds, bool _usingPartial, uint256 _partialNFTId, uint256 _percentageSplit, address[] memory _tokens ) external { uint256 length = _NFTIds.length; for (uint256 i = 0; i < length; i++ ){ withdrawFromGauge(_NFTIds[i], _tokens); } if(_usingPartial){ partialWithdrawFromGauge(_partialNFTId, _percentageSplit, _tokens); } }",
+        "file_name": "Depositor.sol"
+    }
+]

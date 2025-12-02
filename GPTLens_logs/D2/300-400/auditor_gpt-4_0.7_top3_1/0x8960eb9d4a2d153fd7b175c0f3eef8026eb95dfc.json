@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function calls 'distr' which makes state changes and emits events before updating the `blacklist` and `distributionFinished`. This interleaving of external calls and state changes without proper checks can lead to reentrancy attacks where an attacker could potentially call 'getTokens' again before the initial transaction is finished, exploiting the state change lag to extract more tokens.",
+        "file_name": "0x8960eb9d4a2d153fd7b175c0f3eef8026eb95dfc.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "vulnerability": "Burning Untracked Tokens",
+        "reason": "The 'burn' function reduces the 'totalSupply' and 'totalDistributed' by '_value', but it does not check whether these tokens were part of the 'totalDistributed'. This could lead to inconsistencies in tracking of distributed tokens, where burned tokens are subtracted from total distributed, potentially causing underflow or logical errors in distribution logic.",
+        "file_name": "0x8960eb9d4a2d153fd7b175c0f3eef8026eb95dfc.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "Unchecked Send",
+        "reason": "The 'withdraw' function transfers Ether to the owner without checking the result of the 'transfer()' operation. If the transfer fails (for instance, if the contract's balance is insufficient), the contract will not revert, potentially leading to financial discrepancies and loss of funds without any indication of failure.",
+        "file_name": "0x8960eb9d4a2d153fd7b175c0f3eef8026eb95dfc.sol"
+    }
+]

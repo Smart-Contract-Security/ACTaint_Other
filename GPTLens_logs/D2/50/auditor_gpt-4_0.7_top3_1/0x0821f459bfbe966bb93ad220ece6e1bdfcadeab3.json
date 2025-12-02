@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Unintended Airdrop on First Transfer",
+        "reason": "Due to the logic in the _transfer function that checks if an account has been 'touched' and if not, increases the balance of the sender by an airdrop amount, any account making its first transfer will receive an airdrop of tokens. This can be exploited by attackers who can create multiple new accounts, make a transfer to receive the airdrop, and repeat the process to deplete the token supply or manipulate the token\u2019s distribution.",
+        "file_name": "0x0821f459bfbe966bb93ad220ece6e1bdfcadeab3.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) public { require(this.balance >= amount * sellPrice); _transfer(msg.sender, this, amount); msg.sender.transfer(amount * sellPrice); }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The calculation 'amount * sellPrice' can lead to an integer overflow if the values are large enough, which can cause the require statement to pass incorrectly, allowing users to sell more tokens than the contract could afford to buy back in ether. This can lead to financial losses for the token contract or its users.",
+        "file_name": "0x0821f459bfbe966bb93ad220ece6e1bdfcadeab3.sol"
+    },
+    {
+        "function_name": "getEth",
+        "code": "function getEth(uint num) payable public { owner.transfer(num); }",
+        "vulnerability": "Arbitrary Ether Withdrawal",
+        "reason": "This function allows the caller to specify any amount of ether (num) to be transferred to the owner's address, without any checks on the balance or the legitimacy of the request. An attacker with access to the owner account or if the owner's private key is compromised, could drain all ether from the contract.",
+        "file_name": "0x0821f459bfbe966bb93ad220ece6e1bdfcadeab3.sol"
+    }
+]

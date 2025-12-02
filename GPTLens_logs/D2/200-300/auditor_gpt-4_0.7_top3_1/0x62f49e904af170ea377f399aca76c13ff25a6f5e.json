@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initiateTrade",
+        "code": "function initiateTrade( address _tokenFrom, address _tokenTo, uint256 _amountFrom, uint256 _amountTo ) public returns (uint newTradeID) { require(Token(_tokenFrom).transferFrom(msg.sender, address(this), _amountFrom)); newTradeID = offers.length; offers.length++; TradeOffer storage o = offers[newTradeID]; balanceTracker[_tokenFrom] += _amountFrom; o.tokenFrom = _tokenFrom; o.tokenTo = _tokenTo; o.amountFrom = _amountFrom; o.amountTo = _amountTo; o.creator = msg.sender; o.active = true; o.tradeID = newTradeID; emit OfferCreated(newTradeID); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'initiateTrade' function allows for a reentrancy attack since it calls an external contract (Token(_tokenFrom).transferFrom) before updating all relevant state variables. This could potentially allow an attacker to re-enter the contract and manipulate the state or cause other effects before the original transaction is fully completed.",
+        "file_name": "0x62f49e904af170ea377f399aca76c13ff25a6f5e.sol"
+    },
+    {
+        "function_name": "cancelTrade",
+        "code": "function cancelTrade(uint tradeID) public returns (bool) { TradeOffer storage o = offers[tradeID]; require(msg.sender == o.creator); require(Token(o.tokenFrom).transfer(o.creator, o.amountFrom)); balanceTracker[o.tokenFrom] -= o.amountFrom; o.active = false; emit OfferCancelled(tradeID); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similarly, 'cancelTrade' function is vulnerable to reentrancy. It interacts with an external contract (Token(o.tokenFrom).transfer) to send tokens before it has updated the 'balanceTracker' and the 'active' flag in the 'TradeOffer'. An attacker could potentially re-enter and interact with the contract in an inconsistent state.",
+        "file_name": "0x62f49e904af170ea377f399aca76c13ff25a6f5e.sol"
+    },
+    {
+        "function_name": "take",
+        "code": "function take(uint tradeID) public returns (bool) { TradeOffer storage o = offers[tradeID]; require(o.active == true); require(Token(o.tokenFrom).transfer(msg.sender, o.amountFrom)); balanceTracker[o.tokenFrom] -= o.amountFrom; require(Token(o.tokenTo).transferFrom(msg.sender, o.creator, o.amountTo)); o.active = false; emit OfferTaken(tradeID); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'take' function is also vulnerable to reentrancy. It calls two external contracts (Token(o.tokenFrom).transfer and Token(o.tokenTo).transferFrom) and modifies the state after these calls. An attacker could exploit this to manipulate the contract execution or cause unexpected behavior by reentering the contract during one of these external calls.",
+        "file_name": "0x62f49e904af170ea377f399aca76c13ff25a6f5e.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "registerProtectionPool",
+        "code": "function registerProtectionPool(address _protectionPoolAddress) external payable override onlyContractFactory {\n    if (protectionPoolStates[protectionPoolStateIndexes[_protectionPoolAddress]].updatedTimestamp > 0) {\n        revert ProtectionPoolAlreadyRegistered(_protectionPoolAddress);\n    }\n    uint256 newIndex = protectionPoolStates.length;\n    protectionPoolStates.push();\n    ProtectionPoolState storage poolState = protectionPoolStates[newIndex];\n    poolState.protectionPool = IProtectionPool(_protectionPoolAddress);\n    protectionPoolStateIndexes[_protectionPoolAddress] = newIndex;\n    _assessState(poolState);\n    emit ProtectionPoolRegistered(_protectionPoolAddress);\n}",
+        "vulnerability": "Uninitialized Storage Pointer",
+        "reason": "The function 'registerProtectionPool' pushes an empty struct to a storage array and assigns it to a storage pointer without proper initialization. This can lead to unpredictable behavior or manipulation of the contract state.",
+        "file_name": "DefaultStateManager.sol"
+    },
+    {
+        "function_name": "calculateAndClaimUnlockedCapital",
+        "code": "function calculateAndClaimUnlockedCapital(address _seller) external override returns (uint256 _claimedUnlockedCapital) {\n    ProtectionPoolState storage poolState = protectionPoolStates[protectionPoolStateIndexes[msg.sender]];\n    if (poolState.updatedTimestamp == 0) {\n        revert ProtectionPoolNotRegistered(msg.sender);\n    }\n    address[] memory _lendingPools = poolState.protectionPool.getPoolInfo().referenceLendingPools.getLendingPools();\n    uint256 _length = _lendingPools.length;\n    for (uint256 _lendingPoolIndex; _lendingPoolIndex < _length; ) {\n        address _lendingPool = _lendingPools[_lendingPoolIndex];\n        (uint256 _unlockedCapitalPerLendingPool, uint256 _snapshotId) = _calculateClaimableAmount(poolState, _lendingPool, _seller);\n        _claimedUnlockedCapital += _unlockedCapitalPerLendingPool;\n        poolState.lastClaimedSnapshotIds[_lendingPool][_seller] = _snapshotId;\n        unchecked { ++_lendingPoolIndex; }\n    }\n}",
+        "vulnerability": "Authorization Bypass",
+        "reason": "The function uses 'msg.sender' to index into a mapping which is expected to be a protection pool address, but there are no checks to ensure that the sender is indeed a legitimate protection pool. This could allow unauthorized addresses to trigger and manipulate state calculations.",
+        "file_name": "DefaultStateManager.sol"
+    },
+    {
+        "function_name": "_calculateClaimableAmount",
+        "code": "function _calculateClaimableAmount(ProtectionPoolState storage poolState, address _lendingPool, address _seller) internal view returns (uint256 _claimableUnlockedCapital, uint256 _latestClaimedSnapshotId) {\n    uint256 _lastClaimedSnapshotId = poolState.lastClaimedSnapshotIds[_lendingPool][_seller];\n    LockedCapital[] storage lockedCapitals = poolState.lockedCapitals[_lendingPool];\n    uint256 _length = lockedCapitals.length;\n    for (uint256 _index = 0; _index < _length; ) {\n        LockedCapital storage lockedCapital = lockedCapitals[_index];\n        uint256 _snapshotId = lockedCapital.snapshotId;\n        if (!lockedCapital.locked && _snapshotId > _lastClaimedSnapshotId) {\n            ERC20SnapshotUpgradeable _poolSToken = ERC20SnapshotUpgradeable(address(poolState.protectionPool));\n            _claimableUnlockedCapital = (_poolSToken.balanceOfAt(_seller, _snapshotId) * lockedCapital.amount) / _poolSToken.totalSupplyAt(_snapshotId);\n            _latestClaimedSnapshotId = _snapshotId;\n        }\n        unchecked { ++_index; }\n    }\n}",
+        "vulnerability": "Divide by Zero",
+        "reason": "The function does not check if '_poolSToken.totalSupplyAt(_snapshotId)' returns zero before performing a division operation. This can lead to a divide by zero error, which will revert the transaction and could be used to deny service.",
+        "file_name": "DefaultStateManager.sol"
+    }
+]

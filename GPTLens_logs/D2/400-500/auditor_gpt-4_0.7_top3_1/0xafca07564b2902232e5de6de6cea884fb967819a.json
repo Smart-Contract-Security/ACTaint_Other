@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'getTokens' is vulnerable to reentrancy attacks because it calls an external contract via 'distr' while the state (e.g., 'blacklist[investor]') is not fully updated. An attacker can call 'getTokens' again (re-enter) before 'blacklist[investor] = true' is set, allowing them to repeatedly claim tokens.",
+        "file_name": "0xafca07564b2902232e5de6de6cea884fb967819a.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    Burn(burner, _value);\n}",
+        "vulnerability": "Integer Underflow",
+        "reason": "The 'burn' function does not properly check for underflows when subtracting '_value' from 'totalDistributed'. If 'totalDistributed' is less than '_value', it will underflow and set 'totalDistributed' to a very high value, potentially disrupting the token economics.",
+        "file_name": "0xafca07564b2902232e5de6de6cea884fb967819a.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    Distr(_to, _amount);\n    Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "vulnerability": "Logical Error",
+        "reason": "The 'distr' function contains unreachable code that checks if 'totalDistributed' is greater than or equal to 'totalSupply'. This check occurs after the 'return true;' statement, so it will never execute. As a result, 'distributionFinished' may never be set to 'true', allowing continuous distribution beyond the intended limit.",
+        "file_name": "0xafca07564b2902232e5de6de6cea884fb967819a.sol"
+    }
+]

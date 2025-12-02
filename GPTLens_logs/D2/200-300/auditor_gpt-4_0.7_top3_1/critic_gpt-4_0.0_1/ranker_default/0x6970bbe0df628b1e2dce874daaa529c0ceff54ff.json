@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Incorrect Logic Handling",
+        "criticism": "The reasoning is correct in pointing out the logical flaw where the check for 'totalDistributed >= totalSupply' is unreachable due to the 'return true;' statement preceding it. This is a critical issue as it prevents the function from correctly marking the distribution as finished, potentially leading to over-distribution. The severity is high because it affects the integrity of the token distribution process, but profitability for an attacker is low as it does not directly result in an exploitable condition for personal gain.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 2,
+        "reason": "The 'distr' function has a logical issue, where the check for 'totalDistributed >= totalSupply' to set 'distributionFinished = true' is placed after a 'return true;' statement. This means that the check and the subsequent state change to 'distributionFinished' will never execute, potentially leading to over-distribution beyond the intended total supply.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "file_name": "0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the external call to 'distr' followed by further state modifications. However, the severity and profitability are not as high as suggested because the function modifies the 'value' after distribution, which could mitigate the impact of reentrancy to some extent. Nonetheless, the risk of reentrancy should not be underestimated in payable functions.",
+        "correctness": 7,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The 'getTokens' function is marked as 'payable' and performs state changes after an external call, allowing for potential reentrancy attacks. Specifically, the function calls 'distr', which transfers tokens, and then performs further state changes such as blacklisting the user and modifying the 'value' variable. An attacker could potentially exploit this by recursively calling 'getTokens' during the execution of 'distr', leading to unexpected behavior or draining of tokens.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.sol",
+        "final_score": 6.25
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval Race Condition",
+        "criticism": "The reasoning correctly identifies the lack of mitigation against the ERC20 race condition vulnerability. However, the criticism of the function not setting the allowance to zero is slightly misplaced because the function does check if the current allowance is not zero and rejects the new allowance if it is not zero. This reduces the risk but does not eliminate it, as the best practice is indeed to reset to zero before setting a new value. The severity is moderate due to potential exploitation, but profitability is also moderate as it depends on specific race conditions being met.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'approve' function does not follow the best practice to mitigate the known ERC20 race condition vulnerability. The function should first set the allowance to zero before setting it to a new value if the new value is not zero and the current allowance is not zero, to prevent an attack where the spender could use the old and new allowance.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.sol",
+        "final_score": 5.25
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwner",
+        "code": "function transferOwner(address payable newOwner) public onlyOwner {\n    require(newOwner != owner, \"New Owner cannot be the current owner\");\n    require(newOwner != address(0), \"New Owner cannot be zero address\");\n    address payable prevOwner = owner;\n    owner = newOwner;\n    emit OwnerTransferred(prevOwner, newOwner);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'transferOwner' transfers ownership of the contract to a new owner. However, this function does not prevent recursive calling which could lead to reentrancy attacks. An attacker could potentially exploit this by creating a fallback function in their contract that calls 'transferOwner' again when it receives ownership, leading to multiple ownership transfers in a single transaction.",
+        "file_name": "0x5bd5b4e1a2c9b12812795e7217201b78c8c10b78.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() onlyOwner external {\n    selfdestruct(owner);\n}",
+        "vulnerability": "Selfdestruct Abuse",
+        "reason": "The 'kill' function uses 'selfdestruct' which can be called by the owner to destroy the contract and forcibly send the remaining Ether to the owner's address. This action is irreversible and can result in loss of contract data and funds without consent from other parties who might have stakes in the contract. An attacker who gains ownership could destroy the contract, removing all contract functionality and withdrawing all Ether.",
+        "file_name": "0x5bd5b4e1a2c9b12812795e7217201b78c8c10b78.sol"
+    },
+    {
+        "function_name": "setLocked",
+        "code": "function setLocked(bool locked) onlyOwner external {\n    require(isLocked != locked, \"Contract already in requested lock state\");\n    isLocked = locked;\n}",
+        "vulnerability": "Arbitrary Locking",
+        "reason": "The 'setLocked' function allows the owner to lock and unlock the contract arbitrarily, which can be misused to deny service to legitimate users. For instance, the owner could lock the contract during an audit or when a user is about to perform a critical operation, thereby manipulating the contract's availability and potentially leading to financial losses for users.",
+        "file_name": "0x5bd5b4e1a2c9b12812795e7217201b78c8c10b78.sol"
+    }
+]

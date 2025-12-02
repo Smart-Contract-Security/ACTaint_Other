@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "mintPlayers",
+        "vulnerability": "Unchecked Low-Level Call",
+        "criticism": "The criticism is accurate in identifying the unchecked low-level call in the 'mintPlayers' function. The function indeed uses a low-level 'call' to send ETH, and it does check the return value, as indicated by the 'if (!sent) {revert FailedToSendETH(totalFee);}' line. Therefore, the reasoning provided is incorrect because the function does handle the failure of the call. The severity is low because the function properly handles the failure scenario, and the profitability is also low because an attacker cannot directly benefit from this behavior.",
+        "correctness": 2,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "The function uses a low-level 'call' to send ETH to a prize distributor address without checking the return value. This can lead to scenarios where the call fails silently, leading to a loss of funds or unexpected state changes without reversion.",
+        "code": "function mintPlayers(SeasonID seasonId, uint256 clubId, uint256 divisionTier, uint256[] calldata generationIds, bytes32[] calldata divisionProof) external payable whenNotPaused nonReentrant {uint256 totalFee = _validateMintingParams(seasonId, clubId, divisionTier, generationIds, divisionProof);uint256 generationId;for (uint256 i = 0; i < generationIds.length; ) {generationId = generationIds[i];if (generationId > _maxGenerationId) {revert GenerationIDTooHigh(generationId, _maxGenerationId);}if (redeemed[seasonId][clubId][generationId]) {revert PlayerAlreadyRedeemed(generationId);}redeemed[seasonId][clubId][generationId] = true;uint256 playerId = _footiumPlayer.safeMint(_footiumClub.clubToEscrow(clubId));emit AcademyPlayerMinted(seasonId, clubId, generationId, playerId);unchecked {i++;}}(bool sent, ) = _prizeDistributorAddress.call{value: totalFee}(\"\");if (!sent) {revert FailedToSendETH(totalFee);}}",
+        "file_name": "FootiumAcademy.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with Block Gas Limit",
+        "criticism": "The reasoning provided is somewhat plausible but highly unlikely in practical scenarios. The 'withdraw' function does use a low-level call to transfer all contract's balance to the owner, and it checks for failure. The scenario where the block gas limit is exceeded due to a high balance transfer is theoretically possible but extremely rare, as Ethereum's gas limit per block is generally sufficient for such transfers. The severity is low because this is an unlikely scenario, and the profitability is also low because it requires significant manipulation of the contract's balance, which is not typically feasible for an attacker.",
+        "correctness": 4,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'withdraw' function uses a low-level call to transfer all contract's balance to the owner. If the contract's balance is very high, the call's required gas might exceed block gas limit causing the transaction to fail. This can be exploited by intentionally increasing the contract's balance, making it unable to process the withdraw due to block gas limit, effectively locking funds.",
+        "code": "function withdraw() external onlyOwner {uint256 balance = address(this).balance;if (balance > 0) {(bool sent, ) = payable(owner()).call{value: balance}(\"\");if (!sent) {revert FailedToSendETH(balance);}}}",
+        "file_name": "FootiumAcademy.sol"
+    },
+    {
+        "function_name": "setDivisionFees",
+        "vulnerability": "Unchecked External Input",
+        "criticism": "The reasoning is correct in pointing out that the function does not validate the contents of the input array. However, the severity and profitability are overstated. The function is only accessible to the owner, which limits the scope of the attack to a malicious owner scenario. This reduces both the severity and profitability since it requires ownership control, which is not typically within an attacker's capability unless additional vulnerabilities are present.",
+        "correctness": 7,
+        "severity": 3,
+        "profitability": 1,
+        "reason": "This function directly sets the division fees from an input array without validating the contents of the array. Malicious owners can set extremely high fees or manipulate indices, causing unexpected behavior or making the minting process unaffordable.",
+        "code": "function setDivisionFees(uint256[] memory _fees) public onlyOwner {uint256 max = _fees.length;for (uint256 i = 0; i < max; ) {uint256 fee = _fees[i];divisionToFee[i + 1] = fee;unchecked {i++;}}emit ChangedDivisionFees(_fees);}",
+        "file_name": "FootiumAcademy.sol"
+    }
+]

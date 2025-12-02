@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawBalance",
+        "code": "function withdrawBalance() onlyOwner external { assert(owner.send(this.balance)); }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "The use of 'assert' for handling the sending of Ether can lead to a denial of service (DoS) if the send fails because 'assert' will revert all state changes. This makes it impossible to withdraw funds if the 'send' function fails due to reasons like the recipient contract throwing an error or out-of-gas issues. It is safer to use 'require' to check the return value of 'send' and handle it appropriately.",
+        "file_name": "0x203dad4c2af33c0ff1b60b4579cf956a60a6cb23.sol"
+    },
+    {
+        "function_name": "buyListing",
+        "code": "function buyListing(bytes32 listingId, uint256 amount) external payable { Listing storage listing = listings[listingId]; address seller = listing.seller; address contractAddress = listing.tokenContractAddress; uint256 price = listing.price; uint256 sale = price.mul(amount); uint256 allowance = listing.allowance; require(now <= listing.dateEnds); require(allowance - sold[listingId] > amount); require(allowance - amount > 0); require(getBalance(contractAddress, seller) >= allowance); require(getAllowance(contractAddress, seller, this) <= allowance); require(msg.value == sale); ERC20 tokenContract = ERC20(contractAddress); require(tokenContract.transferFrom(seller, msg.sender, amount)); seller.transfer(sale - (sale.mul(ownerPercentage).div(10000))); sold[listingId] = allowance.sub(amount); ListingBought(listingId, contractAddress, price, amount, now, msg.sender); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyListing' is vulnerable to reentrancy attacks because it calls an external contract 'tokenContract.transferFrom' and 'seller.transfer' which can be exploited by a malicious contract to re-enter and call 'buyListing' again before it finishes execution. This can lead to unexpected behavior such as draining funds or other state inconsistencies.",
+        "file_name": "0x203dad4c2af33c0ff1b60b4579cf956a60a6cb23.sol"
+    },
+    {
+        "function_name": "approveToken",
+        "code": "function approveToken(address token, uint256 amount) onlyOwner external { assert(ERC20(token).approve(owner, amount)); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The function 'approveToken' uses 'assert' to ensure that the 'approve' function of an ERC20 token executes successfully. However, using 'assert' for external calls is risky because it does not allow for proper error handling. If the 'approve' call fails, it will revert all state changes and may prevent other functionalities. It is better to use 'require' to check the return value of the external call and handle the error gracefully.",
+        "file_name": "0x203dad4c2af33c0ff1b60b4579cf956a60a6cb23.sol"
+    }
+]

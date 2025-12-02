@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyActive onlyHuman timeUnlocked public {\n    uint256 fee = 0;\n    if (nextContract != address(0)) fee = 5;\n    uint256 _len = usdTokens.length;\n    for(uint256 i = 0; i < _len;i++) {\n        uint256 _amount = userDeposits[msg.sender][usdTokens[i]];\n        if (_amount > 0) {\n            uint256 _amountFee = _amount * fee / 100;\n            if (_amountFee > 0) {\n                IERC20(usdTokens[i]).transfer(owner, _amountFee);\n                _amount -= _amountFee;\n            }\n            userDeposits[msg.sender][usdTokens[i]] = 0;\n            IERC20(usdTokens[i]).transfer(msg.sender, _amount);\n        }\n    }\n}",
+        "vulnerability": "Integer Division",
+        "reason": "The fee calculation (`_amount * fee / 100`) may result in an integer division issue, where the computed fee could be less than expected due to integer truncation. For small `_amount` values, the fee might round down to zero, allowing users to withdraw without paying the intended fee.",
+        "file_name": "0x04037029b4f7fac106b7a3b88985d095e11fd091_1.sol"
+    },
+    {
+        "function_name": "externalCallEth",
+        "code": "function externalCallEth(address payable[] memory _to, bytes[] memory _data, uint256[] memory ethAmount) public onlyOwner payable {\n    require(block.timestamp > ownerFullControlTime, \"!time\");\n    for(uint16 i = 0; i < _to.length; i++) {\n        _cast(_to[i], _data[i], ethAmount[i]);\n    }\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function `_cast` is called within a loop in `externalCallEth`, which performs an external call to arbitrary addresses with arbitrary data and value. Although there is a check for execution success in `_cast`, failure to handle or log failed transactions in `externalCallEth` can lead to unnoticed errors or malicious behavior, such as draining the contract if the fallback function of the called contract consumes a lot of gas.",
+        "file_name": "0x04037029b4f7fac106b7a3b88985d095e11fd091_1.sol"
+    },
+    {
+        "function_name": "deposit",
+        "code": "function deposit(uint256 _amount) onlyActive onlyHuman public {\n    require(block.timestamp < dateToReleaseFunds, \"!too late\");\n    receivePayment(msg.sender, _amount);\n}",
+        "vulnerability": "Denial of Service via Block Timestamp Dependency",
+        "reason": "The function `deposit` relies on `block.timestamp` to check if it's too late to deposit (`block.timestamp < dateToReleaseFunds`). Miners have some control over the `block.timestamp`, and it can be manipulated slightly to influence the execution of this function, potentially locking out legitimate deposits near the cutoff time.",
+        "file_name": "0x04037029b4f7fac106b7a3b88985d095e11fd091_1.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "payOrder",
+        "code": "function payOrder(uint256 orderId) public onlyOwner { require(address(this).balance >= orderSum(orderId)); require(orders[orderId].status == OrderStatus.Pending); orders[orderId].status = OrderStatus.Payed; orders[orderId].investor.transfer(orderSum(orderId)); tecoToken.transferFrom(orders[orderId].investor, owner, orders[orderId].amount); tokensBought[orders[orderId].investor] += orders[orderId].amount; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'payOrder' function transfers funds to an external address (orders[orderId].investor) before updating the order status and the internal state (tokensBought mapping). This could allow the external address to re-enter the contract and potentially create multiple withdrawals or other state changes before the order status is updated to 'Payed'.",
+        "file_name": "0xe13735037b394b7b18fd469f71feaf3371c4a109.sol"
+    },
+    {
+        "function_name": "withdrawFunds",
+        "code": "function withdrawFunds(uint value) public onlyOwner { owner.transfer(value); }",
+        "vulnerability": "Denial of Service",
+        "reason": "In the 'withdrawFunds' function, it directly transfers funds based on the 'value' parameter to the owner's address without checking if the contract has enough balance. If the owner requests more than the contract's balance, it will fail and revert all transactions, potentially blocking legitimate withdrawals or other functionalities.",
+        "file_name": "0xe13735037b394b7b18fd469f71feaf3371c4a109.sol"
+    },
+    {
+        "function_name": "createOrder",
+        "code": "function createOrder(uint256 _amount) public returns (uint256) { require(availableBonuses(msg.sender) >= _amount); require(tecoToken.allowance(msg.sender, address(this)) >= _amount); orders[numOrders++] = Order(msg.sender, _amount, OrderStatus.Pending); return numOrders - 1; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "In 'createOrder', the function does not check the return value of 'tecoToken.allowance' which could potentially always return true due to a faulty implementation in the TecoToken contract. This means even if the allowance is not properly set, the order can still be created, leading to state inconsistency and unintended token transfers.",
+        "file_name": "0xe13735037b394b7b18fd469f71feaf3371c4a109.sol"
+    }
+]

@@ -1,0 +1,78 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x43efc486d1c7c5cb0193e409a73aa33786f5197c.code
+Start time: 20/08/2022 19:42:12
+Building CFG...
+CFG generation time (secs): 55.32
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function () payable
+	( 2828)  b0c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function disableWhitelist(address[])
++--Attacker can make changes to AC item {4} in function enableWhitelist(address[])
+
+Violated access control check in function withdraw()
+	( 4587) 11eb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4821) 12d5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function disableWhitelist(address[])
+	( 5281) 14a1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function airdrop(address[])
+	( 5743) 166f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function setParameters(uint256,uint256)
+	( 6032) 1790:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 6201) 1839:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function enableWhitelist(address[])
+	( 6401) 1901:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distributeAmounts(address[],uint256[])
+	( 6637) 19ed:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function getTokens()
+	( 2828)  b0c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function disableWhitelist(address[])
++--Attacker can make changes to AC item {4} in function enableWhitelist(address[])
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 7943) 1f07:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 8525) 214d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distribution(address[],uint256)
+	( 8742) 2226:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Mining24(uint256,uint256)
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 69.34
+End time: 20/08/2022 19:44:16

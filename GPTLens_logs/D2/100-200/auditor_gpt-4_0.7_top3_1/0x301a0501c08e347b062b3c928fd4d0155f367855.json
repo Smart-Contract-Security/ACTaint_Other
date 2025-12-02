@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "DoS by Block Gas Limit",
+        "reason": "The function changeOwner attempts to transfer all contract's balance to the previous owner address using owner.transfer(this.balance). This could potentially consume all the gas provided by a transaction if the contract's balance is large enough, leading to out-of-gas errors and making the contract unable to perform state changes or ether transfers, effectively causing denial of service.",
+        "file_name": "0x301a0501c08e347b062b3c928fd4d0155f367855.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized Contract Destruction",
+        "reason": "This function allows any user to destroy the contract by sending a specific amount of ether (howManyEtherInWeiToKillContract). Although intended only for the owner or large stakeholders, this design increases risk as any external actor could permanently disable the contract by sending sufficient ether, regardless of their ownership or stake.",
+        "file_name": "0x301a0501c08e347b062b3c928fd4d0155f367855.sol"
+    },
+    {
+        "function_name": "mintTo",
+        "code": "function mintTo(address _to, uint256 _value) public returns (bool) { balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Unauthorized Token Minting",
+        "reason": "The mintTo function can be called by any address, allowing anyone to arbitrarily increase the balance of any address without any checks or validations. This can lead to inflation and devaluation of the token, as well as potential abuses in token distribution, undermining the tokenomics and trust in the token system.",
+        "file_name": "0x301a0501c08e347b062b3c928fd4d0155f367855.sol"
+    }
+]

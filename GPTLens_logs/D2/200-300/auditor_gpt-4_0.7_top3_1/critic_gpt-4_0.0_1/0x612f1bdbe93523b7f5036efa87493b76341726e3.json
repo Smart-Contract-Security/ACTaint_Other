@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is incorrect. The 'getTokens' function does not show any direct or indirect call to an external contract that could lead to reentrancy within the provided code. The 'distr' function is mentioned but without its implementation details, it's speculative to assume it allows for reentrancy. Furthermore, the 'Transfer' event itself does not invoke external contract code. The severity and profitability are overestimated without proper evidence of the vulnerability's exploitability.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 1,
+        "reason": "The 'getTokens' function is vulnerable to a reentrancy attack because it calls 'distr' which then calls an external contract through the 'Transfer' event before updating the 'distributionFinished' state. An attacker can recursively call 'getTokens' during the execution of 'distr', leading to multiple tokens being issued beyond the intended limit.",
+        "code": "function getTokens() payable canDistr public {\n    uint256 tokens = 0;\n    require( msg.value >= MIN_CONTRIBUTION );\n    require( msg.value > 0 );\n    tokens = tokensPerEth.mul(msg.value) / 1 ether;\n    address investor = msg.sender;\n    if (tokens > 0) {\n        distr(investor, tokens);\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "file_name": "0x612f1bdbe93523b7f5036efa87493b76341726e3.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "ERC20 Approve/Allowance Race Condition",
+        "criticism": "The reasoning is partially correct but lacks clarity on the actual impact. The function does indeed fail to fully mitigate the ERC20 approve/allowance race condition as it allows changing allowances in two transactions (to zero and then to a new value). However, the explanation could be more detailed about how this can be exploited (e.g., by an attacker using the old allowance before the new one is set). The severity is moderate because it can lead to unauthorized token transfers, but profitability depends on the specific circumstances of the race condition being exploited.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'approve' function does not correctly prevent the known ERC20 race condition vulnerability, where changing an allowance in a way that sets it to a different non-zero value can be exploited. This function only prevents changing from a non-zero to another non-zero directly, but it does not address the case where an allowance is first changed to zero and then to another non-zero value in two separate transactions, which can still be abused by an attacker.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0x612f1bdbe93523b7f5036efa87493b76341726e3.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unchecked Send",
+        "criticism": "The reasoning is incorrect. The 'transfer' function in Solidity does check for errors and will revert the transaction if the transfer fails. There is no need to manually check the return value of 'transfer' as it throws an error on failure. This misunderstanding leads to an overestimation of the vulnerability's severity and profitability. The actual risk is minimal given the automatic revert behavior of 'transfer'.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'withdraw' function transfers Ether to the owner without checking the return value of the 'transfer' function. Although 'transfer' automatically reverts on failure starting from Solidity 0.4.13, relying on this without explicit checks imposes a risk if there are changes or exceptions in future versions or in the underlying EVM implementation. It's safer to always check the success of the transfer.",
+        "code": "function withdraw() onlyOwner public {\n    address myAddress = this;\n    uint256 etherBalance = myAddress.balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0x612f1bdbe93523b7f5036efa87493b76341726e3.sol"
+    }
+]

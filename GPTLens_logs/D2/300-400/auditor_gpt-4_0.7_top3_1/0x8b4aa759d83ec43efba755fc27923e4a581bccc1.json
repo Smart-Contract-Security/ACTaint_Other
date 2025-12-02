@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "overthrow",
+        "code": "function overthrow(string challengeData) returns (bool success){ var challengeHash = sha3(challengeData); if(checkDate()) return false; if(challengeHash == leaderHash) return false; if((challengeHash ^ leaderHash) > difficulty) return false; difficulty = (challengeHash ^ leaderHash); challengeWorldRecord(difficulty); leader = msg.sender; leaderHash = challengeHash; Leader(\"New leader! This is their address, and the new hash to collide.\", leader, leaderHash); winners[msg.sender]++; fallenLeaders++; return true; }",
+        "vulnerability": "Unchecked external call",
+        "reason": "In the 'overthrow' function, 'leader.send(this.balance)' is used to transfer the contract's balance to the leader. This is an external call to an arbitrary address controlled by the user. If the call fails (e.g., if the recipient is a contract that throws an exception), it can cause the function to revert, potentially leading to denial of service or other unintended effects. This issue is critical because it involves handling of funds and can be triggered by any user.",
+        "file_name": "0x8b4aa759d83ec43efba755fc27923e4a581bccc1.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill(){ if (msg.sender == admin){ GameOver(\"The challenge has ended.\"); selfdestruct(admin); } }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The 'kill' function allows the admin to self-destruct the contract and send all remaining Ether to the admin's address. However, there is no check to ensure that the 'admin' is the legitimate owner or to prevent unauthorized access if the admin's account is compromised. This could lead to loss of contract functionality and funds being sent to an unintended recipient if the admin account is not secured.",
+        "file_name": "0x8b4aa759d83ec43efba755fc27923e4a581bccc1.sol"
+    },
+    {
+        "function_name": "checkDate",
+        "code": "function checkDate() private returns (bool success) { if (block.timestamp > (startingTime + gameLength)) { if(leader != admin){ Winner(\"Victory! Game will be reset to end in 1 week (in block time).\", leader); leader.send(this.balance); }else NoWinner(\"No winner! Game will be reset to end in 1 week (in block time).\"); startingTime = block.timestamp; reset(); return true; } return false; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'checkDate' performs an external call 'leader.send(this.balance)' which sends all the contract's Ether to the current leader. This external call can be exploited by a malicious contract (acting as the leader) to re-enter the 'overthrow' function in the same transaction before the 'fallenLeaders' and other state variables are updated, possibly leading to unexpected behavior such as multiple increments in 'winners[msg.sender]' or 'fallenLeaders'.",
+        "file_name": "0x8b4aa759d83ec43efba755fc27923e4a581bccc1.sol"
+    }
+]

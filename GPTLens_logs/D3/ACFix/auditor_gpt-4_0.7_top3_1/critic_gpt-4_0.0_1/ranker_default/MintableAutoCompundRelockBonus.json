@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate in identifying a potential reentrancy vulnerability due to the external call in '_withdraw' before updating the state. This is a classic reentrancy pattern and could indeed lead to multiple withdrawals if not properly mitigated, making it a severe and potentially profitable attack if exploited. The severity is high due to the direct financial implications, and profitability is also high as an attacker could drain funds.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'withdraw' function calls '_withdraw' which in turn uses external calls such as 'IERC20.safeTransfer' before updating the state variables such as '_balances[msg.sender]'. This can lead to reentrancy attacks where an attacker can potentially call 'withdraw' repeatedly in a single transaction before the state is updated, leading to the draining of funds.",
+        "code": "function withdraw(uint256 _amount) public override canWithdraw(_amount) updateReward(msg.sender) { _withdraw(_amount); }",
+        "file_name": "MintableAutoCompundRelockBonus.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "setToken",
+        "vulnerability": "Arbitrary Token Injection",
+        "criticism": "The reasoning is correct in highlighting the risk of arbitrary token injection through the 'setToken' function. If an attacker gains control or if there's a malicious admin, they could indeed set a harmful token that disrupts the contract's operations or leads to loss of funds. The severity is high due to the potential for immediate impact on the contract's integrity and user funds. Profitability is moderate, depending on the attacker's ability to benefit from the injected token.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'setToken' function allows the admin to change the staking and rewards token to any token address. This can be exploited by setting a malicious token that could have detrimental code in the ERC20 functions such as 'transfer' and 'transferFrom', leading to potential loss of funds or other unexpected behavior.",
+        "code": "function setToken(address _addr) public { configuration.stakingToken = ERC20(_addr); configuration.rewardsToken = ERC20(_addr); }",
+        "file_name": "MintableAutoCompundRelockBonus.sol",
+        "final_score": 7.0
+    },
+    {
+        "function_name": "_compound",
+        "vulnerability": "Incorrect Reward Calculation",
+        "criticism": "The reasoning correctly identifies a potential flaw in the reward calculation mechanism. However, the actual impact and exploitability depend on the specific implementation of the 'rewards' calculation elsewhere in the contract. Without knowing how 'rewards' are determined, it's hard to assess the full severity or profitability. The correctness is moderate due to the dependency on other parts of the contract, and both severity and profitability are potentially moderate but speculative without further context.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 4,
+        "reason": "In the '_compound' function, the earnings are simply incremented by the rewards without any checks or caps. This can lead to incorrect reward calculations if there are any bugs or exploits in how 'rewards' are calculated in other parts of the contract, potentially leading to an excessive minting of tokens.",
+        "code": "function _compound(address account) internal virtual override(BaseStaking, MintableSupplyStaking) { earnings[account] += rewards[account]; MintableSupplyStaking._compound(account); }",
+        "file_name": "MintableAutoCompundRelockBonus.sol",
+        "final_score": 4.5
+    }
+]

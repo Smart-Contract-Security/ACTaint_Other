@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withrawDev",
+        "vulnerability": "Unauthorized ownership transfer",
+        "criticism": "The reasoning is accurate as the function indeed allows any caller to change the 'owner' state variable to their address without any checks, which is a critical vulnerability. This can lead to unauthorized control over the contract, potentially allowing the attacker to manipulate other functions that rely on the 'owner' check. The severity is high due to the potential for complete control over the contract, and profitability is also high as the attacker can potentially redirect funds or manipulate contract behavior to their benefit.",
+        "correctness": 9,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "This function allows any caller to change the 'owner' state variable to their address. This is because it sets 'owner = msg.sender' without any checks on who 'msg.sender' is. This can lead to unauthorized control over the contract as the 'owner' has special permissions in other functions.",
+        "code": "function withrawDev () public { owner = msg.sender; uint256 devTokens = 100000000e8; distr(owner, devTokens); }",
+        "file_name": "0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.sol"
+    },
+    {
+        "function_name": "transferTokenTo",
+        "vulnerability": "Potential integer overflow",
+        "criticism": "The reasoning provided is plausible but lacks specific details about the implementation of 'doAirdrop' to fully validate the claim. Assuming 'doAirdrop' directly manipulates balances without proper checks, the risk of integer overflow is real and could lead to unexpected behavior such as balance wrapping. However, without seeing the actual implementation of 'doAirdrop', it's hard to fully assess the severity and profitability. If the overflow can be exploited to benefit the attacker, both would be higher.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The function 'doAirdrop' called within 'transferTokenTo' adds '_amount' to 'balances[_participant]' and 'totalDistributed' without validating that '_amount' plus the current balance does not exceed the maximum value for a uint256. This might lead to integer overflow vulnerabilities where the balance could wrap around and become less than expected, which can be exploited.",
+        "code": "function transferTokenTo(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "file_name": "0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.sol"
+    },
+    {
+        "function_name": "sendToken",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning identifies a potential reentrancy issue due to the external call to 'distr' within the 'sendToken' function. However, the actual risk of reentrancy would depend on the specifics of how 'distr' handles state changes and whether it indeed allows for state changes that could be exploited through reentrant calls. Without more details on 'distr', this remains a theoretical vulnerability. The severity and profitability would be moderate if the reentrancy could be exploited to withdraw more tokens than allowed or manipulate balances.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 4,
+        "reason": "The function 'sendToken' executes external calls to 'distr' which interacts with state variables and emits events. This pattern can be vulnerable to reentrancy attacks where a malicious contract could call back into 'sendToken' before the first execution completes, attempting to withdraw or manipulate balances or state in unauthorized ways.",
+        "code": "function sendToken() payable canDistr public { uint256 tokens = 0; require( msg.value >= minPurchase ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x68cadbcdd5a14e89364f0535fdef62f0f1b9d025.sol"
+    }
+]

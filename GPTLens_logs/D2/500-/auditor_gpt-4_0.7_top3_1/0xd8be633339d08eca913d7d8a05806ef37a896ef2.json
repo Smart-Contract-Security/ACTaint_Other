@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public { selfdestruct(owner); if ((_value != 0) && (allowance[msg.sender][_spender] != 0)) revert(); allowance[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); }",
+        "vulnerability": "Self-destruct logic in non-destructive function",
+        "reason": "The 'approve' function contains a 'selfdestruct(owner)' command which will destruct the contract when called. This function is meant for ERC20 token allowance handling, not for terminating the contract. This allows any user to destroy the contract unconditionally, leading to loss of funds and disruption of service.",
+        "file_name": "0xd8be633339d08eca913d7d8a05806ef37a896ef2.sol"
+    },
+    {
+        "function_name": "withdrawOld",
+        "code": "function withdrawOld(address to) public { var balance = dividends(msg.sender); payouts[msg.sender] += (int256) (balance * PRECISION); totalPayouts += (int256) (balance * PRECISION); to.transfer(balance); }",
+        "vulnerability": "Arbitrary redirection of funds",
+        "reason": "The 'withdrawOld' function allows the caller to redirect their dividends to any address. This can be exploited to send funds to unintended recipients, potentially aiding in theft or in creating misleading financial records.",
+        "file_name": "0xd8be633339d08eca913d7d8a05806ef37a896ef2.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public { var _allowance = allowance[_from][msg.sender]; if (_allowance < _value) revert(); allowance[_from][msg.sender] = _allowance - _value; transferTokens(_from, _to, _value); }",
+        "vulnerability": "Potential underflow in allowance handling",
+        "reason": "In 'transferFrom', the function decreases the allowance without checking for underflow, which can happen if '_allowance' is smaller than '_value'. This can lead to the allowance becoming extremely high, allowing a spender to transfer an unexpectedly large number of tokens.",
+        "file_name": "0xd8be633339d08eca913d7d8a05806ef37a896ef2.sol"
+    }
+]

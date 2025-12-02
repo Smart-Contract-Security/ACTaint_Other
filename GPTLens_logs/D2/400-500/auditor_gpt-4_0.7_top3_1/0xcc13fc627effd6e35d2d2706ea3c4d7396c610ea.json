@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "uploadBalances",
+        "code": "function uploadBalances(address[] addresses, uint256[] balances) onlyOwner { require(!balancesLocked); require(addresses.length == balances.length); uint256 sum; for (uint256 i = 0; i < uint256(addresses.length); i++) { sum = safeAdd(sum, safeSub(balances[i], balanceOf[addresses[i]])); balanceOf[addresses[i]] = balances[i]; } balanceOf[owner] = safeSub(balanceOf[owner], sum); }",
+        "vulnerability": "Arithmetic overflow",
+        "reason": "The function 'uploadBalances' calculates a sum of differences between new and current balances which can potentially lead to an integer overflow. Although the 'safeAdd' and 'safeSub' functions are used to prevent overflows and underflows in intermediate steps, the cumulative sum itself is not checked for overflow. This can lead to incorrect balance adjustments, particularly underflows in the owner's balance, leading to unintended token creation or destruction.",
+        "file_name": "0xcc13fc627effd6e35d2d2706ea3c4d7396c610ea.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) returns (bool success) { require(!locked); require(balanceOf[msg.sender] >= _amount); require(balanceOf[_to] + _amount >= balanceOf[_to]); balanceOf[msg.sender] -= _amount; uint256 preBalance = balanceOf[_to]; balanceOf[_to] += _amount; bool alreadyMax = preBalance >= singleIDXMQty; if (!alreadyMax) { if (now >= validAfter[_to].ts + mustHoldFor) validAfter[_to].last = preBalance; validAfter[_to].ts = now; } if (validAfter[msg.sender].last > balanceOf[msg.sender]) validAfter[msg.sender].last = balanceOf[msg.sender]; Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Arithmetic overflow",
+        "reason": "The function 'transfer' does not properly check for overflows when adding _amount to balanceOf[_to]. Although the condition 'require(balanceOf[_to] + _amount >= balanceOf[_to])' is intended to prevent overflows, it is not sufficient as it only checks if an overflow occurred but does not prevent the overflow itself. An attacker could exploit this by sending a large amount that causes an overflow and resets the balance of the recipient to a lower value, leading to token theft.",
+        "file_name": "0xcc13fc627effd6e35d2d2706ea3c4d7396c610ea.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _amount) returns (bool success) { require(!locked); require(balanceOf[_from] >= _amount); require(balanceOf[_to] + _amount >= balanceOf[_to]); require(_amount <= allowance[_from][msg.sender]); balanceOf[_from] -= _amount; uint256 preBalance = balanceOf[_to]; balanceOf[_to] += _amount; allowance[_from][msg.sender] -= _amount; bool alreadyMax = preBalance >= singleIDXMQty; if (!alreadyMax) { if (now >= validAfter[_to].ts + mustHoldFor) validAfter[_to].last = preBalance; validAfter[_to].ts = now; } if (validAfter[_from].last > balanceOf[_from]) validAfter[_from].last = balanceOf[_from]; Transfer(_from, _to, _amount); return true; }",
+        "vulnerability": "Arithmetic overflow",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' also fails to properly secure against overflow when adding _amount to balanceOf[_to]. The condition 'require(balanceOf[_to] + _amount >= balanceOf[_to])' checks for the presence of an overflow but does not mitigate it. This could allow an attacker who has been approved to transfer tokens on behalf of another user, to cause an overflow and effectively steal tokens by resetting the balance of the recipient.",
+        "file_name": "0xcc13fc627effd6e35d2d2706ea3c4d7396c610ea.sol"
+    }
+]

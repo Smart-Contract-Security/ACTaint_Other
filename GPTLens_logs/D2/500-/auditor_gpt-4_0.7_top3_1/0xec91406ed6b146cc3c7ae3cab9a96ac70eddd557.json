@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "DoItLive",
+        "code": "function DoItLive() public payable { if (msg.value >= address(this).balance) { close(); } }",
+        "vulnerability": "Unrestricted Ether Withdrawal",
+        "reason": "The function 'DoItLive' allows any user to trigger the 'close' function by sending an amount of Ether that is greater than or equal to the contract's balance. This could lead to unauthorized self-destruction of the contract and withdrawal of all Ether stored in it, as the 'close' function executes 'selfdestruct(msg.sender)', sending all remaining Ether to the message sender.",
+        "file_name": "0xec91406ed6b146cc3c7ae3cab9a96ac70eddd557.sol"
+    },
+    {
+        "function_name": "close",
+        "code": "function close() private { selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized SelfDestruct",
+        "reason": "The 'close' function is marked as private but is called from public functions 'DoItLive' and 'live'. Despite being private, it can be indirectly triggered by any user through these public functions. 'selfdestruct(msg.sender)' in this function sends all Ether in the contract to the caller's address, which can be exploited by anyone calling 'DoItLive' with enough Ether or the owner calling 'live'.",
+        "file_name": "0xec91406ed6b146cc3c7ae3cab9a96ac70eddd557.sol"
+    },
+    {
+        "function_name": "live",
+        "code": "function live() public { if (msg.sender == Owner) { close(); } }",
+        "vulnerability": "Owner Only SelfDestruct",
+        "reason": "The 'live' function allows the owner of the contract to trigger the 'close' function, leading to the contract\u2019s self-destruction. This can be a risk if the ownership isn't securely managed or if the owner's account is compromised. Additionally, this function does not have any checks or safety mechanisms to prevent accidental calls, which can permanently destroy the contract.",
+        "file_name": "0xec91406ed6b146cc3c7ae3cab9a96ac70eddd557.sol"
+    }
+]

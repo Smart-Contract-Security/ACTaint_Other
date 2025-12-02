@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _amount) onlyOwner public returns (bool) { totalSupply_ = totalSupply_.add(_amount); balances[_to] = balances[_to].add(_amount); Mint(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The mint function allows the contract owner to create an arbitrary amount of tokens. This can lead to an uncontrolled increase in the token supply, potentially causing inflation or devaluing the token. There are no checks or limits on the amount that can be minted at once or in total.",
+        "file_name": "0x74e1f5848c8d9eb41dae555af6068bebfd66f1dd.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) public { require(_value <= balances[msg.sender]); address burner = msg.sender; balances[burner] = balances[burner].sub(_value); totalSupply_ = totalSupply_.sub(_value); Burn(burner, _value); }",
+        "vulnerability": "Unrestricted Burn",
+        "reason": "The burn function allows any token holder to destroy any amount of tokens they possess. While this could be seen as a feature, it can be misused in scenarios such as token sales or contracts relying on the token balance as a measure of value or governance rights.",
+        "file_name": "0x74e1f5848c8d9eb41dae555af6068bebfd66f1dd.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public onlyOwner { require(newOwner != address(0)); pendingOwner = newOwner; }",
+        "vulnerability": "Ownership Hijacking",
+        "reason": "The transferOwnership function sets a new pending owner but does not immediately transfer the ownership. If the original owner neglects to confirm the transfer, the pending owner could potentially claim the ownership rights by forcing the original owner to call acceptOwnership, especially if the original owner's private key is compromised.",
+        "file_name": "0x74e1f5848c8d9eb41dae555af6068bebfd66f1dd.sol"
+    }
+]

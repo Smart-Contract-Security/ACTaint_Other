@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "constuctor",
+        "code": "function constuctor() public { owner = msg.sender; }",
+        "vulnerability": "Typographical error in constructor",
+        "reason": "The function name 'constuctor' is a typographical error and should be 'constructor'. This error means the constructor will not set the owner upon contract deployment, leaving the contract without a designated owner. This makes all functions protected by the onlyOwner modifier accessible to anyone, as the ownership check will fail.",
+        "file_name": "0xfb025f588cd68b9ddd30e4c3919748e87e5c6265.sol"
+    },
+    {
+        "function_name": "addComment",
+        "code": "function addComment(bytes3 _rating, string _text) public returns (uint) { Comment storage comment = comments[commentsLength]; comment.rating = _rating; comment.text = _text; emit commentInfo(_rating, _text); commentsLength++; return commentsLength; }",
+        "vulnerability": "Unrestricted access control",
+        "reason": "The function 'addComment' allows any user to add a comment without any restrictions. Since this function is not protected by the onlyOwner modifier or any other form of access control, malicious users can flood the contract with irrelevant or harmful comments, potentially leading to denial of service (DoS) by filling up storage or degrading the contract's usability.",
+        "file_name": "0xfb025f588cd68b9ddd30e4c3919748e87e5c6265.sol"
+    },
+    {
+        "function_name": "setComment",
+        "code": "function setComment(uint256 _id, bytes3 _rating, string _text) public { Comment storage comment = comments[_id]; comment.rating = _rating; comment.text = _text; emit commentInfo(_rating, _text); }",
+        "vulnerability": "Unrestricted access control",
+        "reason": "Like 'addComment', the function 'setComment' lacks any form of access control. This allows any external caller to modify any comment stored in the contract. An attacker can exploit this to alter legitimate comments, leading to misinformation or confusion among users, potentially harming the reputation of the contract operators or other users.",
+        "file_name": "0xfb025f588cd68b9ddd30e4c3919748e87e5c6265.sol"
+    }
+]

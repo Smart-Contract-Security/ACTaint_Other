@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "allocateOwnStake",
+        "code": "function allocateOwnStake(uint8 subjectType, uint256 subject, uint256 amount) external onlyAgencyType(subjectType, SubjectStakeAgency.DELEGATED) { if (!_subjectGateway.canManageAllocation(subjectType, subject, _msgSender())) revert SenderCannotAllocateFor(subjectType, subject); _allocateStake(subjectType, subject, _msgSender(), amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'allocateOwnStake' is vulnerable to reentrancy attacks because it calls '_allocateStake' which then interacts with external contracts (rewardsDistributor.didAllocate) before the state (balances in _allocatedStake and _unallocatedStake) is fully updated. An attacker could potentially exploit this by creating a fallback function in the rewardsDistributor contract to re-enter the 'allocateOwnStake' function and allocate more stake than they own.",
+        "file_name": "StakeAllocator.sol"
+    },
+    {
+        "function_name": "withdrawAllocation",
+        "code": "function withdrawAllocation(uint256 activeSharesId, uint8 subjectType, uint256 subject, address allocator, uint256 stakeAmount, uint256 sharesAmount) external onlyRole(STAKING_CONTRACT_ROLE) { uint256 oldUnallocated = _unallocatedStake.balanceOf(activeSharesId); int256 fromAllocated = int256(stakeAmount) - int256(oldUnallocated); if (fromAllocated > 0) { _allocatedStake.burn(activeSharesId, uint256(fromAllocated)); rewardsDistributor.didUnallocate(subjectType, subject, uint256(fromAllocated), sharesAmount, allocator); emit AllocatedStake(subjectType, subject, false, uint256(fromAllocated), _allocatedStake.balanceOf(activeSharesId)); _unallocatedStake.burn(activeSharesId, _unallocatedStake.balanceOf(activeSharesId)); emit UnallocatedStake(subjectType, subject, false, oldUnallocated, 0); } else { _unallocatedStake.burn(activeSharesId, stakeAmount); rewardsDistributor.didUnallocate(subjectType, subject, 0, sharesAmount, allocator); emit UnallocatedStake(subjectType, subject, false, stakeAmount, _unallocatedStake.balanceOf(activeSharesId)); } }",
+        "vulnerability": "Integer underflow",
+        "reason": "In 'withdrawAllocation', the calculation of 'fromAllocated' can lead to integer underflow. This occurs when 'oldUnallocated' (balance of unallocated stake) is greater than 'stakeAmount' (amount to withdraw). This underflow could potentially allow an attacker to manipulate balance calculations leading to incorrect balance updates or bypassing certain restrictions.",
+        "file_name": "StakeAllocator.sol"
+    },
+    {
+        "function_name": "depositAllocation",
+        "code": "function depositAllocation(uint256 activeSharesId, uint8 subjectType, uint256 subject, address allocator, uint256 stakeAmount, uint256 sharesAmount) external override onlyRole(STAKING_CONTRACT_ROLE) { SubjectStakeAgency agency = getSubjectTypeAgency(subjectType); if (agency != SubjectStakeAgency.DELEGATED && agency != SubjectStakeAgency.DELEGATOR) { return; } (int256 extra, ) = _allocationIncreaseChecks(subjectType, subject, agency, allocator, stakeAmount); if (extra > 0) { _allocatedStake.mint(activeSharesId, stakeAmount - uint256(extra)); rewardsDistributor.didAllocate(subjectType, subject, stakeAmount - uint256(extra), sharesAmount, allocator); emit AllocatedStake(subjectType, subject, true, stakeAmount - uint256(extra), _allocatedStake.balanceOf(activeSharesId)); _unallocatedStake.mint(activeSharesId, uint256(extra)); emit UnallocatedStake(subjectType, subject, true, uint256(extra), _unallocatedStake.balanceOf(activeSharesId)); } else { _allocatedStake.mint(activeSharesId, stakeAmount); rewardsDistributor.didAllocate(subjectType, subject, stakeAmount, sharesAmount, allocator); emit AllocatedStake(subjectType, subject, true, stakeAmount, _allocatedStake.balanceOf(activeSharesId)); } }",
+        "vulnerability": "Incorrect calculation leading to imbalanced allocation",
+        "reason": "In 'depositAllocation', the calculation of 'extra' can be greater than 'stakeAmount', leading to a negative value being passed to the '_allocatedStake.mint' function when 'stakeAmount - uint256(extra)' is computed. This incorrect calculation can lead to imbalances in the allocation of stakes and potential exploitation where more shares are minted than should be allowed.",
+        "file_name": "StakeAllocator.sol"
+    }
+]

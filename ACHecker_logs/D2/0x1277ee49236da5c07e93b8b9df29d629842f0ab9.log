@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x1277ee49236da5c07e93b8b9df29d629842f0ab9.code
+Start time: 19/08/2022 07:57:44
+Building CFG...
+CFG generation time (secs): 0.12
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function UpMineLVL(uint256)
+	( 3749)  ea5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function UpMineLVL(uint256)
+
+Violated access control check in function startSelling(uint8,uint256,uint256,uint128)
+	( 5507) 1583:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function UpMineLVL(uint256)
+
+Violated access control check in function StartMiningByIdArray(uint256[])
+	( 8034) 1f62:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function UpMineLVL(uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 27.00
+End time: 19/08/2022 07:58:11

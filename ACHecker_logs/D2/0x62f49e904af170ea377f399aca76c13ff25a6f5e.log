@@ -1,0 +1,18 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x62f49e904af170ea377f399aca76c13ff25a6f5e.code
+Start time: 21/08/2022 18:58:55
+Building CFG...
+CFG generation time (secs): 0.03
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function cancelTrade(uint256)
+	(  866)  362:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function take(uint256)
++--Attacker can make changes to AC item {2} in function initiateTrade(address,address,uint256,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 3.38
+End time: 21/08/2022 18:58:58

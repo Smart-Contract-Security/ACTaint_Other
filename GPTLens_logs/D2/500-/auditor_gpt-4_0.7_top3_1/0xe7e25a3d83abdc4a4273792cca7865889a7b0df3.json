@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "kill",
+        "code": "function kill() payable { if (this.balance == 0) selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The kill function allows any caller to destroy the contract if its balance is zero, as it does not have an 'onlyOwner' modifier or any other access control mechanisms. This could allow any attacker to permanently remove the contract from the blockchain when its balance is 0, potentially disrupting the service or access to stored data.",
+        "file_name": "0xe7e25a3d83abdc4a4273792cca7865889a7b0df3.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint amount) payable onlyOwner { if (Deposits[msg.sender] > 0 && amount <= Deposits[msg.sender]) { msg.sender.send(amount); Withdraw(amount); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The withdraw function sends Ether to msg.sender using msg.sender.send(amount) without updating the Deposits mapping before sending the Ether. This might allow a malicious contract to call this function recursively if the initial send is successful, potentially draining the contract's Ether balance by repeatedly calling withdraw before the state (Deposits mapping) is updated.",
+        "file_name": "0xe7e25a3d83abdc4a4273792cca7865889a7b0df3.sol"
+    },
+    {
+        "function_name": "deposit",
+        "code": "function deposit() payable { if (msg.value >= 0.1 ether) { Deposits[msg.sender] += msg.value; Deposit(msg.value); } }",
+        "vulnerability": "Denial of Service (DoS) by Griefing",
+        "reason": "The deposit function only allows deposits of 0.1 ether or more. An attacker could repeatedly send transactions with less than 0.1 ether to this function. These transactions would still consume gas but would not update the Deposits mapping or emit the Deposit event, potentially causing legitimate users to waste gas.",
+        "file_name": "0xe7e25a3d83abdc4a4273792cca7865889a7b0df3.sol"
+    }
+]

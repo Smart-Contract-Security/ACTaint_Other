@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb9d526121e3f04e3d3266fd71b49a11c98ef9bf5.code
+Start time: 27/08/2022 21:28:20
+Building CFG...
+CFG generation time (secs): 3.34
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawAltcoinTokens(address)
+	( 1581)  62d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdraw()
+	( 2295)  8f7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2391)  957:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 2611)  a33:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 2647)  a57:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2871)  b37:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 2970)  b9a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3527)  dc7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function Rethen()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.85
+End time: 27/08/2022 21:28:29

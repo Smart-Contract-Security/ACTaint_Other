@@ -1,0 +1,18 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc4ea9dee8638893fbe67701d171d4ecf19135254.code
+Start time: 28/08/2022 06:07:32
+Building CFG...
+CFG generation time (secs): 1.26
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setGameStatus(bool)
+	( 1477)  5c5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function startNewRound()
++--Attacker can make changes to AC item {7} in function createDrone()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 4.61
+End time: 28/08/2022 06:07:38

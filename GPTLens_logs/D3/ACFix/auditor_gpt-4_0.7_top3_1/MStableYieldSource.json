@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "supplyTokenTo",
+        "code": "function supplyTokenTo(uint256 mAssetAmount, address to) external override nonReentrant { mAsset.safeTransferFrom(msg.sender, address(this), mAssetAmount); uint256 creditsIssued = savings.depositSavings(mAssetAmount); imBalances[to] += creditsIssued; emit Supplied(msg.sender, to, mAssetAmount); }",
+        "vulnerability": "Incorrect balance update",
+        "reason": "The function 'supplyTokenTo' updates the balance of 'to' address by adding the 'creditsIssued' directly. This can lead to a vulnerability where an attacker may manipulate the 'to' parameter to credit another account, potentially leading to unauthorized accrual of balances.",
+        "file_name": "MStableYieldSource.sol"
+    },
+    {
+        "function_name": "redeemToken",
+        "code": "function redeemToken(uint256 mAssetAmount) external override nonReentrant returns (uint256 mAssetsActual) { uint256 mAssetBalanceBefore = mAsset.balanceOf(address(this)); uint256 creditsBurned = savings.redeemUnderlying(mAssetAmount); imBalances[msg.sender] -= creditsBurned; uint256 mAssetBalanceAfter = mAsset.balanceOf(address(this)); mAssetsActual = mAssetBalanceAfter - mAssetBalanceBefore; mAsset.safeTransfer(msg.sender, mAssetsActual); emit Redeemed(msg.sender, mAssetAmount, mAssetsActual); }",
+        "vulnerability": "Insufficient balance check",
+        "reason": "The 'redeemToken' function does not check if the user has sufficient credits to burn before executing the redemption. This could result in underflow of the user's balance leading to arbitrary large balances, potentially allowing an attacker to withdraw more assets than they should be entitled to.",
+        "file_name": "MStableYieldSource.sol"
+    },
+    {
+        "function_name": "approveMax",
+        "code": "function approveMax() public { IERC20(savings.underlying()).safeApprove(address(savings), type(uint256).max); emit ApprovedMax(msg.sender); }",
+        "vulnerability": "Excessive approval",
+        "reason": "The 'approveMax' function sets the approval of the total supply of the underlying asset to the 'savings' contract. This could potentially lead to a vulnerability where, if the 'savings' contract is compromised, an attacker could drain all tokens from users who have called this function.",
+        "file_name": "MStableYieldSource.sol"
+    }
+]

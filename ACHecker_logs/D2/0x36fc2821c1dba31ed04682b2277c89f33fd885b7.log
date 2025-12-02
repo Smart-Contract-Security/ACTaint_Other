@@ -1,0 +1,17 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x36fc2821c1dba31ed04682b2277c89f33fd885b7.code
+Start time: 20/08/2022 09:50:17
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Target of DELEGATECALL) Missing access control check in function upgrade(address,bytes)
+Needed to protect following instruction in function () payable
+(  488)  1e8:	f4	-6 +1 = -5	DELEGATECALL
+
+Analysis time (secs): 1.08
+End time: 20/08/2022 09:50:18

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Missing ownership transfer validation",
+        "reason": "The function allows the current owner to set any address as the newOwner without any checks if the new owner address is valid (not zero). This can lead to mistakenly setting an incorrect address which cannot be corrected without the cooperation of the new incorrect owner.",
+        "file_name": "0x12ac8fa232888cdff7b923ca584a887835a631f2.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); emit Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function does not use the Checks-Effects-Interactions pattern. The function first modifies the state (balances and allowances) and then calls the external contract through the 'emit' function. This can potentially lead to reentrancy attacks if the external contract called is malicious.",
+        "file_name": "0x12ac8fa232888cdff7b923ca584a887835a631f2.sol"
+    },
+    {
+        "function_name": "approveAndCall",
+        "code": "function approveAndCall(address spender, uint tokens, bytes data) public returns (bool success) { allowed[msg.sender][spender] = tokens; emit Approval(msg.sender, spender, tokens); ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, this, data); return true; }",
+        "vulnerability": "Potential reentrancy vulnerability",
+        "reason": "This function sets the allowance and then immediately calls an external contract. If the external contract is malicious, it might call back into the smart contract and exploit the freshly set allowance before any other state changes are made, leading to unexpected behavior or extraction of funds.",
+        "file_name": "0x12ac8fa232888cdff7b923ca584a887835a631f2.sol"
+    }
+]

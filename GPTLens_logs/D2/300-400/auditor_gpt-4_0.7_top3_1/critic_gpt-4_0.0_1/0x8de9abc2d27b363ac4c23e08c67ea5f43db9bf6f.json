@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setProof",
+        "vulnerability": "Reentrancy",
+        "criticism": "The vulnerability reasoning is incorrect as the 'setProof' function does not make any external calls or inter-contract communications before updating the state variables. The operations occurring seem to be purely internal computations and state updates, with no visible lines that interact with external addresses which could re-enter. Therefore, the risk of reentrancy in this function is non-existent. The correctness score is low because of the inaccurate identification of reentrancy risk, while both the severity and profitability scores are zero due to the absence of actual vulnerability.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'setProof' updates the state variables after making external calls. This allows the called contracts to re-enter and potentially exploit the state before it is finalized, leading to unexpected behaviors or loss of funds.",
+        "code": "function setProof (string _proofLink) onlyBy (owner) { if (!proofSet) { uint256 remainder; proofLink = _proofLink; proofSet = true; remainder = editionSize % (10000 / ethartArtReward); ethartArtAwarded = (editionSize - remainder) / (10000 / ethartArtReward); if (remainder > 0 && now % ((10000 / ethartArtReward) - 1) <= remainder) {ethartArtAwarded++;} piecesOwned[registrar] = ethartArtAwarded; piecesOwned[owner] = editionSize - ethartArtAwarded; } else {throw;} }",
+        "file_name": "0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.sol"
+    },
+    {
+        "function_name": "buyPiece",
+        "vulnerability": "Integer Overflow/Underflow",
+        "criticism": "The reasoning about the potential for integer overflow/underflow when calculating token distribution is valid. Given the division and subtraction operations involved without explicit overflow/underflow checks, unforeseen input values could indeed produce erroneous financial movements or token assignments. Hence, the correctness score is high. Similarly, the potential severity of this vulnerability is notable due to the direct financial implications. Profitability is also relatively high, as a motivated attacker might leverage such vulnerabilities to divert or retain undesired amounts of ethers.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "The function 'buyPiece' calculates parts of the payment based on percentages without ensuring the operation does not cause an integer overflow or underflow. Malicious inputs or extreme values in 'msg.value', 'ownerCommission', and 'ethartRevenueReward' can cause unexpected results, leading to financial loss.",
+        "code": "function buyPiece() payable { if (pieceForSale && msg.value >= lowestAskPrice) { uint256 _amountOwner; uint256 _amountEthart; uint256 _amountSeller; uint256 _amountReferrer; _amountOwner = (msg.value / 10000) * ownerCommission; _amountEthart = (msg.value / 10000) * ethartRevenueReward; _amountSeller = msg.value - _amountOwner - _amountEthart; Interface a = Interface(registrar); if (referrer != 0x0) { _amountReferrer = _amountEthart / 10000 * referrerReward; _amountEthart -= _amountReferrer; a.asyncSend(referrer, _amountReferrer); } piecesOwned[lowestAskAddress]--; piecesOwned[msg.sender]++; PieceSold (lowestAskAddress, msg.sender, msg.value); pieceForSale = false; lowestAskPrice = 0; a.issuePatrons(msg.sender, msg.value); a.asyncSend(owner, _amountOwner); a.asyncSend(lowestAskAddress, _amountSeller); lowestAskAddress = 0x0; a.asyncSend(registrar, _amountEthart); registrar.transfer(msg.value); } else {throw;} }",
+        "file_name": "0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.sol"
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked External Call",
+        "criticism": "The reasoning misclassifies 'Transfer' as an external call, which it is not; it is merely an event that's emitted. Events in Ethereum do not interact with external contracts, nor do they return values that need to be checked. Therefore, there is a mistake in identifying this as a vulnerability related to unchecked external call execution. Given that 'Transfer' does not impact the state if it fails and can't fail in the given implementation of solidity, the overall ratings for both severity and profitability are zero, reflecting the absence of actual vulnerability.",
+        "correctness": 0,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The function 'transfer' does not check the return value of the 'Transfer' event emission. This can lead to unnoticed failures in event logging, which might not reflect the actual token balances updates, potentially confusing off-chain clients or interfaces relying on these events.",
+        "code": "function transfer(address _to, uint256 _amount) notLocked(msg.sender, _amount) onlyPayloadSize(2 * 32) returns (bool success) { if (piecesOwned[msg.sender] >= _amount && _amount > 0 && piecesOwned[_to] + _amount > piecesOwned[_to] && _to != 0x0) { piecesOwned[msg.sender] -= _amount; piecesOwned[_to] += _amount; Transfer(msg.sender, _to, _amount); return true; } else { return false;} }",
+        "file_name": "0x8de9abc2d27b363ac4c23e08c67ea5f43db9bf6f.sol"
+    }
+]

@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x4d7edd5f94515b0f35b38f6fb2ea975a20823465.code
+Start time: 21/08/2022 01:38:22
+Building CFG...
+CFG generation time (secs): 0.36
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function approve(address,uint256)
+	( 4431) 114f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function removeSpriteFromSale(uint256)
+	( 8717) 220d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function listSpriteForSale(uint256,uint256)
+	( 9340) 247c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+Violated access control check in function transfer(address,uint256)
+	(11633) 2d71:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {15} in function buySprite(uint256)
++--Attacker can make changes to AC item {15} in function listSpriteForSale(uint256,uint256)
++--Attacker can make changes to AC item {15} in function transfer(address,uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 12.72
+End time: 21/08/2022 01:38:35

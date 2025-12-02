@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public {\n    uint256 tokens = 0;\n    require( msg.value >= MIN_CONTRIBUTION );\n    require( msg.value > 0 );\n    tokens = tokensPerEth.mul(msg.value) / 1 ether;\n    address investor = msg.sender;\n    if (tokens > 0) {\n        distr(investor, tokens);\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "vulnerability": "Integer Overflow",
+        "reason": "The calculation of 'tokens' does not handle overflow conditions. Since Solidity 0.4.24 doesn't have overflow checks by default, an overflow in the multiplication or division can lead to incorrect token calculations, potentially allowing an attacker to receive more tokens than intended.",
+        "file_name": "0x0f3c1db76e44ca31e76698daa35e0d568f934f37.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Race Condition (Front-Running)",
+        "reason": "This function is vulnerable to a race condition where, if a user tries to change an already set allowance (not zero), the function will return 'false' without changing the allowance. An attacker can front-run a legitimate transaction changing the allowance, causing unexpected financial losses or discrepancies.",
+        "file_name": "0x0f3c1db76e44ca31e76698daa35e0d568f934f37.sol"
+    },
+    {
+        "function_name": "withdrawForeignTokens",
+        "code": "function withdrawForeignTokens(address _tokenContract) onlyOwner public returns (bool) {\n    ForeignToken token = ForeignToken(_tokenContract);\n    uint256 amount = token.balanceOf(address(this));\n    return token.transfer(owner, amount);\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The 'transfer' function call on an external contract 'ForeignToken' is made without checking its return value for success or failure. If the 'transfer' fails silently, this function will still return 'true', potentially leading to incorrect assumptions about the state of funds or assets.",
+        "file_name": "0x0f3c1db76e44ca31e76698daa35e0d568f934f37.sol"
+    }
+]

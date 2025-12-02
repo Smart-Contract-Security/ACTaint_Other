@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc5a55a809445b228e3662ff3da4cff5cc42c65a5.code
+Start time: 28/08/2022 06:37:12
+Building CFG...
+CFG generation time (secs): 1.67
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 3925)  f55:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4157) 103d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 4615) 1207:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 4723) 1273:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawALTokenss(address)
+	( 4958) 135e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5593) 15d9:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5791) 169f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6931) 1b13:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function cmctcybermovie()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.26
+End time: 28/08/2022 06:37:19

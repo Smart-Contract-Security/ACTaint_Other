@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "transfer",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'transfer' function for reentrancy is somewhat misplaced. The function uses an external library to update balances, but the reentrancy risk is not as straightforward as described. The function does ensure that the sender's balance is reduced before the receiver's balance is increased, which is a common mitigation against reentrancy. However, the use of an external library could introduce unknown behaviors depending on its implementation. The severity is moderate due to potential reentrancy, but the correctness of the reasoning is overestimated as the function does follow a safer order of operations.",
+        "correctness": 5,
+        "severity": 5,
+        "profitability": 3,
+        "reason": "The transfer function updates balances using an external library call to 'insert' which can potentially be a vector for reentrancy attacks. Since the balance of the sender is updated after the balance of the receiver, a malicious receiver contract could call back into this contract and double-spend. This is because the sender's balance is only reduced after the receiver's balance is increased, potentially allowing the recursive call to execute the transfer again.",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { require(_value <= IterableMapping.iterate_getValue(balances, msg.sender)); require(_to != address(0)); IterableMapping.insert(balances, msg.sender, IterableMapping.iterate_getValue(balances, msg.sender).sub(_value)); IterableMapping.insert(balances, _to, IterableMapping.iterate_getValue(balances, _to).add(_value)); emit Transfer(msg.sender, _to, _value); return true; }",
+        "file_name": "0x04abeda201850ac0124161f037efd70c74ddc74c.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning for the 'transferFrom' function being vulnerable to reentrancy is more accurate than the 'transfer' function. The order of operations does indeed update balances before decreasing the allowance, which could allow a reentrant call to exploit the unchanged allowance. This is a significant oversight and could lead to multiple withdrawals. The severity is high due to the potential for direct financial loss, and the correctness of the reasoning is strong. However, profitability is also high as an attacker could exploit this repeatedly.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "Similar to the 'transfer' function, 'transferFrom' also updates balances using external library calls and then modifies the allowance. The order of operations allows for a reentrancy attack because if a malicious contract is one of the parties, it could potentially call back into 'transferFrom' during execution. Since allowance is only decreased after the balances are updated, it can lead to issues where the allowance check passes initially but fails to protect against multiple withdrawals.",
+        "code": "function transferFrom( address _from, address _to, uint256 _value ) public returns (bool) { require(_value <= IterableMapping.iterate_getValue(balances, _from)); require(_value <= allowed[_from][msg.sender]); require(_to != address(0)); IterableMapping.insert(balances, _from, IterableMapping.iterate_getValue(balances, _from).sub(_value)); IterableMapping.insert(balances, _to, IterableMapping.iterate_getValue(balances, _to).add(_value)); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value); emit Transfer(_from, _to, _value); return true; }",
+        "file_name": "0x04abeda201850ac0124161f037efd70c74ddc74c.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race Condition",
+        "criticism": "The reasoning about the 'approve' function is correct in identifying a race condition vulnerability due to front-running. The function does not reset the allowance to zero before setting a new value, which can allow a spender to use the old allowance and the newly approved amount. This is a well-known issue in ERC-20 tokens known as the 'approve/allowance' race condition. The severity and profitability are significant as they can lead to unexpected financial losses. The criticism is well-founded and accurately describes the vulnerability.",
+        "correctness": 9,
+        "severity": 7,
+        "profitability": 6,
+        "reason": "The 'approve' function sets the allowance for a spender without considering any previously set allowances. This can result in a race condition known as 'front-running', where a malicious spender can quickly spend the remaining allowance before the sender has a chance to reset it to a lower value. This could result in unexpected spending of tokens because the check and update of the allowance are not atomic.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool) { allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x04abeda201850ac0124161f037efd70c74ddc74c.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "setPerpRiskParams",
+        "vulnerability": "Unchecked Array Removal",
+        "criticism": "The reasoning identifies a potential inefficiency in the loop that removes a perpetual from the 'registeredPerp' array, but it does not necessarily constitute a vulnerability. The lack of a 'break' statement after removing an item does lead to unnecessary iterations, but this would not typically result in a denial of service unless the array is extremely large, which is uncommon. The severity is low because it would require specific conditions to exploit effectively, and profitability is also low as there is no direct way to gain from triggering this inefficiency.",
+        "correctness": 5,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "In the function 'setPerpRiskParams', when removing a perpetual from 'registeredPerp' array, the code does not break the loop after finding and removing the perpetual. This can lead to unnecessary iterations, and potential out-of-gas errors if the array is large, which can be used by an attacker in a denial of service (DoS) attack by repeatedly registering and unregistering a perpetual to make the array grow.",
+        "code": "function setPerpRiskParams( Types.State storage state, address perp, Types.RiskParams calldata param ) external { if (state.perpRiskParams[perp].isRegistered && !param.isRegistered) { for (uint256 i; i < state.registeredPerp.length;) { if (state.registeredPerp[i] == perp) { state.registeredPerp[i] = state.registeredPerp[ state.registeredPerp.length - 1 ]; state.registeredPerp.pop(); } unchecked { ++i; } } } if (!state.perpRiskParams[perp].isRegistered && param.isRegistered) { state.registeredPerp.push(perp); } require( param.liquidationPriceOff + param.insuranceFeeRate <= param.liquidationThreshold, Errors.INVALID_RISK_PARAM ); state.perpRiskParams[perp] = param; emit UpdatePerpRiskParams(perp, param); }",
+        "file_name": "Operation.sol"
+    },
+    {
+        "function_name": "updateFundingRate",
+        "vulnerability": "Unchecked External Calls",
+        "criticism": "The reasoning correctly points out the risk of inconsistent state due to the lack of checks on the success of external calls in 'updateFundingRate'. This could indeed lead to discrepancies between the actual funding rate and the logs, which is a significant issue in financial contexts. The severity is high because it affects the integrity of financial data, but profitability is moderate as exploiting this would require specific conditions and might not directly result in financial gain.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 4,
+        "reason": "The function 'updateFundingRate' calls external contract methods 'getFundingRate' and 'updateFundingRate' without checking whether these calls succeed. If the call to 'updateFundingRate' fails but does not revert (e.g., the external contract uses a 'try/catch' without reverting), the funding rate in the external contract would not be updated, but the event 'UpdateFundingRate' would still be emitted, leading to inconsistent state between the actual funding rate and the emitted logs.",
+        "code": "function updateFundingRate( address[] calldata perpList, int256[] calldata rateList ) external { require( perpList.length == rateList.length, Errors.ARRAY_LENGTH_NOT_SAME ); for (uint256 i = 0; i < perpList.length;) { int256 oldRate = IPerpetual(perpList[i]).getFundingRate(); IPerpetual(perpList[i]).updateFundingRate(rateList[i]); emit UpdateFundingRate(perpList[i], oldRate, rateList[i]); unchecked { ++i; } } }",
+        "file_name": "Operation.sol"
+    },
+    {
+        "function_name": "setSecondaryAsset",
+        "vulnerability": "Re-entrancy",
+        "criticism": "The reasoning about potential re-entrancy during the 'decimals()' call is valid, especially considering the external call to an untrusted contract. However, the actual impact and exploitability depend on the broader contract context, which isn't fully detailed here. If the contract has other state changes or external interactions following this function, the risk could be higher. The severity is moderate due to potential unexpected behaviors, but profitability is low as it's unclear how this could be exploited for gain.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "This function 'setSecondaryAsset' calls an external contract 'IDecimalERC20(_secondaryAsset).decimals()' to get decimals of the secondary asset. If the external contract is malicious, it could potentially make re-entrant calls back into the smart contract during the decimals() invocation. Even though there are checks before state updates, the re-entrancy could still potentially interact in unexpected ways with other parts of the contract not shown in the snippet.",
+        "code": "function setSecondaryAsset( Types.State storage state, address _secondaryAsset ) external { require( state.secondaryAsset == address(0), Errors.SECONDARY_ASSET_ALREADY_EXIST ); require( IDecimalERC20(_secondaryAsset).decimals() == IDecimalERC20(state.primaryAsset).decimals(), Errors.SECONDARY_ASSET_DECIMAL_WRONG ); state.secondaryAsset = _secondaryAsset; emit SetSecondaryAsset(_secondaryAsset); }",
+        "file_name": "Operation.sol"
+    }
+]

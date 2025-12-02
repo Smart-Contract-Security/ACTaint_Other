@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw () public noone_else { uint256 withdraw_amt = this.balance; if (msg.sender != me || withdraw_amt < savings_goal ){ withdraw_amt = 0; } if (!msg.sender.send(withdraw_amt)) throw; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdraw' function sends ether to an arbitrary address before setting the withdrawal amount to zero. An attacker can recursively call the withdraw function in the fallback function when receiving ether, leading to draining all the ether in the contract because the balance is checked and modified after the send operation.",
+        "file_name": "0x17683235257f2089e3e4acc9497f25386a529507.sol"
+    },
+    {
+        "function_name": "recovery",
+        "code": "function recovery (uint256 _password) noone_else { if ( uint256(sha3(_password)) % 10000000000000000000 == 49409376313952921 ){ selfdestruct (me); } else throw; }",
+        "vulnerability": "Weak Password Hash",
+        "reason": "The 'recovery' function uses a predictable hashing function (sha3) and a weak comparison mechanism that can be brute-forced offline. Once the password is found, an attacker can destroy the contract by invoking the selfdestruct function, thereby claiming all remaining ether.",
+        "file_name": "0x17683235257f2089e3e4acc9497f25386a529507.sol"
+    },
+    {
+        "function_name": "set_savings_goal",
+        "code": "function set_savings_goal(uint256 new_goal) noone_else { if (this.balance >= savings_goal) savings_goal = new_goal; }",
+        "vulnerability": "Unchecked Set Goal",
+        "reason": "The 'set_savings_goal' function allows the savings goal to be changed if the contract's balance is already greater than or equal to the current savings goal. An attacker can first ensure the contract balance is high, change the goal to a miniscule amount, and then withdraw funds, thus bypassing intended restrictions.",
+        "file_name": "0x17683235257f2089e3e4acc9497f25386a529507.sol"
+    }
+]

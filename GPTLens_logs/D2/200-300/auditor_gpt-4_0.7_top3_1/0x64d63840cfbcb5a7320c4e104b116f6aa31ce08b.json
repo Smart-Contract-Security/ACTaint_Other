@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "allocate",
+        "code": "function allocate(address _address,uint256 percent) private{\n uint256 bal=totalSupply.percent(percent);\n transfer(_address,bal);\n }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'allocate' function calls 'transfer' which can allow an external call to another contract. If the recipient of the transfer is a malicious contract, it could call back into this contract before the initial transfer is complete, leading to reentrancy attack. This is dangerous because the state changes are not finalized before the external call, which might lead to inconsistency and unexpected behaviors.",
+        "file_name": "0x64d63840cfbcb5a7320c4e104b116f6aa31ce08b.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) public {\n require(_value <= balances[msg.sender]);\n address burner = msg.sender;\n balances[burner] = balances[burner].sub(_value);\n totalSupply = totalSupply.sub(_value);\n Burn(burner, _value);\n }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function 'burn' does not check the return value of 'sub' function from SafeMath library. Although the SafeMath's 'sub' function uses 'assert' to ensure no underflow, in Solidity 0.4.x versions, 'assert' only throws an error without returning a value. It\u2019s safer to handle or check these operations\u2019 return to avoid ignoring failed operations.",
+        "file_name": "0x64d63840cfbcb5a7320c4e104b116f6aa31ce08b.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) {\n require(_to != address(0));\n require(_value <= balances[msg.sender]);\n balances[msg.sender] = balances[msg.sender].sub(_value);\n balances[_to] = balances[_to].add(_value);\n Transfer(msg.sender, _to, _value);\n return true;\n }",
+        "vulnerability": "Missing Input Validation",
+        "reason": "The function 'transfer' lacks necessary validation to ensure that the '_to' address is not an important contract or the token contract itself, which can lead to accidental loss of tokens. It\u2019s important to have checks to prevent transferring tokens to 0x0, the token contract, or other critical addresses unintentionally.",
+        "file_name": "0x64d63840cfbcb5a7320c4e104b116f6aa31ce08b.sol"
+    }
+]

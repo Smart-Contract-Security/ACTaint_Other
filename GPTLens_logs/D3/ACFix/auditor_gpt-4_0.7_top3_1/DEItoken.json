@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address account, uint256 amount) public virtual{ uint256 currentAllowance = _allowances[msgSender()][account]; _approve(account,msgSender(), currentAllowance - amount); _burn(account,amount); }",
+        "vulnerability": "Underflow",
+        "reason": "The function directly subtracts 'amount' from 'currentAllowance' without checking if 'currentAllowance' is greater than or equal to 'amount'. If 'amount' is greater than 'currentAllowance', this will result in an underflow leading to a very large allowance being set due to the subtraction of a larger number from a smaller one, which wraps around in unsigned integer arithmetic.",
+        "file_name": "DEItoken.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address account, uint256 amount) public virtual{ uint256 currentAllowance = _allowances[msgSender()][account]; _approve(account,msgSender(), currentAllowance - amount); _burn(account,amount); }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "This function modifies the approval amount by reducing the current allowance before calling _burn. However, if there is a concurrent call to increase the allowance from the same delegator, it might lead to a race condition where the approved amount is manipulated after the check and before the burn. This can potentially allow burning more tokens than originally approved.",
+        "file_name": "DEItoken.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address account, uint256 amount) public virtual{ uint256 currentAllowance = _allowances[msgSender()][account]; _approve(account,msgSender(), currentAllowance - amount); _burn(account,amount); }",
+        "vulnerability": "Missing Sender Validation",
+        "reason": "The function does not explicitly validate if 'msgSender()' is authorized to burn tokens from 'account'. This could lead to unauthorized burning if the function is called by an attacker who manages to manipulate the allowance mapping.",
+        "file_name": "DEItoken.sol"
+    }
+]

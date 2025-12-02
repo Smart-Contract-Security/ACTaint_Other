@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "vulnerability": "Logic flaw in distribution control",
+        "reason": "The condition to check if the total distributed amount has reached the total supply and setting the distributionFinished flag is unreachable as it is placed after the return statement. This flaw allows the continuous distribution of tokens beyond the intended total supply.",
+        "file_name": "0x2dfd9ec3000e5f9a0e585174d540f19322e90942.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(50000).mul(49999);\n}",
+        "vulnerability": "Reentrancy vulnerability",
+        "reason": "The function 'getTokens' allows for potential reentrancy attacks since it calls 'distr' which might lead to state changes, and after that, it modifies the state of the contract and blacklists the user. An attacker could potentially exploit this by recursively calling 'getTokens' before the blacklist state is set, allowing multiple distributions to the same address within one transaction.",
+        "file_name": "0x2dfd9ec3000e5f9a0e585174d540f19322e90942.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) onlyOwner public {\n    require(_value <= balances[msg.sender]);\n    address burner = msg.sender;\n    balances[burner] = balances[burner].sub(_value);\n    totalSupply = totalSupply.sub(_value);\n    totalDistributed = totalDistributed.sub(_value);\n    emit Burn(burner, _value);\n}",
+        "vulnerability": "Improper burn implementation",
+        "reason": "The burn function allows the owner to reduce the total supply and total distributed count by an arbitrary value. However, this function does not check if the value to burn actually exists beyond the owner's balance, potentially allowing the 'totalDistributed' to go negative if the burned amount is greater than the balance but less than or equal to the owner's balance, which could lead to undefined behavior in token accounting.",
+        "file_name": "0x2dfd9ec3000e5f9a0e585174d540f19322e90942.sol"
+    }
+]

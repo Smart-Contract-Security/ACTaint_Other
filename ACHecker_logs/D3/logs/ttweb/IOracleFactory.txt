@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/data1/XXX/AChecker/bin/achecker.py", line 423, in <module>
+    main()
+  File "/data1/XXX/AChecker/bin/achecker.py", line 419, in main
+    analysis(p, initial_storage, sym_validation =symbolic_validation, mode=mode)
+  File "/data1/XXX/AChecker/bin/achecker.py", line 89, in analysis
+    ssa = rattle.Recover(bytes.hex(p.code).encode(), edges=p.cfg.edges(), split_functions=False)      
+  File "/data1/XXX/AChecker/src/project.py", line 49, in cfg
+    self._cfg = CFG(generate_BBs(self.code))
+  File "/data1/XXX/AChecker/src/cfg/cfg.py", line 18, in __init__
+    self.root = self._bb_at[0]
+KeyError: 0

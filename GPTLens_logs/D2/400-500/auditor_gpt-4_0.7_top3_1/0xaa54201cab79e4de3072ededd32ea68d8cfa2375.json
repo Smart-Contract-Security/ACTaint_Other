@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "Kill",
+        "code": "function Kill(uint a) { selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized self-destruction",
+        "reason": "The Kill function allows any user to destroy the contract by sending a transaction to it. Since there are no access control checks (like onlyOwner modifier or similar), any external actor can call this function, passing any uint value, and trigger the selfdestruct operation. This would lead to loss of contract's code and potentially any funds or states stored in it, causing severe implications.",
+        "file_name": "0xaa54201cab79e4de3072ededd32ea68d8cfa2375.sol"
+    },
+    {
+        "function_name": "Test2",
+        "code": "function Test2(uint a) constant returns(address) { return msg.sender; }",
+        "vulnerability": "Constant function not marked as view",
+        "reason": "The function Test2 is defined with the 'constant' keyword but does not use the 'view' or 'pure' specifier introduced in Solidity version 0.4.17. Although 'constant' implies that the function promises not to modify the state, it is an old way of indicating read-only functions and may lead to confusion or incorrect function behavior in future compiler versions. It's recommended to use 'view' or 'pure' for clearer intent and compatibility.",
+        "file_name": "0xaa54201cab79e4de3072ededd32ea68d8cfa2375.sol"
+    },
+    {
+        "function_name": "Test4",
+        "code": "function Test4(uint b) constant returns(uint) { return a.length; }",
+        "vulnerability": "Constant function not marked as view",
+        "reason": "Similar to Test2, Test4 uses the deprecated 'constant' keyword instead of 'view'. This can lead to future compatibility issues with newer versions of the Solidity compiler, as 'constant' might be phased out or its behavior altered. It is recommended to use the 'view' keyword for functions that do not modify the state to ensure clarity and future-proofing of the contract code.",
+        "file_name": "0xaa54201cab79e4de3072ededd32ea68d8cfa2375.sol"
+    }
+]

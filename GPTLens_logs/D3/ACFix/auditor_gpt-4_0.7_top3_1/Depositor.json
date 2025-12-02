@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "depositToGauge",
+        "code": "function depositToGauge(uint256 _amount) onlyOwner() external returns(uint256){ AMMToken.transferFrom(msg.sender, address(this), _amount); AMMToken.safeIncreaseAllowance(address(gauge), _amount); gauge.deposit(_amount, 0); uint256 NFTId = depositReceipt.safeMint(_amount); depositReceipt.safeTransferFrom(address(this), msg.sender, NFTId); return(NFTId); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'depositToGauge' function transfers tokens and interacts with external contracts (gauge.deposit and depositReceipt.safeMint) without using reentrancy guards. If the external contract is malicious or compromised, it could call back into this or other functions in this contract before the first call finishes, potentially leading to effects such as double withdrawals, balance manipulation, or other unintended interactions.",
+        "file_name": "Depositor.sol"
+    },
+    {
+        "function_name": "withdrawFromGauge",
+        "code": "function withdrawFromGauge(uint256 _NFTId, address[] memory _tokens) public { uint256 amount = depositReceipt.pooledTokens(_NFTId); depositReceipt.burn(_NFTId); gauge.getReward(address(this), _tokens); gauge.withdraw(amount); AMMToken.transfer(msg.sender, amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'withdrawFromGauge' function similarly suffers from a reentrancy vulnerability. It interacts with the depositReceipt and gauge external contracts for state-changing functions (like burn, getReward, withdraw) and does not implement reentrancy guards. This can be exploited in similar ways to the 'depositToGauge' function.",
+        "file_name": "Depositor.sol"
+    },
+    {
+        "function_name": "multiWithdrawFromGauge",
+        "code": "function multiWithdrawFromGauge( uint256[] memory _NFTIds, bool _usingPartial, uint256 _partialNFTId, uint256 _percentageSplit, address[] memory _tokens ) external { uint256 length = _NFTIds.length; for (uint256 i = 0; i < length; i++ ){ withdrawFromGauge(_NFTIds[i], _tokens); } if(_usingPartial){ partialWithdrawFromGauge(_partialNFTId, _percentageSplit, _tokens); } }",
+        "vulnerability": "Missing Access Control",
+        "reason": "The 'multiWithdrawFromGauge' function allows batch withdrawal of tokens by calling 'withdrawFromGauge' multiple times. However, it is marked as 'external' without any further access control checks such as 'onlyOwner', potentially allowing any external entity to trigger withdrawals. This could lead to unauthorized asset transfers if exploited.",
+        "file_name": "Depositor.sol"
+    }
+]

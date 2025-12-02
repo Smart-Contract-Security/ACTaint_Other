@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x0f3c1db76e44ca31e76698daa35e0d568f934f37.code
+Start time: 19/08/2022 05:41:29
+Building CFG...
+CFG generation time (secs): 2.87
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function AirdropPerETH(uint256)
+	( 1345)  541:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdraw()
+	( 2095)  82f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2202)  89a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function DistributeToken(address,uint256)
+	( 2449)  991:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2540)  9ec:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function MultiAddressDistrubuteToken(address[],uint256)
+	( 2874)  b3a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 3184)  c70:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3523)  dc3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function CFCdistrubution()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.77
+End time: 19/08/2022 05:41:38

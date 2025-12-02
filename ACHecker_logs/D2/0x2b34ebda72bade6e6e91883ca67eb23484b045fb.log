@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x2b34ebda72bade6e6e91883ca67eb23484b045fb.code
+Start time: 20/08/2022 01:24:31
+Building CFG...
+CFG generation time (secs): 0.27
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function 5279d492
+	( 2264)  8d8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function Ownable()
++--Attacker can make changes to AC item {12} in function transferOwnership(address)
+
+Violated access control check in function destroy()
+	( 2801)  af1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function Ownable()
++--Attacker can make changes to AC item {12} in function transferOwnership(address)
+
+Violated access control check in function transferTo(address)
+	( 3012)  bc4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function Ownable()
++--Attacker can make changes to AC item {12} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3731)  e93:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {12} in function Ownable()
++--Attacker can make changes to AC item {12} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function Ownable()
+Needed to protect following instruction in function destroy()
+( 2819)  b03:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 3.63
+End time: 20/08/2022 01:24:35

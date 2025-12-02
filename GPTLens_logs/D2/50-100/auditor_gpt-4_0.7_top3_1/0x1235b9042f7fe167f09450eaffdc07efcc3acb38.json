@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint amount) payable onlyOwner { if (Deposits[msg.sender] > 0 && amount <= Deposits[msg.sender]) { msg.sender.send(amount); Withdraw(amount); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'withdraw' does not update the state (reduce the Deposits balance) before sending Ether with 'msg.sender.send(amount)'. An attacker can re-enter the contract and potentially withdraw more Ether than they are allowed, as the balance check and update are not atomic.",
+        "file_name": "0x1235b9042f7fe167f09450eaffdc07efcc3acb38.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() payable { if (this.balance == 0) selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The 'kill' function allows any user to destroy the contract if the contract balance is 0. This can be exploited by an attacker by first draining the contract (if possible) and then calling 'kill' to remove the contract from the blockchain, potentially causing loss of contract state and functionality unexpectedly.",
+        "file_name": "0x1235b9042f7fe167f09450eaffdc07efcc3acb38.sol"
+    },
+    {
+        "function_name": "Vault",
+        "code": "function Vault() payable { Owner = msg.sender; deposit(); }",
+        "vulnerability": "Constructor Misnaming",
+        "reason": "The function 'Vault' appears to be intended as the constructor for the 'Deposit' contract, given it sets the 'Owner'. However, it is misnamed and does not match the contract name ('Deposit'), meaning it can be called by anyone at any time, potentially allowing an attacker to reset the 'Owner' address and take control of the contract.",
+        "file_name": "0x1235b9042f7fe167f09450eaffdc07efcc3acb38.sol"
+    }
+]

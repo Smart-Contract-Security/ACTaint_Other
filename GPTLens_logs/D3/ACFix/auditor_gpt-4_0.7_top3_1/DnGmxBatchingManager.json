@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "grantAllowances",
+        "code": "function grantAllowances() external onlyOwner { sGlp.approve(address(dnGmxJuniorVault), type(uint256).max); }",
+        "vulnerability": "Unlimited Approval",
+        "reason": "The grantAllowances function grants unlimited approval of the sGlp tokens to the dnGmxJuniorVault. This can lead to a potential risk where the dnGmxJuniorVault or any entity that compromises it might misuse these approvals to drain sGlp tokens from this contract without further consent from the token owner.",
+        "file_name": "DnGmxBatchingManager.sol"
+    },
+    {
+        "function_name": "setKeeper",
+        "code": "function setKeeper(address _keeper) external onlyOwner { keeper = _keeper; emit KeeperUpdated(_keeper); }",
+        "vulnerability": "Single Point of Failure",
+        "reason": "The setKeeper function allows the owner to change the keeper address, which has significant permissions like pausing deposits. If the owner account gets compromised, the attacker can take control of significant functionalities by updating the keeper, potentially leading to disruption in the contract services or other malicious activities.",
+        "file_name": "DnGmxBatchingManager.sol"
+    },
+    {
+        "function_name": "_claim",
+        "code": "function _claim( address claimer, address receiver, uint256 amount ) internal { if (receiver == address(0)) revert InvalidInput(0x10); if (amount == 0) revert InvalidInput(0x11); UserDeposit storage userDeposit = vaultBatchingState.userDeposits[claimer]; uint128 userUsdcBalance = userDeposit.usdcBalance; uint128 userUnclaimedShares = userDeposit.unclaimedShares; { uint256 userDepositRound = userDeposit.round; if (userDepositRound < vaultBatchingState.currentRound && userUsdcBalance > 0) { RoundDeposit storage roundDeposit = vaultBatchingState.roundDeposits[userDepositRound]; userUnclaimedShares += userUsdcBalance .mulDiv(roundDeposit.totalShares, roundDeposit.totalUsdc) .toUint128(); userDeposit.usdcBalance = 0; } } if (userUnclaimedShares < amount.toUint128()) revert InsufficientShares(userUnclaimedShares); userDeposit.unclaimedShares = userUnclaimedShares - amount.toUint128(); dnGmxJuniorVault.transfer(receiver, amount); emit SharesClaimed(claimer, receiver, amount); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The _claim function is vulnerable to reentrancy attacks. It interacts with an external contract dnGmxJuniorVault via the transfer function and updates the state after this external call. If the external contract is malicious or compromised, it could call back into this contract before the state (such as userUnclaimedShares) is updated, potentially allowing for claims of shares more than once.",
+        "file_name": "DnGmxBatchingManager.sol"
+    }
+]

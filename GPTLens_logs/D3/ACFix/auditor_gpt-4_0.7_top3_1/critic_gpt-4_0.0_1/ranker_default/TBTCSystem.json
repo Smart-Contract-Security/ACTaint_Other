@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "requestNewKeep",
+        "vulnerability": "Reentrancy Risk",
+        "criticism": "The reasoning correctly identifies a potential reentrancy risk due to the external call that sends Ether. However, the severity of this vulnerability depends on the implementation of the called contract. If the called contract is secure against reentrancy, the risk is mitigated. The profitability could be high if an attacker can exploit this to drain funds or corrupt state, but this depends heavily on the external contract's defenses against such attacks.",
+        "correctness": 6,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The function 'requestNewKeep' sends Ether (msg.value) to another contract ('_keepFactory.openKeep') which could be a potential target for reentrancy attacks. If the called contract is malicious or has a bug, it could call back into this or other functions in 'TBTCSystem' leading to state corruption or unexpected behavior.",
+        "code": "function requestNewKeep(uint256 _m, uint256 _n, uint256 _bond) external payable returns (address) { IBondedECDSAKeepVendor _keepVendor = IBondedECDSAKeepVendor(keepVendor); IBondedECDSAKeepFactory _keepFactory = IBondedECDSAKeepFactory(_keepVendor.selectFactory()); return _keepFactory.openKeep.value(msg.value)(_n, _m, msg.sender, _bond); }",
+        "file_name": "TBTCSystem.sol",
+        "final_score": 5.75
+    },
+    {
+        "function_name": "setLotSizes",
+        "vulnerability": "Input Validation Issue",
+        "criticism": "The reasoning is accurate in identifying that the function only checks for the presence of 1BTC and does not validate other entries in the array. This could indeed lead to unexpected behavior if these lot sizes are used elsewhere in the contract without further validation. The severity is moderate because it could affect the contract's operations depending on how these lot sizes are used. However, the profitability for an attacker is low as exploiting this requires specific conditions and may not directly result in financial gain.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 2,
+        "reason": "The function 'setLotSizes' only checks for the presence of 1BTC (10**8 satoshis) in the input array, but does not validate other entries in the array. Malicious input containing valid 1BTC followed by arbitrary large or small values could lead to unexpected behavior when these lot sizes are used elsewhere in the contract.",
+        "code": "function setLotSizes(uint256[] calldata _lotSizes) external onlyOwner { for( uint i = 0; i < _lotSizes.length; i++){ if (_lotSizes[i] == 10**8){ lotSizesSatoshis = _lotSizes; emit LotSizesUpdated(_lotSizes); return; } } revert(\"Lot size array must always contain 1BTC\"); }",
+        "file_name": "TBTCSystem.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "emergencyPauseNewDeposits",
+        "vulnerability": "Single Use Function",
+        "criticism": "The reasoning is correct in pointing out the limitation of the function being callable only once. This indeed reduces flexibility in handling ongoing emergency situations. The severity is moderate because it could prevent the system from responding adequately to evolving threats. However, the profitability for an attacker is non-existent as this vulnerability does not provide a direct way to gain financially or disrupt the system in a profitable manner.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 0,
+        "reason": "The 'emergencyPauseNewDeposits' function can only be called once as it checks if 'pausedTimestamp' is zero and sets it to the current timestamp. This could be a problem if the pause needs to be reactivated after resuming deposits. It limits the flexibility in handling emergency situations.",
+        "code": "function emergencyPauseNewDeposits() external onlyOwner returns (bool) { require(pausedTimestamp == 0, \"emergencyPauseNewDeposits can only be called once\"); pausedTimestamp = block.timestamp; allowNewDeposits = false; emit AllowNewDepositsUpdated(false); }",
+        "file_name": "TBTCSystem.sol",
+        "final_score": 4.5
+    }
+]

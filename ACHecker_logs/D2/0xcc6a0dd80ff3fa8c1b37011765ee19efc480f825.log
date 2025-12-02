@@ -1,0 +1,63 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xcc6a0dd80ff3fa8c1b37011765ee19efc480f825.code
+Start time: 28/08/2022 11:41:51
+Building CFG...
+CFG generation time (secs): 23.99
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 2446)  98e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2542)  9ee:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function disableWhitelist(address[])
+	( 2765)  acd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function airdrop(address[])
+	( 2909)  b5d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 3140)  c44:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function enableWhitelist(address[])
+	( 3242)  caa:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distributeAmounts(address[],uint256[])
+	( 3359)  d1f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 4136) 1028:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 4475) 117b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distribution(address[],uint256)
+	( 4561) 11d1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function ZeroXEth()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 19.78
+End time: 28/08/2022 11:42:35

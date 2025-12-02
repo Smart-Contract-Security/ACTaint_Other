@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "requestNumber",
+        "code": "function requestNumber(address _requestor, uint256 _max, uint8 _waitTime) payable public {\n    if (!whiteList[msg.sender]) {\n        require(!(msg.value < cost));\n    }\n    assert(!isRequestPending(_requestor));\n    pendingNumbers[_requestor] = PendingNumber({\n        requestProxy: tx.origin,\n        renderedNumber: 0,\n        max: max,\n        originBlock: block.number,\n        waitTime: waitTime\n    });\n    if (_max > 1) {\n        pendingNumbers[_requestor].max = _max;\n    }\n    if (_waitTime > 0 && _waitTime < 250) {\n        pendingNumbers[_requestor].waitTime = _waitTime;\n    }\n    EventRandomLedgerRequested(_requestor, pendingNumbers[_requestor].max, pendingNumbers[_requestor].originBlock, pendingNumbers[_requestor].waitTime, pendingNumbers[_requestor].requestProxy);\n}",
+        "vulnerability": "Use of tx.origin",
+        "reason": "The function uses 'tx.origin' to assign the requestProxy. This can be exploited by malicious contracts calling this function, as 'tx.origin' will be equal to the original sender (user), not the immediate sender (contract). This can lead to unauthorized actions being taken on behalf of the user.",
+        "file_name": "0x870ed69ed12430c6a3d4abdb30c7eeb1918c62b1.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address _recipient, uint256 _balance) onlyOwner public returns (bool) {\n    _recipient.transfer(_balance);\n    return true;\n}",
+        "vulnerability": "No check for transfer success",
+        "reason": "The function does not check if the transfer was successful. This can lead to loss of funds if the transfer fails for any reason (e.g., the call stack depth limit is reached, or the recipient is a contract that throws an error). Using .transfer() is safer as it automatically reverts on failure, but the function should handle the logic post-transfer appropriately.",
+        "file_name": "0x870ed69ed12430c6a3d4abdb30c7eeb1918c62b1.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() onlyOwner {\n    selfdestruct(owner);\n}",
+        "vulnerability": "Unchecked selfdestruct",
+        "reason": "The kill function allows the owner to destroy the contract and send remaining funds to the owner's address. This can be problematic if not properly communicated or agreed upon by all stakeholders or users of the contract, as it can lead to loss of access or funds unexpectedly.",
+        "file_name": "0x870ed69ed12430c6a3d4abdb30c7eeb1918c62b1.sol"
+    }
+]

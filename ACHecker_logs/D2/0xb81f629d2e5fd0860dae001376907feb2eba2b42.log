@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xb81f629d2e5fd0860dae001376907feb2eba2b42.code
+Start time: 27/08/2022 20:19:08
+Building CFG...
+CFG generation time (secs): 1.73
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdraw()
+	( 3799)  ed7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4031)  fbf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdrop(address,uint256)
+	( 4489) 1189:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function adminClaimAirdropMultiple(address[],uint256)
+	( 4597) 11f5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawALTokenss(address)
+	( 4832) 12e0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5467) 155b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function updateTokensPerEth(uint256)
+	( 5665) 1621:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 6931) 1b13:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function GEXGLOBEXTOKEN()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 5.35
+End time: 27/08/2022 20:19:16

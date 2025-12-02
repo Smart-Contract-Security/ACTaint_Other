@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintWithNumberPerCall",
+        "code": "function mintWithNumberPerCall(Chips target, uint numberOfCalls, uint numberPerCall) payable public {\n    require(msg.value % numberOfCalls == 0, \"Division error\");\n    uint256 perCallValue = msg.value / numberOfCalls;\n    for (uint p = 0; p < numberOfCalls; p++) {\n        target.mintTokens{value: perCallValue}(numberPerCall);\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function mintWithNumberPerCall allows for external calls within a loop (target.mintTokens) which can be exploited through reentrancy. An attacker can create a malicious contract that calls back into mintWithNumberPerCall during the execution of target.mintTokens, potentially leading to multiple unintended mints if the state is manipulated correctly.",
+        "file_name": "0xc606721c67741D9C140Ed11b93Fc4ea857C8A69f_1.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    uint balance = address(this).balance;\n    payable(msg.sender).transfer(balance);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The withdraw function uses a direct transfer of all contract's balance to the message sender, making it susceptible to reentrancy attacks. An attacker can potentially re-enter the contract through a fallback function during the transfer, allowing unexpected behavior such as draining more funds than intended.",
+        "file_name": "0xc606721c67741D9C140Ed11b93Fc4ea857C8A69f_1.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) public virtual onlyOwner {\n    require(newOwner != address(0), \"Ownable: new owner is the zero address\");\n    _setOwner(newOwner);\n}",
+        "vulnerability": "Ownership Hijacking",
+        "reason": "The transferOwnership function allows the owner to transfer control to any address including potentially malicious ones. If an attacker gains control over the owner's account (e.g., through phishing, key leakage), they can transfer the ownership to their address, seizing control over the contract and its assets.",
+        "file_name": "0xc606721c67741D9C140Ed11b93Fc4ea857C8A69f_1.sol"
+    }
+]

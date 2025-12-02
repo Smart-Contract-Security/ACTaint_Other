@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyTokens",
+        "code": "function buyTokens(address beneficiary) public nonReentrant payable {\n    uint256 weiAmount = msg.value;\n    _preValidatePurchase(beneficiary, weiAmount);\n    uint256 tokens = _getTokenAmount(weiAmount);\n    _weiRaised = _weiRaised.add(weiAmount);\n    _deliverTokens(beneficiary, tokens);\n    emit TokensPurchased(msg.sender, beneficiary, weiAmount, tokens);\n    _forwardFunds();\n}",
+        "vulnerability": "Reentrancy on ETH transfer",
+        "reason": "The '_forwardFunds' function, which performs an ETH transfer to a wallet, is called at the end of the 'buyTokens' function after the state variables have been updated. Although the function uses a nonReentrant modifier, the external call to an untrusted address (_wallet) can potentially lead to reentrancy attacks because the state changes occur before the external call. An attacker could recursively call the buyTokens function to drain ETH from the contract.",
+        "file_name": "0x75306b144352a179b0026ea9ef34a57fc0ecde81.sol"
+    },
+    {
+        "function_name": "_deliverTokens",
+        "code": "function _deliverTokens(address beneficiary, uint256 tokenAmount) internal {\n    _token.safeTransfer(beneficiary, tokenAmount);\n}",
+        "vulnerability": "Unchecked token transfer",
+        "reason": "The function '_deliverTokens' transfers tokens to a beneficiary using the 'safeTransfer' method from the SafeERC20 library. However, there is no check after this transfer to ensure that the transfer was successful. If the token contract fails to transfer tokens (e.g., if the contract has a bug or runs out of tokens), the Crowdsale contract still records the tokens as sold and forwards the received ETH, potentially leading to financial discrepancies.",
+        "file_name": "0x75306b144352a179b0026ea9ef34a57fc0ecde81.sol"
+    },
+    {
+        "function_name": "_preValidatePurchase",
+        "code": "function _preValidatePurchase(address beneficiary, uint256 weiAmount) internal onlyWhileOpen view {\n    require(beneficiary != address(0));\n    require(weiAmount != 0);\n}",
+        "vulnerability": "DoS by block timestamp",
+        "reason": "The '_preValidatePurchase' function relies on 'block.timestamp' to ensure that the Crowdsale is open. Since 'block.timestamp' can be manipulated by miners to some degree, this can potentially lead to denial of service where a miner sets the timestamp outside the Crowdsale period to prevent purchases from being processed. Alternatively, they could allow purchases outside the intended time frame, disrupting the Crowdsale's schedule.",
+        "file_name": "0x75306b144352a179b0026ea9ef34a57fc0ecde81.sol"
+    }
+]

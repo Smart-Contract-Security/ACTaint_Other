@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "setNameNewAddress",
+        "vulnerability": "Authorization Bypass Through User-Controlled Key",
+        "criticism": "The reasoning is somewhat accurate in identifying a potential security risk if the 'nameAccountRecoveryAddress' is compromised. However, this is not a vulnerability in the code itself but rather a risk associated with the security of the 'nameAccountRecoveryAddress'. The function correctly implements checks to ensure that only the authorized address can make changes. The severity is moderate due to the potential impact of an account takeover, but the profitability is also moderate as it depends on compromising a high-level account.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'setNameNewAddress' allows setting a new address for a name ID based on the 'msg.sender' being the 'nameAccountRecoveryAddress'. If the 'nameAccountRecoveryAddress' is compromised or incorrectly set to a malicious address, it could lead to unauthorized address changes, effectively hijacking accounts by redirecting their associated IDs to addresses controlled by an attacker.",
+        "code": "function setNameNewAddress(address _id, address _newAddress) external returns (bool) { require (msg.sender == nameAccountRecoveryAddress); require (AOLibrary.isName(_id)); require (_newAddress != address(0)); require (_ethAddressToNameId[_newAddress] == address(0)); require (_nameIdToEthAddress[_id] != address(0)); address _currentEthAddress = _nameIdToEthAddress[_id]; _ethAddressToNameId[_currentEthAddress] = address(0); _ethAddressToNameId[_newAddress] = _id; _nameIdToEthAddress[_id] = _newAddress; return true; }",
+        "file_name": "0x10fbf61e4cce57d72eed8b5d9728134ce374bd82.sol",
+        "final_score": 5.25
+    },
+    {
+        "function_name": "transferFrom",
+        "vulnerability": "Missing Return Value Check",
+        "criticism": "The criticism about the missing return value check is valid but not currently applicable as the '_transfer' function does not return a value. The potential issue arises only if the '_transfer' function is modified in the future to include a return value. This is more of a future-proofing concern rather than an immediate vulnerability. The current impact and profitability are low since no direct exploitation is possible with the current implementation.",
+        "correctness": 5,
+        "severity": 2,
+        "profitability": 1,
+        "reason": "The internal '_transfer' function is called without checking its return value. Although currently the internal function does not return a value, future modifications to '_transfer' might include a return statement indicating success or failure of the operation, which would not be handled properly by 'transferFrom'. This may lead to unexpected behavior where tokens are incorrectly considered transferred.",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) { require(_value <= allowance[_from][msg.sender]); allowance[_from][msg.sender] -= _value; _transfer(_from, _to, _value); return true; }",
+        "file_name": "0x10fbf61e4cce57d72eed8b5d9728134ce374bd82.sol",
+        "final_score": 3.25
+    },
+    {
+        "function_name": "mint",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided for the reentrancy vulnerability is incorrect. The function sets 'hasReceived[_nameId]' to true before any state changes that could affect balances or total supply, which is a common mitigation technique against reentrancy. The function does not call any external contracts or make any external calls that could lead to reentrancy. Therefore, the risk of reentrancy is minimal, and the reasoning does not align with the actual code implementation.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The function 'mint' does not properly guard against reentrancy attacks. 'hasReceived[_nameId]' is set to true after the minting logic, which increases the 'balanceOf' and 'totalSupply'. A malicious contract could potentially call this function during its execution (if it's called by the 'mint' function, for example, in a fallback function), allowing for repeated mints and uncontrolled increase in total supply.",
+        "code": "function mint(address _nameId) public inWhitelist isName(_nameId) returns (bool) { require (hasReceived[_nameId] == false); hasReceived[_nameId] = true; balanceOf[_nameId] = balanceOf[_nameId].add(MAX_SUPPLY_PER_NAME); totalSupply = totalSupply.add(MAX_SUPPLY_PER_NAME); emit Mint(_nameId, MAX_SUPPLY_PER_NAME); return true; }",
+        "file_name": "0x10fbf61e4cce57d72eed8b5d9728134ce374bd82.sol",
+        "final_score": 1.25
+    }
+]

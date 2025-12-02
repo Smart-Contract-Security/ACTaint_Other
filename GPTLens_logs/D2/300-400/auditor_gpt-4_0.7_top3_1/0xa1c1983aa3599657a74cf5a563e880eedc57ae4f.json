@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fallback function",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function allows for reentrancy due to the use of the 'send' method without setting the state beforehand. The 'send' method is called on 'whale' and 'msg.sender' before the state (such as 'blockheight') is updated with 'setFacts()'. This may allow an attacker to recursively call the fallback function, potentially leading to unexpected behavior or draining the contract's balance.",
+        "file_name": "0xa1c1983aa3599657a74cf5a563e880eedc57ae4f.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "vulnerability": "Unchecked send",
+        "reason": "In the fallback function, the 'send' method results are stored in variables 'isSuccess' and 'isOtherSuccess', but these results are not checked before proceeding. If 'send' fails (returning false), the function continues to execute as if it had succeeded. This could lead to a state where the contract thinks it has successfully sent funds even though it has not, potentially leading to incorrect event logs and state updates.",
+        "file_name": "0xa1c1983aa3599657a74cf5a563e880eedc57ae4f.sol"
+    },
+    {
+        "function_name": "fallback function",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "vulnerability": "DoS with (unexpected) revert",
+        "reason": "The fallback function uses the 'throw' statement to revert the transaction if the incoming transaction value is less than 'this.balance + DELTA'. This could be used to deny service by repeatedly sending transactions with value slightly less than required, causing all transactions to revert and potentially preventing legitimate interactions with the contract.",
+        "file_name": "0xa1c1983aa3599657a74cf5a563e880eedc57ae4f.sol"
+    }
+]

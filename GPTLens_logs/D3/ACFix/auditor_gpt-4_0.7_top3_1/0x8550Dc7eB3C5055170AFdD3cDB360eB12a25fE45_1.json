@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "cross",
+        "code": "function cross(uint amount_) public payable { require(msg.value >= pounge,'too low'); token.transferFrom(msg.sender,address(this),amount_); emit Cross(msg.sender,amount_); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'cross' function is vulnerable to reentrancy attacks because it calls an external contract 'token.transferFrom' before updating the state. An attacker could exploit this by creating a malicious contract that calls 'cross' during the execution of 'transferFrom', leading to multiple withdrawals.",
+        "file_name": "0x8550Dc7eB3C5055170AFdD3cDB360eB12a25fE45_1.sol"
+    },
+    {
+        "function_name": "claimMain",
+        "code": "function claimMain(address addr_) public onlyOwner { payable(addr_).transfer(address(this).balance); }",
+        "vulnerability": "DoS with unbounded gas",
+        "reason": "The 'claimMain' function can lead to a denial of service (DoS) condition if the 'addr_' is a contract and fallback function consumes a lot of gas or reverts. Since 'transfer' is used, it forwards only 2300 gas which might not be enough and could cause the transaction to fail.",
+        "file_name": "0x8550Dc7eB3C5055170AFdD3cDB360eB12a25fE45_1.sol"
+    },
+    {
+        "function_name": "setToken",
+        "code": "function setToken(address addr_) public onlyOwner { token = IERC20(addr_); }",
+        "vulnerability": "Arbitrary External Contract Interaction",
+        "reason": "The 'setToken' function allows the owner to set any address as the token contract address. If a malicious address is set, it can lead to unexpected behavior or loss of funds when 'token.transferFrom' and other token-related functions are called.",
+        "file_name": "0x8550Dc7eB3C5055170AFdD3cDB360eB12a25fE45_1.sol"
+    }
+]

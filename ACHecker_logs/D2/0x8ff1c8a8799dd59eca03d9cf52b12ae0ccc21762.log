@@ -1,0 +1,67 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x8ff1c8a8799dd59eca03d9cf52b12ae0ccc21762.code
+Start time: 26/08/2022 07:52:53
+Building CFG...
+CFG generation time (secs): 0.41
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawSale(uint256)
+	( 2298)  8fa:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function putOnSale(uint256,uint256)
+	( 4829) 12dd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function transferP2P(uint256,address)
+	( 5628) 15fc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function mixAuto(uint256,uint256)
+	(12153) 2f79:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function createSkin(uint128,uint256)
+	( 4829) 12dd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function recycleSkin(uint256[5],uint256)
+	( 6959) 1b2f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function buyInMarket(uint256)
+	( 8304) 2070:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function mix(uint256,uint256)
+	(12153) 2f79:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+Violated access control check in function bleach(uint128,uint128)
+	(10386) 2892:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {5} in function summon()
++--Attacker can make changes to AC item {5} in function recycleSkin(uint256[5],uint256)
++--Attacker can make changes to AC item {5} in function summon10()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 45.59
+End time: 26/08/2022 07:53:39

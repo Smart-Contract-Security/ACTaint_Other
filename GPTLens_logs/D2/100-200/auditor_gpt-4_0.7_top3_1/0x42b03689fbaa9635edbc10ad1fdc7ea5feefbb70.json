@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external {\n    if (msg.value>=howManyEtherInWeiToBecomeOwner) {\n        owner.transfer(msg.value);\n        owner.transfer(this.balance);\n        owner=_newowner;\n    }\n}",
+        "vulnerability": "Unrestricted Ether Transfer",
+        "reason": "The 'changeOwner' function allows the sender to transfer ownership of the contract if they send a large amount of Ether. After initiating the ownership transfer, it sends all the Ether in the contract to the former owner. This can be exploited by an attacker to drain all the funds from the contract.",
+        "file_name": "0x42b03689fbaa9635edbc10ad1fdc7ea5feefbb70.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external {\n    if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) {\n        selfdestruct(owner);\n    }\n}",
+        "vulnerability": "Unrestricted Contract Destruction",
+        "reason": "The 'killContract' function allows either the owner or anyone who sends sufficient Ether to destroy the contract. This can be exploited to permanently disable the contract, potentially leading to loss of funds or disrupting the associated service.",
+        "file_name": "0x42b03689fbaa9635edbc10ad1fdc7ea5feefbb70.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function () payable external {\n    if (!funding) revert();\n    if (msg.value == 0) revert();\n    var numTokens = msg.value * (1000.0/totalTokens);\n    totalTokens += numTokens;\n    balances[msg.sender] += numTokens;\n    Transfer(0, msg.sender, numTokens);\n}",
+        "vulnerability": "Arbitrary Token Minting",
+        "reason": "The fallback function allows anyone to send Ether to the contract and receive tokens in return, based on the current value of 'totalTokens'. The amount of tokens minted is not capped, which could lead to hyperinflation of the token and devaluation. Moreover, the computation of 'numTokens' does not account for integer division issues, which might result in incorrect token distributions.",
+        "file_name": "0x42b03689fbaa9635edbc10ad1fdc7ea5feefbb70.sol"
+    }
+]

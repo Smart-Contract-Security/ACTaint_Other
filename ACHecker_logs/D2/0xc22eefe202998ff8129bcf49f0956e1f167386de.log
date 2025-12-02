@@ -1,0 +1,65 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc22eefe202998ff8129bcf49f0956e1f167386de.code
+Start time: 28/08/2022 04:04:28
+Building CFG...
+CFG generation time (secs): 67.54
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+(  761)  2f9:	57	-2 +0 = -2	JUMPI
+((  756)  2f4:	34	-0 +1 = 1	CALLVALUE, (  757)  2f5:	15	-1 +1 = 0	ISZERO, (    0)    0:	63	-0 +1 = 1	PUSH4(3735929054) 	deadc0de)
+
+Violated access control check in function withdraw()
+	( 4280) 10b8:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 4507) 119b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function disableWhitelist(address[])
+	( 4967) 1367:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function airdrop(address[])
+	( 5276) 149c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 5618) 15f2:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function enableWhitelist(address[])
+	( 5818) 16ba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distributeAmounts(address[],uint256[])
+	( 6054) 17a6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawForeignTokens(address)
+	( 7462) 1d26:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 7996) 1f3c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function distribution(address[],uint256)
+	( 8213) 2015:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function EtherPluscoin()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 88.99
+End time: 28/08/2022 04:07:05

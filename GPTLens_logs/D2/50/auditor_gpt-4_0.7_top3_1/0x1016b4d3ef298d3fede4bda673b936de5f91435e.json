@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public { if(msg.sender.balance < minBalanceForAccounts) sell((minBalanceForAccounts - msg.sender.balance) / sellPrice); _transfer(msg.sender, _to, _value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function in the smart contract is vulnerable to a reentrancy attack. This is due to the call to 'sell' function within the 'transfer' function, which interacts with external contracts. If the 'sell' function is called, it transfers Ether back to msg.sender, who could be a malicious contract designed to make recursive calls back to 'transfer', potentially leading to unexpected behavior or draining of contract funds.",
+        "file_name": "0x1016b4d3ef298d3fede4bda673b936de5f91435e.sol"
+    },
+    {
+        "function_name": "TokenERC20",
+        "code": "function TokenERC20( uint256 initialSupply, string tokenName, string tokenSymbol ) public { initialSupply = maxSupply - totalairdrop; balanceOf[msg.sender] = initialSupply; totalSupply = initialSupply; initialized[msg.sender] = true; name = \"\u6e2c\u8a6610\"; symbol = \"\u6e2c\u8a6610\"; }",
+        "vulnerability": "Unexpected Token Supply Manipulation",
+        "reason": "The constructor 'TokenERC20' sets the 'initialSupply' to 'maxSupply - totalairdrop' and assigns all of this supply to the contract creator. This could lead to unexpected token distribution and manipulation as the constructor parameters are not used in setting the actual token supply and symbol, which are hardcoded, leading to potential misleading or abuse in token allocation.",
+        "file_name": "0x1016b4d3ef298d3fede4bda673b936de5f91435e.sol"
+    },
+    {
+        "function_name": "getBalance",
+        "code": "function getBalance(address _address) internal returns (uint256) { if (totalSupply < maxSupply && !initialized[_address]) { initialized[_address] = true; balanceOf[_address] = airdropAmount; totalSupply += airdropAmount; return balanceOf[_address]; } else { return balanceOf[_address]; } }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'getBalance' can modify state variables 'initialized' and 'balanceOf', and potentially 'totalSupply' by issuing an airdrop when it is supposed to be a read-only function (as implied by its name). This misleads users about its functionality and can lead to unauthorized state changes, altering account balances without explicit permission or expected action.",
+        "file_name": "0x1016b4d3ef298d3fede4bda673b936de5f91435e.sol"
+    }
+]

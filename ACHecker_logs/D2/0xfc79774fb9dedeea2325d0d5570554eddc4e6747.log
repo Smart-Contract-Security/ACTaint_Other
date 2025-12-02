@@ -1,0 +1,40 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xfc79774fb9dedeea2325d0d5570554eddc4e6747.code
+Start time: 01/09/2022 14:25:38
+Building CFG...
+CFG generation time (secs): 9.83
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+(  761)  2f9:	57	-2 +0 = -2	JUMPI
+((  755)  2f3:	34	-0 +1 = 1	CALLVALUE, (  756)  2f4:	80	-1 +2 = 1	DUP1, (  757)  2f5:	15	-1 +1 = 0	ISZERO, (    0)    0:	63	-0 +1 = 1	PUSH4(3735929054) 	deadc0de)
+
+Violated access control check in function withdraw()
+	( 1907)  773:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VPC0x()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function withdrawVPC0xTokens(address)
+	( 2001)  7d1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VPC0x()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function burn(uint256)
+	( 2343)  927:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VPC0x()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function finishDistribution()
+	( 2648)  a58:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VPC0x()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+Violated access control check in function transferOwnership(address)
+	( 3294)  cde:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function VPC0x()
++--Attacker can make changes to AC item {1} in function transferOwnership(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 8.60
+End time: 01/09/2022 14:25:56

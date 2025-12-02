@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows a user to become the new owner of the contract by sending a large amount of Ether. However, before updating the owner state variable, it transfers Ether first to the current owner. If the current owner is a malicious contract, it can call changeOwner again (re-enter) while it is still the owner, potentially draining the contract's balance.",
+        "file_name": "0xe50b0cefeb80bdd9e3d03517976909765c96e962.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "This function allows any user to destroy the contract if they send a sufficient amount of Ether. This could lead to loss of contract functionality and data, impacting all users. The destruction of the contract should be strictly controlled and ideally only executable by the current owner without any payment.",
+        "file_name": "0xe50b0cefeb80bdd9e3d03517976909765c96e962.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Arbitrary Contract Modification",
+        "reason": "This function allows anyone to change the name and symbol of the token if they send enough Ether. This can mislead users about the token they are interacting with, potentially leading to fraud or misuse. The control over token metadata like name and symbol should be restricted to the contract owner only.",
+        "file_name": "0xe50b0cefeb80bdd9e3d03517976909765c96e962.sol"
+    }
+]

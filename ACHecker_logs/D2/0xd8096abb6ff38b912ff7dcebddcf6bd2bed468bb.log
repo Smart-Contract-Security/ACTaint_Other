@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xd8096abb6ff38b912ff7dcebddcf6bd2bed468bb.code
+Start time: 29/08/2022 15:32:42
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setOwner(uint256,address)
+	( 1515)  5eb:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function registerDINWithResolver(address,address)
++--Attacker can make changes to AC item {0} in function setOwner(uint256,address)
++--Attacker can make changes to AC item {0} in function selfRegisterDIN()
+
+Violated access control check in function setResolver(uint256,address)
+	( 2140)  85c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function registerDINWithResolver(address,address)
++--Attacker can make changes to AC item {0} in function setOwner(uint256,address)
++--Attacker can make changes to AC item {0} in function selfRegisterDIN()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 1.75
+End time: 29/08/2022 15:32:44

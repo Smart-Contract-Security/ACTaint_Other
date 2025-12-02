@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) isRunning validAddress returns (bool success) { require(balanceOf[msg.sender] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); balanceOf[msg.sender] -= _value; balanceOf[_to] += _value; Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "The function does not properly handle the case where '_value' is so large that when added to 'balanceOf[_to]', it causes an overflow, resetting the balance to a smaller number. This can be exploited by an attacker sending a large amount of tokens to overflow the recipient's balance, potentially leading to loss of funds or unintended token manipulation.",
+        "file_name": "0x43e6546d22166e931043c5082777725ff3ebcf00.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) isRunning validAddress returns (bool success) { require(balanceOf[_from] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); require(allowance[_from][msg.sender] >= _value); balanceOf[_to] += _value; balanceOf[_from] -= _value; allowance[_from][msg.sender] -= _value; Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Integer Overflow",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' also does not account for integer overflow when '_value' is added to 'balanceOf[_to]'. An attacker can use this to overflow the balance of '_to', potentially causing unexpected financial discrepancies in token distribution.",
+        "file_name": "0x43e6546d22166e931043c5082777725ff3ebcf00.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) isRunning validAddress returns (bool success) { require(_value == 0 || allowance[msg.sender][_spender] == 0); allowance[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The function 'approve' allows setting allowances but does not handle the scenario where an allowance is changed from a non-zero value to another non-zero value without first setting it to zero. This can lead to a race condition known as the 'approve/transferFrom' attack, where an attacker might utilize the old allowance just before it is updated, potentially leading to unauthorized token transfers.",
+        "file_name": "0x43e6546d22166e931043c5082777725ff3ebcf00.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "adminClaimAirdrop",
+        "vulnerability": "Unlimited minting",
+        "criticism": "The reasoning is correct in identifying the potential for unlimited token issuance by the owner through the 'doAirdrop' function. This could indeed lead to hyperinflation if abused. However, this is contingent on the behavior of the 'doAirdrop' function, which isn't detailed here. Assuming it behaves as described, the severity is high due to potential token devaluation, but profitability for an external attacker is low as only the owner can exploit this.",
+        "correctness": 7,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The function allows the contract owner to issue an unlimited amount of tokens to any participant by calling the internal 'doAirdrop' function, which increases the 'totalDistributed' and the participant's balance without any checks on the totalSupply after distribution has started. This can lead to hyperinflation and depreciation of the token value.",
+        "code": "function adminClaimAirdrop(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "file_name": "0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat misleading. The 'distr' function's behavior is not fully described, and without knowing if it indeed calls external contracts or not, it's hard to confirm the reentrancy risk. The state change for 'distributionFinished' is indeed after the call, which could be a concern, but without more details on 'distr', the risk cannot be fully assessed. Assuming 'distr' interacts with external contracts, the severity and profitability could be high if an attacker exploits it.",
+        "correctness": 5,
+        "severity": 6,
+        "profitability": 6,
+        "reason": "This function is vulnerable to reentrancy attacks because it interacts with external contracts (via the 'distr' function which emits events and updates state) while the state changes (specifically 'distributionFinished') are only committed afterwards. An attacker can recursively call 'getTokens' in a fallback function to drain Ether or manipulate token distribution before the 'distributionFinished' state is set true.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Improper Approval Reset",
+        "criticism": "The reasoning is incorrect. The function does handle the resetting of allowances correctly by ensuring that a non-zero allowance can only be changed if the current allowance is zero. This is a protective measure against certain types of ERC20 vulnerabilities (like the approve/transferFrom attack). The described behavior is not a vulnerability but a feature to enhance security. Therefore, the severity and profitability are both low as there is no actual vulnerability.",
+        "correctness": 2,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "This function contains a vulnerability where it incorrectly handles the resetting of allowances. The function only allows changing the allowance from a non-zero value to another non-zero value if the current allowance is zero, which contradicts the typical expected behavior of the 'approve' function in ERC20 tokens where users should be able to freely update their allowances. This can lead to issues where allowances cannot be properly managed by token holders.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x412d99a1f370d5d750b9bdf197b0a4bee2bc4e60.sol",
+        "final_score": 1.0
+    }
+]

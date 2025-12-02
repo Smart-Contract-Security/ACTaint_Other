@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' allows changing the owner of the contract by sending a certain amount of Ether. However, it uses 'owner.transfer(msg.value)' followed by 'owner.transfer(this.balance)', which can be exploited through a reentrancy attack. If the 'owner' address is a contract, it could execute code on the receipt of funds (using a fallback function), potentially calling 'changeOwner' again before the original execution finishes, leading to unexpected behavior or draining of contract funds.",
+        "file_name": "0x2066a2e0cd7f19589f582e2fc9af9669cc9e02f1.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized Contract Destruction",
+        "reason": "The 'killContract' function allows anyone who sends a sufficient amount of Ether to permanently destroy the contract using 'selfdestruct(owner)'. This poses a severe security risk as any user, by simply sending enough Ether, can remove the contract from the Ethereum network, potentially leading to loss of funds or disruption of service.",
+        "file_name": "0x2066a2e0cd7f19589f582e2fc9af9669cc9e02f1.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Arbitrary Contract Modification",
+        "reason": "This function allows any user to change the name and symbol of the token by sending a specified amount of Ether. This can mislead or confuse token holders, as the identity of the token can be changed arbitrarily, potentially for fraudulent purposes.",
+        "file_name": "0x2066a2e0cd7f19589f582e2fc9af9669cc9e02f1.sol"
+    }
+]

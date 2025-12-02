@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Approval race condition",
+        "reason": "The function does not reset the allowance to zero before setting it to a new value when the current allowance is not zero. This can lead to a race condition known as the 'approve/transferFrom' attack where an approved spender can exploit the race condition and transfer more than intended by the owner.",
+        "file_name": "0xc5a55a809445b228e3662ff3da4cff5cc42c65a5.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Potential reentrancy attack",
+        "reason": "This function transfers Ether stored at the contract address to the owner without using the checks-effects-interactions pattern. This can potentially allow reentrancy attacks if the fallback function of the owner address is malicious and calls back into the contract.",
+        "file_name": "0xc5a55a809445b228e3662ff3da4cff5cc42c65a5.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Unchecked return value",
+        "reason": "The 'transfer' function does not check the return value of 'sub' and 'add' functions from the SafeMath library. While the SafeMath functions use assert to ensure no overflow/underflow occurs, explicitly checking and handling the return value could prevent potential issues not covered by assert, enhancing contract resilience against unexpected behaviors or inputs.",
+        "file_name": "0xc5a55a809445b228e3662ff3da4cff5cc42c65a5.sol"
+    }
+]

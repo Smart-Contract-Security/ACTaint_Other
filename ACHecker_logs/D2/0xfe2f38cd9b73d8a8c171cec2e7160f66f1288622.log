@@ -1,0 +1,173 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xfe2f38cd9b73d8a8c171cec2e7160f66f1288622.code
+Start time: 01/09/2022 17:54:28
+Building CFG...
+CFG generation time (secs): 0.09
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function 06a5f21d
+	( 5133) 140d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 0f1e19c3
+	( 5234) 1472:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 1146015e
+	( 5335) 14d7:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 12035ca6
+	( 5436) 153c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 146891e3
+	( 5537) 15a1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 1aeea41b
+	( 5658) 161a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 1e468cf6
+	( 5759) 167f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 20250264
+	( 5860) 16e4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 20fbec8f
+	( 5961) 1749:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 27d1a8b0
+	( 6062) 17ae:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 39cbe7b4
+	( 6193) 1831:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 4067cd48
+	( 6304) 18a0:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 571fa2e4
+	( 6445) 192d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 5ae73e9c
+	( 6556) 199c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 5d81d832
+	( 6667) 1a0b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 5df6ef01
+	( 6768) 1a70:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 5e0b4cb6
+	( 6869) 1ad5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 5fde486f
+	( 6970) 1b3a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 6c55d7e3
+	( 7091) 1bb3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 7a16cbe3
+	( 7212) 1c2c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 81824d53
+	( 7343) 1caf:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 8468b094
+	( 7464) 1d28:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 84cfdf89
+	( 7575) 1d97:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 878f222e
+	( 7676) 1dfc:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 8a3535c7
+	( 7777) 1e61:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 9cffd567
+	( 7908) 1ee4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 9dea96cf
+	( 8009) 1f49:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function 9fc34563
+	( 8110) 1fae:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function a3f769e9
+	( 8277) 2055:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function a8dfced3
+	( 8378) 20ba:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function b9682189
+	( 8509) 213d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function c995f6eb
+	( 8630) 21b6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function ce0ca610
+	( 8741) 2225:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function ce2a2058
+	( 8842) 228a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function cf63f552
+	( 8943) 22ef:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function d4d53f17
+	( 9054) 235e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function dd6bfba1
+	( 9185) 23e1:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function ef96f28f
+	( 9326) 246e:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function f30d6756
+	( 9427) 24d3:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+Violated access control check in function f5f68ef6
+	( 9538) 2542:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {0} in function a3c95810
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 13.83
+End time: 01/09/2022 17:54:42

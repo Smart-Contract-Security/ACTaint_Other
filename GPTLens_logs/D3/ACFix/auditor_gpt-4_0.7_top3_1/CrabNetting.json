@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "toggleAuctionLive",
+        "code": "function toggleAuctionLive() external onlyOwner {\n    isAuctionLive = !isAuctionLive;\n    emit ToggledAuctionLive(isAuctionLive);\n}",
+        "vulnerability": "Toggling auction live state",
+        "reason": "The function 'toggleAuctionLive' allows the contract owner to toggle the auction state at any time, potentially leading to disruptions during an ongoing auction or enabling manipulation by allowing or disallowing withdrawals and other actions dependent on the auction state.",
+        "file_name": "CrabNetting.sol"
+    },
+    {
+        "function_name": "withdrawUSDC",
+        "code": "function withdrawUSDC(uint256 _amount) external {\n    require(!isAuctionLive, \"auction is live\");\n    usdBalance[msg.sender] = usdBalance[msg.sender] - _amount;\n    require( usdBalance[msg.sender] >= minUSDCAmount || usdBalance[msg.sender] == 0, \"remaining amount smaller than minimum, consider removing full balance\" );\n    uint256 toRemove = _amount;\n    uint256 lastIndexP1 = userDepositsIndex[msg.sender].length;\n    for (uint256 i = lastIndexP1; i > 0; i--) {\n        Receipt storage r = deposits[userDepositsIndex[msg.sender][i - 1]];\n        if (r.amount > toRemove) {\n            r.amount -= toRemove;\n            toRemove = 0;\n            break;\n        } else {\n            toRemove -= r.amount;\n            delete deposits[userDepositsIndex[msg.sender][i - 1]];\n        }\n    }\n    IERC20(usdc).transfer(msg.sender, _amount);\n    emit USDCDeQueued(msg.sender, _amount, usdBalance[msg.sender]);\n}",
+        "vulnerability": "Potential re-entrancy",
+        "reason": "The 'withdrawUSDC' function does not protect against re-entrancy attacks. The function adjusts the user's balance and interacts with an external contract (IERC20) to transfer funds. The lack of re-entrancy protection could allow an attacker to perform multiple withdrawals in a single transaction before the balance is effectively reduced, potentially leading to a loss of funds.",
+        "file_name": "CrabNetting.sol"
+    },
+    {
+        "function_name": "_checkOrder",
+        "code": "function _checkOrder(Order memory _order) internal {\n    _useNonce(_order.trader, _order.nonce);\n    bytes32 structHash = keccak256( abi.encode( _CRAB_NETTING_TYPEHASH, _order.bidId, _order.trader, _order.quantity, _order.price, _order.isBuying, _order.expiry, _order.nonce ) );\n    bytes32 hash = _hashTypedDataV4(structHash);\n    address offerSigner = ECDSA.recover(hash, _order.v, _order.r, _order.s);\n    require(offerSigner == _order.trader, \"Signature not correct\");\n    require(_order.expiry >= block.timestamp, \"order expired\");\n}",
+        "vulnerability": "Signature validation reusability",
+        "reason": "The '_checkOrder' function uses a nonce for each order to ensure that an order cannot be replayed. However, if the nonce is not properly managed or if the nonces are reset or reused after a certain condition, it can potentially allow an old or already processed order to be executed again, leading to unexpected trading actions or financial discrepancies.",
+        "file_name": "CrabNetting.sol"
+    }
+]

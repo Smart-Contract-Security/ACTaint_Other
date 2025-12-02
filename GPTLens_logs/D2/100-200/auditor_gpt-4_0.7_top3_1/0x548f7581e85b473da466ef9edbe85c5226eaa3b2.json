@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyListing",
+        "code": "function buyListing(bytes32 listingId, uint256 amount) external payable { Listing storage listing = listings[listingId]; address seller = listing.seller; address contractAddress = listing.tokenContractAddress; uint256 price = listing.price; uint256 sale = price.mul(amount); uint256 allowance = listing.allowance; require(now <= listing.dateEnds); require(allowance - sold[listingId] >= amount); require(getBalance(contractAddress, seller) >= amount); require(getAllowance(contractAddress, seller, this) >= amount); require(msg.value == sale); ERC20 tokenContract = ERC20(contractAddress); require(tokenContract.transferFrom(seller, msg.sender, amount)); seller.transfer(sale - (sale.mul(ownerPercentage).div(10000))); sold[listingId] = allowance.sub(amount); ListingBought(listingId, contractAddress, price, amount, now, msg.sender); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'buyListing' transfers ether to a seller address and updates the state of sales after that. This transfer allows the seller to call back into the contract (reenter) before the state 'sold[listingId]' is updated, which could lead to multiple unintended withdrawals or other state inconsistencies.",
+        "file_name": "0x548f7581e85b473da466ef9edbe85c5226eaa3b2.sol"
+    },
+    {
+        "function_name": "withdrawBalance",
+        "code": "function withdrawBalance() onlyOwner external { assert(owner.send(this.balance)); }",
+        "vulnerability": "DoS with (unexpected) revert",
+        "reason": "The function 'withdrawBalance' uses 'assert' to ensure the transfer of contract balance to the owner. If the send fails (for instance, if the owner is a contract that fails to receive ether), it will cause a revert. Since assert is used, it consumes all gas, and no further transactions could be processed, potentially locking funds.",
+        "file_name": "0x548f7581e85b473da466ef9edbe85c5226eaa3b2.sol"
+    },
+    {
+        "function_name": "createListing",
+        "code": "function createListing(address tokenContractAddress, uint256 price, uint256 allowance, uint256 dateEnds, uint256 salt) external { require(price > 0); require(allowance > 0); require(dateEnds > 0); require(getBalance(tokenContractAddress, msg.sender) >= allowance); bytes32 listingId = getHashInternal(tokenContractAddress, price, allowance, dateEnds, salt); Listing memory listing = Listing(msg.sender, tokenContractAddress, price, allowance, now, dateEnds); listings[listingId] = listing; ListingCreated(listingId, tokenContractAddress, price, allowance, now, dateEnds, msg.sender); }",
+        "vulnerability": "Unchecked return value",
+        "reason": "The function 'createListing' does not check the return value of 'getBalance' which is called to ensure the sender has enough tokens. If an ERC20 token contract does not implement 'balanceOf' correctly, or returns an erroneous value, this function may incorrectly allow the creation of a listing without proper validation of token ownership.",
+        "file_name": "0x548f7581e85b473da466ef9edbe85c5226eaa3b2.sol"
+    }
+]

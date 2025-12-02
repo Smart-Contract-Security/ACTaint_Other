@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawVotingRights",
+        "code": "function withdrawVotingRights(uint _numTokens) external { uint availableTokens = voteTokenBalance[msg.sender].sub(getLockedTokens(msg.sender)); require(availableTokens >= _numTokens); voteTokenBalance[msg.sender] -= _numTokens; require(token.transfer(msg.sender, _numTokens)); _VotingRightsWithdrawn(_numTokens, msg.sender); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function withdrawVotingRights updates the balance of tokens after calling an external contract (token.transfer). This can lead to reentrancy attacks where the external call can re-enter the function and manipulate state in unexpected ways, potentially allowing a malicious user to withdraw more tokens than they should be able to.",
+        "file_name": "0x5e2eb68a31229b469e34999c467b017222677183.sol"
+    },
+    {
+        "function_name": "commitVote",
+        "code": "function commitVote(uint _pollID, bytes32 _secretHash, uint _numTokens, uint _prevPollID) external { require(commitPeriodActive(_pollID)); require(voteTokenBalance[msg.sender] >= _numTokens); require(_pollID != 0); require(_prevPollID == 0 || dllMap[msg.sender].contains(_prevPollID)); uint nextPollID = dllMap[msg.sender].getNext(_prevPollID); nextPollID = (nextPollID == _pollID) ? dllMap[msg.sender].getNext(_pollID) : nextPollID; require(validPosition(_prevPollID, nextPollID, msg.sender, _numTokens)); dllMap[msg.sender].insert(_prevPollID, _pollID, nextPollID); bytes32 UUID = attrUUID(msg.sender, _pollID); store.setAttribute(UUID, 'numTokens', _numTokens); store.setAttribute(UUID, 'commitHash', uint(_secretHash)); pollMap[_pollID].didCommit[msg.sender] = true; _VoteCommitted(_pollID, _numTokens, msg.sender); }",
+        "vulnerability": "Unchecked Return Values",
+        "reason": "The function commitVote does not check the return value of the external call to dllMap[msg.sender].insert, which could potentially fail silently leading to inconsistent state updates or other logical errors in the smart contract.",
+        "file_name": "0x5e2eb68a31229b469e34999c467b017222677183.sol"
+    },
+    {
+        "function_name": "resolveChallenge",
+        "code": "function resolveChallenge(bytes32 _propID) private { ParamProposal memory prop = proposals[_propID]; Challenge storage challenge = challenges[prop.challengeID]; uint reward = challengeWinnerReward(prop.challengeID); challenge.winningTokens = voting.getTotalNumberOfTokensForWinningOption(prop.challengeID); challenge.resolved = true; if (voting.isPassed(prop.challengeID)) { if(prop.processBy > now) { set(prop.name, prop.value); } _ChallengeFailed(_propID, prop.challengeID, challenge.rewardPool, challenge.winningTokens); require(token.transfer(prop.owner, reward)); } else { _ChallengeSucceeded(_propID, prop.challengeID, challenge.rewardPool, challenge.winningTokens); require(token.transfer(challenges[prop.challengeID].challenger, reward)); } }",
+        "vulnerability": "DoS with Failed Call",
+        "reason": "In the resolveChallenge function, the execution relies on the successful transfer of tokens using token.transfer(). If this call fails (e.g., if the token contract has a bug or if the recipient address is a contract that rejects payments), it will cause the entire function to revert, potentially preventing the resolution of challenges and locking funds.",
+        "file_name": "0x5e2eb68a31229b469e34999c467b017222677183.sol"
+    }
+]

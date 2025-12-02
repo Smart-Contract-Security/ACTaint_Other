@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Unrestricted Ether Transfer",
+        "reason": "This function allows transferring all contract's Ether balance to the previous owner, then changing the ownership if the sent Ether is above a threshold. This could lead to draining all funds by an attacker who can afford the Ether threshold. This action is not limited to specific conditions like 'onlyOwner', making it exploitable.",
+        "file_name": "0x353230862ae8ab6ca5dde592654acd6cdec1c1b2.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Arbitrary Contract Destruction",
+        "reason": "This function allows anyone who sends a sufficient amount of Ether to destruct the contract, removing it from the blockchain. This could be exploited by an attacker to permanently disable the contract's functionality once they meet the Ether threshold, potentially causing loss and disruption for other users.",
+        "file_name": "0x353230862ae8ab6ca5dde592654acd6cdec1c1b2.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Unauthorized Token Identification Change",
+        "reason": "This function allows any user, who sends enough Ether, to change the token's name and symbol. This could be exploited to mislead or confuse users, by changing the token's identity to resemble another well-known token, potentially facilitating scams or fraudulent activities.",
+        "file_name": "0x353230862ae8ab6ca5dde592654acd6cdec1c1b2.sol"
+    }
+]

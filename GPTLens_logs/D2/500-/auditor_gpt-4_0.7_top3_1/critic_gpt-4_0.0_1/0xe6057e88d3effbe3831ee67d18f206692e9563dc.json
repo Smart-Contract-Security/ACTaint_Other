@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "remove",
+        "vulnerability": "Use of deprecated function",
+        "criticism": "The criticism is valid as the function uses 'suicide(msg.sender)', which is indeed deprecated in favor of 'selfdestruct'. Using deprecated functions can lead to deprecated bytecode which might not be supported in future versions of the Ethereum Virtual Machine, potentially leading to contract failure. However, the severity is not very high as this does not directly lead to a security breach but rather to potential maintenance issues. The profitability is zero as this does not provide a direct way for an attacker to gain.",
+        "correctness": 8,
+        "severity": 3,
+        "profitability": 0,
+        "reason": "The function uses 'suicide(msg.sender)', which is deprecated in favor of 'selfdestruct'. Using deprecated functions can lead to unexpected behavior and vulnerabilities in smart contracts.",
+        "code": "function remove() checkAccess(\"owner\") { suicide(msg.sender); }",
+        "file_name": "0xe6057e88d3effbe3831ee67d18f206692e9563dc.sol"
+    },
+    {
+        "function_name": "setCaller",
+        "vulnerability": "Missing input validation",
+        "criticism": "The reasoning is correct that the function does not validate the input address, which could indeed lead to setting a zero address or an invalid address. This can disrupt the functionality of the contract or lead to security issues if the caller address is critical for other operations. The severity is moderate because it can potentially disrupt contract operations, but the profitability is low as it does not directly result in financial gain for an attacker unless combined with other vulnerabilities.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The function 'setCaller' does not validate the input address 'pCaller'. This could lead to setting a zero address or an invalid address as caller, which might disrupt the intended functionality of the contract or lead to other security issues.",
+        "code": "function setCaller(address pCaller) checkOwner() returns (bool _success) { caller = pCaller; return true; }",
+        "file_name": "0xe6057e88d3effbe3831ee67d18f206692e9563dc.sol"
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unrestricted push to array",
+        "criticism": "The reasoning is correct that pushing an unlimited number of transactions to the 'transactions' array could potentially exhaust the gas limit, leading to denial of service. This is a significant issue as it affects the availability of the contract. However, the profitability for an attacker is low unless they can benefit from the denial of service itself, which is generally not the case. The severity is high due to the potential impact on contract functionality.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "The function 'transfer' pushes new transactions to the 'transactions' array without implementing a limit on the size of the array. This can cause the contract to run out of gas if too many transactions are pushed, leading to denial of service or other unexpected behaviors.",
+        "code": "function transfer(address _from, address _to, uint _amount) checkAccess(\"elcoin\") { if (startTime > now || periodicity == 0 || auctionSize == 0 || prize == 0) { return; } counter++; if (_amount >= minTx && counter > periodicity - auctionSize) { transactions.push(Transaction(_from, _amount)); } if (counter >= periodicity) { _prepareAndSendReward(); counter = 0; round++; delete transactions; } }",
+        "file_name": "0xe6057e88d3effbe3831ee67d18f206692e9563dc.sol"
+    }
+]

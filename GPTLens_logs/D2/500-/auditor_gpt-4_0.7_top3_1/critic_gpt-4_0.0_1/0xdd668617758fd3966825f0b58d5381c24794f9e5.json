@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "transferAdminship",
+        "vulnerability": "Missing Input Validation",
+        "criticism": "The criticism is valid as the function lacks a check for the zero address, which is a critical oversight. Transferring admin rights to a zero address would indeed render the contract unmanageable, leading to severe consequences. The reasoning is sound and the vulnerability is severe due to the potential loss of control over the contract. However, the profitability for an external attacker is low unless they can somehow coerce the admin into making this mistake.",
+        "correctness": 8,
+        "severity": 8,
+        "profitability": 2,
+        "reason": "The function transferAdminship allows the current admin to transfer the admin role to another address. However, there is no check to validate that the _newAdmin address is not a zero address. Transferring admin rights to a zero address can result in a loss of control over the contract, making it impossible to perform administrative tasks such as freezing accounts or changing the allowed address.",
+        "code": "function transferAdminship(address _newAdmin) onlyAdmin public { admin = _newAdmin; TransferAdminship(admin); }",
+        "file_name": "0xdd668617758fd3966825f0b58d5381c24794f9e5.sol"
+    },
+    {
+        "function_name": "setFrozen",
+        "vulnerability": "Arbitrary Account Freeze",
+        "criticism": "The reasoning is correct in identifying the potential for abuse in the setFrozen function. The ability for an admin to freeze any account without constraints can be used maliciously or carelessly, impacting users' access and the token's operations. This vulnerability is severe in terms of potential disruption but typically would not be profitable for an attacker unless used in a sophisticated manner involving other exploits or market manipulation.",
+        "correctness": 7,
+        "severity": 7,
+        "profitability": 3,
+        "reason": "This function allows the admin to freeze or unfreeze any account at will without any restrictions or checks beyond admin authentication. This action can be used maliciously to deny service to legitimate users or manipulate token dynamics by selectively freezing accounts, potentially disrupting the normal operation of the token.",
+        "code": "function setFrozen(address _target,bool _flag) onlyAdmin public { frozen[_target]=_flag; FrozenStatus(_target,_flag); }",
+        "file_name": "0xdd668617758fd3966825f0b58d5381c24794f9e5.sol"
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked Return Values",
+        "criticism": "The reasoning provided is somewhat misleading. The use of SafeMath's assert statements inherently ensures that the operations are successful, or the transaction reverts. Therefore, the lack of explicit return value checks does not introduce additional risk in this context. The criticism of ignoring return values is generally valid but not applicable in this specific case due to the use of SafeMath. Thus, the severity and profitability are both low.",
+        "correctness": 3,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The transfer function uses the SafeMath library to perform subtraction and addition operations for balance updates. While the SafeMath's sub and add functions include assert statements to prevent overflows, the function itself does not explicitly check the return values to ensure that the operations were successful. Although in this case the use of assert inside SafeMath mitigates this issue, generally ignoring return values can lead to states where transaction failures might not revert overall transaction, leading to inconsistent state in contract.",
+        "code": "function transfer(address _to, uint256 _value) transferLock public returns (bool success) { require(_to != address(0)); require(balances[msg.sender] >= _value); require(frozen[msg.sender]==false); balances[msg.sender] = balances[msg.sender].sub(_value); balances[_to] = balances[_to].add(_value); Transfer(msg.sender, _to, _value); return true; }",
+        "file_name": "0xdd668617758fd3966825f0b58d5381c24794f9e5.sol"
+    }
+]

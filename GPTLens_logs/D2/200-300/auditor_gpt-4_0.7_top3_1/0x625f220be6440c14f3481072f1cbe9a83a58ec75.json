@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setReleaseDate",
+        "code": "function setReleaseDate(uint date) public payable { if (isOwner() && !Locked) { ReleaseDate = date; Locked = true; ReleaseDate(date); } }",
+        "vulnerability": "Once locked, ReleaseDate can't be updated",
+        "reason": "This function allows the contract owner to set the release date of funds only once as it sets 'Locked' to true after the first call. Subsequent legitimate attempts to update the release date due to changing conditions will fail, which might not be intended logic.",
+        "file_name": "0x625f220be6440c14f3481072f1cbe9a83a58ec75.sol"
+    },
+    {
+        "function_name": "withdrawTo",
+        "code": "function withdrawTo(address to, uint amount) public payable { if (isOwner() && isReleasable()) { uint withdrawMax = deposits[msg.sender]; if (withdrawMax > 0 && amount <= withdrawMax) { to.transfer(amount); Withdrawal(amount); } } }",
+        "vulnerability": "Possible reentrancy attack",
+        "reason": "This function transfers funds to an address specified by the owner once the release date is reached. However, if the 'to' address is a contract, it may call back into 'withdrawTo' during its fallback function, potentially leading to reentrancy attacks where more funds than intended could be withdrawn if the state updates (in this case reducing the balance) happen after the external call.",
+        "file_name": "0x625f220be6440c14f3481072f1cbe9a83a58ec75.sol"
+    },
+    {
+        "function_name": "withdrawTo",
+        "code": "function withdrawTo(address to, uint amount) public payable { if (isOwner() && isReleasable()) { uint withdrawMax = deposits[msg.sender]; if (withdrawMax > 0 && amount <= withdrawMax) { to.transfer(amount); Withdrawal(amount); } } }",
+        "vulnerability": "Improper balance update",
+        "reason": "The function does not update the 'deposits[msg.sender]' mapping after successful withdrawal. This oversight allows the owner to withdraw the same amount repeatedly until the actual balance of the contract is drained, as the checks rely on outdated balance information.",
+        "file_name": "0x625f220be6440c14f3481072f1cbe9a83a58ec75.sol"
+    }
+]

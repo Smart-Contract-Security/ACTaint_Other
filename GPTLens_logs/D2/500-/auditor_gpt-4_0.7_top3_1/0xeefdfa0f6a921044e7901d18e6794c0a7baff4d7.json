@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function allows for reentrancy attack because it calls 'distr', which emits an event and transfers tokens before updating the 'blacklist' state. An attacker can recursively call 'getTokens' within the same transaction before they are blacklisted, potentially draining the contract.",
+        "file_name": "0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "vulnerability": "Logical flaw",
+        "reason": "The 'distr' function contains unreachable code. The conditional statement to finish distribution is placed after the 'return' statement, which means it will never execute. This logical flaw can lead to continuous distribution beyond the intended total supply.",
+        "file_name": "0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Race condition",
+        "reason": "The 'approve' function is vulnerable to a race condition known as 'front-running'. It allows a spender to potentially spend an approved amount multiple times. This happens because it does not reset the allowance to 0 before setting it to a new value, allowing a spender to call 'transferFrom' twice: once before and once after the new approval.",
+        "file_name": "0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "withdrawPrize",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is accurate. The function 'withdrawPrize' does indeed transfer ether before setting 'prizeAmount' to zero, which can allow for a reentrancy attack if the recipient is a contract that can make calls back to this function. This is a severe vulnerability as it can lead to multiple withdrawals and drain the contract's funds. The profitability for an attacker exploiting this vulnerability is high, as they can potentially withdraw more than they are entitled to.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The function 'withdrawPrize' allows transferring ether to an arbitrary address without updating related state variables beforehand ('prizeAmount = 0;' comes after the transfer), which could allow the recipient to call back into the contract and withdraw the prize again before the state is updated (reentrancy attack).",
+        "code": "function withdrawPrize() private { require(lastDepositInfo.time > 0 && lastDepositInfo.time <= now - MAX_IDLE_TIME, 'The last depositor is not confirmed yet'); require(currentReceiverIndex <= lastDepositInfo.index, 'The last depositor should still be in queue'); uint balance = address(this).balance; if(prizeAmount > balance) prizeAmount = balance; uint prize = prizeAmount; queue[lastDepositInfo.index].depositor.transfer(prize); prizeAmount = 0; proceedToNewStage(stage + 1); }",
+        "file_name": "0x1104b8ea455df066a84545778b26376411f23097.sol",
+        "final_score": 8.5
+    },
+    {
+        "function_name": "pay",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning is correct in identifying a potential DoS attack through the failure of ether transfers within a loop. If any transfer fails, the entire function reverts, which can prevent all subsequent legitimate users from receiving their funds. This vulnerability is severe as it affects the availability of the contract's functionality. However, the profitability for an attacker is low, as it does not directly result in financial gain but disrupts the service.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 1,
+        "reason": "The 'pay' function iterates over an array and performs transfers within a loop. If any transfer fails (e.g., if the recipient is a contract that reverts on receiving ether), the entire function will revert. This could lead to denial of service as legitimate users might not be able to receive their funds.",
+        "code": "function pay() private { uint balance = address(this).balance; uint128 money = 0; if(balance > prizeAmount) money = uint128(balance - prizeAmount); for(uint i=currentReceiverIndex; i<currentQueueSize; i++){ Deposit storage dep = queue[i]; if(money >= dep.expect){ dep.depositor.transfer(dep.expect); money -= dep.expect; delete queue[i]; }else{ dep.depositor.transfer(money); dep.expect -= money; break; } if(gasleft() <= 50000) break; } currentReceiverIndex = i; }",
+        "file_name": "0x1104b8ea455df066a84545778b26376411f23097.sol",
+        "final_score": 6.0
+    },
+    {
+        "function_name": "addDeposit",
+        "vulnerability": "Unbounded loop",
+        "criticism": "The reasoning is somewhat misleading. The function 'addDeposit' does indeed add to the queue, which could grow large, but calling this an 'unbounded loop' is incorrect as there is no loop within 'addDeposit' itself that is unbounded. The potential issue here is more related to scalability and gas costs rather than an immediate vulnerability like a loop running indefinitely. The severity is moderate due to potential gas issues, but profitability for an attacker is non-existent as this does not provide a direct exploitation path.",
+        "correctness": 4,
+        "severity": 5,
+        "profitability": 0,
+        "reason": "The function 'addDeposit' indirectly influences the length of the queue through the 'push' function, which can cause the size of the queue to grow indefinitely. This unbounded loop can result in high gas costs, making it difficult or impossible to execute functions that iterate over the queue, potentially leading to denial of service.",
+        "code": "function addDeposit(address depositor, uint value) private { DepositCount storage c = depositsMade[depositor]; if(c.stage != stage){ c.stage = int128(stage); c.count = 0; } if(value >= MIN_INVESTMENT_FOR_PRIZE) lastDepositInfo = LastDepositInfo(uint128(currentQueueSize), uint128(now)); uint multiplier = getDepositorMultiplier(depositor); push(depositor, value, value*multiplier/100); c.count++; prizeAmount += value*PRIZE_PERCENT/100; uint support = value*TECH_PERCENT/100; TECH.transfer(support); uint adv = value*PROMO_PERCENT/100; PROMO.transfer(adv); }",
+        "file_name": "0x1104b8ea455df066a84545778b26376411f23097.sol",
+        "final_score": 3.25
+    }
+]

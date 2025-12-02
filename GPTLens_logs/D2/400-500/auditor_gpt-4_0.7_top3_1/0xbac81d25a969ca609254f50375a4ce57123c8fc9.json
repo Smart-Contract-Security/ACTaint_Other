@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The `getTokens` function does not update the distribution state (i.e., decrease `totalRemaining`) before calling an external contract `distr`, which can lead to reentrancy where an attacker continuously calls `getTokens` to drain the contract.",
+        "file_name": "0xbac81d25a969ca609254f50375a4ce57123c8fc9.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); totalRemaining = totalRemaining.sub(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The `distr` function makes external calls to emit `Distr` and `Transfer` events without checking the return values. This can lead to unnoticed failures of these events that might affect tracking and auditing of token distribution.",
+        "file_name": "0xbac81d25a969ca609254f50375a4ce57123c8fc9.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { uint256 etherBalance = this.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "The `withdraw` function transfers all the Ether balance to the owner without considering gas limits or checking the success of the transfer. If the transfer fails (e.g., if the owner address is a contract that rejects Ether), the entire function will revert, potentially locking all funds in the contract.",
+        "file_name": "0xbac81d25a969ca609254f50375a4ce57123c8fc9.sol"
+    }
+]

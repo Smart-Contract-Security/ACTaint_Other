@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createNewHodl",
+        "code": "function createNewHodl(uint _endTime) external payable blockCatEntryPoint limitTransactionValue whenNotPaused returns (uint currentId) { require(_endTime >= now); require((_endTime - now) <= maximumHodlDuration); require(msg.value > 0); currentId = instanceId; address instanceOwner = msg.sender; uint hodlAmount = msg.value; uint endTime = _endTime; HodlInstance storage curInst = instances[currentId]; curInst.instId = currentId; curInst.instOwner = instanceOwner; curInst.hasBeenWithdrawn = false; curInst.hodlAmount = hodlAmount; curInst.endTime = endTime; HodlCreated(currentId, instanceOwner, hodlAmount, endTime); instanceId++; }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows a reentrancy attack because it calls an external contract (via the blockCatEntryPoint modifier which includes a call to collectPayment in CATServicePaymentCollector) and updates the state afterwards. An attacker could potentially call this function during the execution of collectPayment to create a recursive call and manipulate the state (like creating multiple instances) before the initial call finishes execution.",
+        "file_name": "0x1142e1f922cde42756741b4e16ddc5a87ee94b3d.sol"
+    },
+    {
+        "function_name": "collectPayment",
+        "code": "function collectPayment(address _fromWho, uint _payment) public { require(registeredServices[msg.sender] == true); serviceDeployCount[msg.sender]++; userDeployCount[_fromWho]++; totalDeployments++; CAT.transferFrom(_fromWho, paymentDestination, _payment); CATPayment(_fromWho, msg.sender, _payment); }",
+        "vulnerability": "Missing sender validation",
+        "reason": "This function does not validate if _fromWho has approved enough CAT tokens for the contract to handle, thus making it susceptible to unauthorized token transfers if an attacker manipulates the state of msg.sender to appear as a registered service. There also lacks a validation to ensure that _fromWho is distinct from msg.sender preventing a potential misuse where a registered service can trigger payments from itself fraudulently.",
+        "file_name": "0x1142e1f922cde42756741b4e16ddc5a87ee94b3d.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint _instId) external onlyInstanceOwner(_instId) instanceExists(_instId) whenNotPaused { HodlInstance storage curInst = instances[_instId]; require(now >= curInst.endTime); require(curInst.hasBeenWithdrawn == false); curInst.hasBeenWithdrawn = true; curInst.instOwner.transfer(curInst.hodlAmount); HodlWithdrawn(_instId, msg.sender, curInst.hodlAmount); }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "This function could be susceptible to a denial of service attack where an attacker can intentionally fail the transaction by making the transfer fail (e.g., sending ether to a contract that throws in its fallback function). This would lock the funds as curInst.hasBeenWithdrawn is only set to true after a successful transfer, blocking legitimate withdrawals.",
+        "file_name": "0x1142e1f922cde42756741b4e16ddc5a87ee94b3d.sol"
+    }
+]

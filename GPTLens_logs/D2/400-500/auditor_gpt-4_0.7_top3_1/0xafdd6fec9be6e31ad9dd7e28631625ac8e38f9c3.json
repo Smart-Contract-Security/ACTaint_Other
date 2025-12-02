@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "TokenSale fallback",
+        "code": "function () public payable stopInEmergency { require(msg.value >= price); uint tokens = msg.value / price; require(token.balanceOf(this) >= tokens); tokensSoldTotal = tokensSoldTotal.add(tokens); if (token.balanceOf(msg.sender) == 0) investorCount++; weiRaisedTotal = weiRaisedTotal.add(msg.value); token.transfer(msg.sender, tokens); uint reservePie = msg.value.div(10); uint beneficiaryPie = msg.value.sub(reservePie); reserve.transfer(reservePie); beneficiary.transfer(beneficiaryPie); emit NewContribution(msg.sender, tokens, msg.value); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function does not guard against reentrancy attacks. After the token.transfer(msg.sender, tokens) call, control is handed over to the msg.sender, which could be a malicious contract. This contract could in turn call back into any functions of the TokenSale contract, potentially leading to unexpected behavior such as draining funds or other manipulative actions before the original call completes.",
+        "file_name": "0xafdd6fec9be6e31ad9dd7e28631625ac8e38f9c3.sol"
+    },
+    {
+        "function_name": "changePrice",
+        "code": "function changePrice(uint _price) public onlyOwner stopInEmergency { price = _price; }",
+        "vulnerability": "Denial of Service",
+        "reason": "The function allows the owner to change the price to any value, including 0. If the price is set to 0, this would allow users to purchase tokens for free, depleting the token balance of the contract and potentially halting sales if there are no checks elsewhere on the price being greater than 0, effectively leading to a denial of service.",
+        "file_name": "0xafdd6fec9be6e31ad9dd7e28631625ac8e38f9c3.sol"
+    },
+    {
+        "function_name": "withdrawERC20Token",
+        "code": "function withdrawERC20Token(address _token) public onlyOwner stopInEmergency { ERC20 foreignToken = ERC20(_token); foreignToken.transfer(msg.sender, foreignToken.balanceOf(this)); }",
+        "vulnerability": "Arbitrary ERC20 Withdrawal",
+        "reason": "This function allows the owner to withdraw any ERC20 tokens sent to the contract. This is potentially dangerous if the contract receives tokens accidentally or in an intended manner. The owner can drain any ERC20 tokens regardless of their intended purpose or linkage to the contract's operational logic.",
+        "file_name": "0xafdd6fec9be6e31ad9dd7e28631625ac8e38f9c3.sol"
+    }
+]

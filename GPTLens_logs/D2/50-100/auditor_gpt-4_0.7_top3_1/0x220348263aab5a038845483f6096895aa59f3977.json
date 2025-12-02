@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "TransferToken",
+        "code": "function TransferToken (address[] _to, uint _value, uint _weiPrice) public { for (uint i=0; i< _to.length; i++) { tokenReward.preallocate(_to[i], _value, _weiPrice); } }",
+        "vulnerability": "Unbounded Loop",
+        "reason": "The function iterates over an array without any restrictions on its size, which can lead to gas exhaustion. If the array '_to' contains a large number of addresses, the transaction may require a significant amount of gas to complete, potentially exceeding the block gas limit and causing the transaction to fail. Attackers can deliberately pass a large array to make the function fail or to consume excessive gas.",
+        "file_name": "0x220348263aab5a038845483f6096895aa59f3977.sol"
+    },
+    {
+        "function_name": "removeContract",
+        "code": "function removeContract() public { selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized Self-Destruct",
+        "reason": "This function allows any user to execute the selfdestruct operation, which will remove the contract from the blockchain and send any remaining Ether to the caller's address. There is no access control implemented, making it possible for any external actor to destroy the contract and potentially seize control of contract funds or disrupt the service.",
+        "file_name": "0x220348263aab5a038845483f6096895aa59f3977.sol"
+    },
+    {
+        "function_name": "TransferOwner",
+        "code": "function TransferOwner (address _owner) public { tokenReward.transferOwnership(_owner); }",
+        "vulnerability": "Ownership Takeover",
+        "reason": "This function allows any user to change the ownership of the token contract to any address without any form of authentication or validation. Malicious actors can call this function to transfer ownership to themselves or to a harmful address, enabling them to take control of the token contract and manipulate its functionalities, potentially causing significant damage to the legitimate owners and users.",
+        "file_name": "0x220348263aab5a038845483f6096895aa59f3977.sol"
+    }
+]

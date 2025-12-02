@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEtherInWeiToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function allows an attacker to potentially call the function repeatedly before the first invocation of the function is finished. The function transfers Ether to the current owner, which could be a contract that has a fallback function, leading to reentrancy. This could result in draining the contract's balance before the owner state is updated.",
+        "file_name": "0x6b31a898f7e711b323a6212eac4ae250e0d6624f.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized Kill",
+        "reason": "This function allows any user to kill the contract by sending sufficient Ether, not just the owner. This could lead to denial of service where a malicious user permanently disables the contract by sending enough Ether and triggering selfdestruct.",
+        "file_name": "0x6b31a898f7e711b323a6212eac4ae250e0d6624f.sol"
+    },
+    {
+        "function_name": "changeNameSymbol",
+        "code": "function changeNameSymbol(string _name, string _symbol) payable external { if (msg.sender==owner || msg.value >=howManyEtherInWeiToChangeSymbolName) { name = _name; symbol = _symbol; } }",
+        "vulnerability": "Unauthorized Change",
+        "reason": "This function allows any user, not just the owner, to change the name and symbol of the token if they send enough Ether. This can lead to a situation where the token's identity could be changed by anyone who sends sufficient funds, potentially misleading users or devaluing the token.",
+        "file_name": "0x6b31a898f7e711b323a6212eac4ae250e0d6624f.sol"
+    }
+]

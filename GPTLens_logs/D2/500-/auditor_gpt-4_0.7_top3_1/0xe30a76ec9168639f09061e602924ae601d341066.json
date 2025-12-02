@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function indirectly calls the 'distr' function, which changes the state and subsequently emits an event. If an attacker can invoke this function recursively through a fallback function in a smart contract, it can lead to unexpected behavior or drain the contract resources before the execution of 'blacklist[investor] = true;', which acts as a reentrancy guard but is placed after the state-changing actions.",
+        "file_name": "0xe30a76ec9168639f09061e602924ae601d341066.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public {\n    if (newOwner != address(0)) {\n        owner = newOwner;\n    }\n}",
+        "vulnerability": "Missing Input Validation",
+        "reason": "The 'transferOwnership' function does not emit any events or have sufficient logging mechanism. This function allows the ownership of the contract to be transferred to another account without any trace, which could lead to malicious activities going unnoticed, especially if the new owner is not authorized or intended.",
+        "file_name": "0xe30a76ec9168639f09061e602924ae601d341066.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approve/Allowance Attack",
+        "reason": "The 'approve' function does not properly handle the case where a non-zero allowance is being changed to another non-zero value. This can lead to a race condition if an allowance is used by a spender during the change of allowance, commonly referred to as 'approve/allowance attack'. The lack of resetting allowance to zero before setting it to a new value can be exploited by an attacker to spend more than intended.",
+        "file_name": "0xe30a76ec9168639f09061e602924ae601d341066.sol"
+    }
+]

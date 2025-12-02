@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool success) { whitelist[_to] = true; return super.transfer(_to, _value); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function automatically whitelists any address involved in a token transfer by setting 'whitelist[_to] = true'. This can be exploited by attackers to whitelist malicious addresses simply by sending tokens to them, bypassing intended access controls and potentially leading to unauthorized actions or access within the contract.",
+        "file_name": "0x8d2da938d6f717eb5d84f68bb0eca7584c8faf2a.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) { whitelist[_to] = true; return super.transferFrom(_from, _to, _value); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "Similar to the 'transfer' function, this function also automatically whitelists the recipient address of a token transfer. This can be misused by attackers to whitelist arbitrary addresses by transferring tokens from authorized addresses they control to any address.",
+        "file_name": "0x8d2da938d6f717eb5d84f68bb0eca7584c8faf2a.sol"
+    },
+    {
+        "function_name": "burnTokens",
+        "code": "function burnTokens(address participant, uint256 amountTokens) external onlyFundWallet { uint256 newTokValue = amountTokens; address thisparticipant = participant; if (balances[thisparticipant] < newTokValue) { newTokValue = balances[thisparticipant]; } uint256 newtokenBurned = safeAdd(tokenBurned, newTokValue); require(newtokenBurned <= tokenCap); tokenBurned = newtokenBurned; balances[thisparticipant] = safeSub(balances[thisparticipant], newTokValue); totalSupply = safeSub(totalSupply, newTokValue); }",
+        "vulnerability": "Token Manipulation",
+        "reason": "The function allows the fund wallet to burn any amount of tokens from any address. This can be exploited if the fund wallet is compromised or by malicious insiders to arbitrarily reduce the token balances of any participant, potentially disrupting the token economy and damaging user trust.",
+        "file_name": "0x8d2da938d6f717eb5d84f68bb0eca7584c8faf2a.sol"
+    }
+]

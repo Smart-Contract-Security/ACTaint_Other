@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address _newOwner) public onlyOwner { newOwner = _newOwner; }",
+        "vulnerability": "Missing Ownership Transfer Confirmation",
+        "reason": "This function allows the contract owner to set a new owner address, but it does not require the new owner to accept the ownership, which can lead to the accidental loss of contract control if the wrong address is set.",
+        "file_name": "0x278ae6f52ce72b0df6cba451534b87846acc9d65.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address spender, uint tokens) public returns (bool success) { allowed[msg.sender][spender] = tokens; Approval(msg.sender, spender, tokens); return true; }",
+        "vulnerability": "Missing Zero Check on Approvals",
+        "reason": "This function does not check if an approval amount is being set to zero before setting a new amount. This can result in the 'approve' function being vulnerable to a race condition attack, where the allowance can be used up before the new value is set, which can lead to unauthorized transfers.",
+        "file_name": "0x278ae6f52ce72b0df6cba451534b87846acc9d65.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address from, address to, uint tokens) public returns (bool success) { balances[from] = safeSub(balances[from], tokens); allowed[from][msg.sender] = safeSub(allowed[from][msg.sender], tokens); balances[to] = safeAdd(balances[to], tokens); Transfer(from, to, tokens); return true; }",
+        "vulnerability": "Potential Reentrancy",
+        "reason": "This function does not use the Checks-Effects-Interactions pattern, which can make it vulnerable to reentrancy attacks. The function modifies the state after calling an external contract (via the Transfer event), potentially allowing reentrant calls that can lead to unexpected behaviors or exploits.",
+        "file_name": "0x278ae6f52ce72b0df6cba451534b87846acc9d65.sol"
+    }
+]

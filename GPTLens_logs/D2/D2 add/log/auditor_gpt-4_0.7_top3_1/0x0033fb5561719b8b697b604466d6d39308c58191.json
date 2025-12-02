@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buy",
+        "code": "function buy() payable public { uint amount = msg.value / buyPrice; _transfer(this, msg.sender, amount); }",
+        "vulnerability": "Integer Division Before Token Transfer",
+        "reason": "In the 'buy' function, the amount of tokens calculated by 'msg.value / buyPrice' can lead to an integer division issue, where if the 'msg.value' is less than 'buyPrice', the amount becomes zero but the transaction still proceeds transferring zero tokens. This can result in unexpected behavior and may be exploited in a denial of service by repeatedly calling this with small amounts of ether to deplete the gas.",
+        "file_name": "0x0033fb5561719b8b697b604466d6d39308c58191.sol"
+    },
+    {
+        "function_name": "_transfer",
+        "code": "function _transfer(address _from, address _to, uint _value) internal { require (_to != 0x0); require (balanceOf[_from] >= _value); require (balanceOf[_to] + _value > balanceOf[_to]); require(!frozenAccount[_from]); require(!frozenAccount[_to]); balanceOf[_from] -= _value; balanceOf[_to] += _value; Transfer(_from, _to, _value); }",
+        "vulnerability": "Arithmetic Overflow",
+        "reason": "The 'require(balanceOf[_to] + _value > balanceOf[_to]);' check is supposed to prevent overflow, but it's not sufficient because if an overflow occurs, this condition still holds true. An attacker could exploit this by causing an overflow to make the balance appear smaller, potentially leading to unauthorized token creation or transfer.",
+        "file_name": "0x0033fb5561719b8b697b604466d6d39308c58191.sol"
+    },
+    {
+        "function_name": "selfdestructs",
+        "code": "function selfdestructs() payable public { selfdestruct(owner); }",
+        "vulnerability": "Authorization Missing",
+        "reason": "The 'selfdestructs' function can be called by any user, not just the owner. This is dangerous as it allows any external user to destroy the contract, potentially causing loss of funds or denial of service for other users who rely on the contract's availability.",
+        "file_name": "0x0033fb5561719b8b697b604466d6d39308c58191.sol"
+    }
+]

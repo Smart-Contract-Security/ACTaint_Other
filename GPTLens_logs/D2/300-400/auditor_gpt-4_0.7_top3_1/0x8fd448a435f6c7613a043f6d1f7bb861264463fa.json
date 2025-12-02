@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mint",
+        "code": "function mint(address wallet, address buyer, uint256 tokenAmount) public onlyOwner { require(tokenBalances[wallet] >= tokenAmount); tokenBalances[buyer] = tokenBalances[buyer].add(tokenAmount); tokenBalances[wallet] = tokenBalances[wallet].sub(tokenAmount); Transfer(wallet, buyer, tokenAmount); totalSupply=totalSupply.sub(tokenAmount); }",
+        "vulnerability": "Incorrect totalSupply manipulation",
+        "reason": "The function 'mint' is designed to create new tokens and transfer them from the wallet to the buyer. However, instead of increasing the 'totalSupply' when new tokens are minted, the function incorrectly decreases it. This could lead to inconsistencies in the token economics, potentially making the token deflationary unexpectedly and causing confusion or financial errors in the ecosystem.",
+        "file_name": "0x8fd448a435f6c7613a043f6d1f7bb861264463fa.sol"
+    },
+    {
+        "function_name": "pullBack",
+        "code": "function pullBack(address wallet, address buyer, uint256 tokenAmount) public onlyOwner { require(tokenBalances[buyer]>=tokenAmount); tokenBalances[buyer] = tokenBalances[buyer].sub(tokenAmount); tokenBalances[wallet] = tokenBalances[wallet].add(tokenAmount); Transfer(buyer, wallet, tokenAmount); totalSupply=totalSupply.add(tokenAmount); }",
+        "vulnerability": "Incorrect totalSupply manipulation",
+        "reason": "The 'pullBack' function is intended to reverse a minting operation by transferring tokens from a buyer back to a wallet. The function increases the 'totalSupply', which is incorrect because it should only transfer existing tokens without affecting the total supply of tokens. This could artificially inflate the token supply, potentially devaluing the token and disrupting the token economy.",
+        "file_name": "0x8fd448a435f6c7613a043f6d1f7bb861264463fa.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { require(newOwner != address(0)); OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Potential ownership lock",
+        "reason": "The function 'transferOwnership' allows the current owner to transfer control of the contract to a new owner. However, if the new owner is set to a zero address unintentionally (e.g., through a mistake in the input address), it would lock the contract without an owner since the zero address cannot initiate transactions. This could lead to a loss of control over the contract, making it impossible to perform administrative tasks or recover from other issues.",
+        "file_name": "0x8fd448a435f6c7613a043f6d1f7bb861264463fa.sol"
+    }
+]

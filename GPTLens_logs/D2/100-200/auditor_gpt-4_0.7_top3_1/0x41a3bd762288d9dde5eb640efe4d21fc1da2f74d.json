@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'getTokens' is vulnerable to reentrancy attacks because it calls 'distr' which sends tokens to an investor before updating the 'blacklist' or 'distributionFinished' status. An attacker could recursively call 'getTokens' within the same transaction before they are blacklisted or before the distribution is marked as finished, potentially allowing them to withdraw more tokens than intended.",
+        "file_name": "0x41a3bd762288d9dde5eb640efe4d21fc1da2f74d.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval Attack",
+        "reason": "The approve function allows setting a non-zero allowance only if the current allowance is zero. However, if an allowance needs to be changed from non-zero to another non-zero value, it requires the allowance to first be set to zero. This two-step process can be exploited by a malicious spender in a race condition known as the 'approve attack', where they may spend the original allowance and then the newly approved amount.",
+        "file_name": "0x41a3bd762288d9dde5eb640efe4d21fc1da2f74d.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "vulnerability": "DoS with Unexpected revert",
+        "reason": "The withdraw function transfers Ethereum based on the contract's balance to the owner. If, for any reason, the transfer fails (e.g., the owner contract has a fallback function that reverts), the entire function will revert, potentially locking funds indefinitely. This could be exploited by an attacker if they can control the owner address or cause the transaction to revert.",
+        "file_name": "0x41a3bd762288d9dde5eb640efe4d21fc1da2f74d.sol"
+    }
+]

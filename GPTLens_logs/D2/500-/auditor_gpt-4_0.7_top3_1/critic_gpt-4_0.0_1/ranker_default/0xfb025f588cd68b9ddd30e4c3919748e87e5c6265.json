@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "constuctor",
+        "vulnerability": "Typographical error in constructor",
+        "criticism": "The reasoning is accurate in identifying the typographical error in the function name, which prevents it from acting as a constructor. This is a critical issue because it leaves the contract without a designated owner, potentially allowing unrestricted access to functions meant to be protected. The severity is high due to the potential for complete loss of control over the contract. However, the profitability is moderate because exploiting this depends on the presence of valuable functions unprotected due to the missing owner.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 5,
+        "reason": "The function name 'constuctor' is a typographical error and should be 'constructor'. This error means the constructor will not set the owner upon contract deployment, leaving the contract without a designated owner. This makes all functions protected by the onlyOwner modifier accessible to anyone, as the ownership check will fail.",
+        "code": "function constuctor() public { owner = msg.sender; }",
+        "file_name": "0xfb025f588cd68b9ddd30e4c3919748e87e5c6265.sol",
+        "final_score": 7.75
+    },
+    {
+        "function_name": "addComment",
+        "vulnerability": "Unrestricted access control",
+        "criticism": "The reasoning correctly identifies the lack of access control in the 'addComment' function, which could indeed lead to spam or irrelevant data being stored, potentially causing a denial of service. However, the severity is somewhat overstated as smart contract storage is expensive, and filling it up would require significant resources. The profitability is low because there is no direct financial gain from this action, just potential disruption.",
+        "correctness": 8,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "The function 'addComment' allows any user to add a comment without any restrictions. Since this function is not protected by the onlyOwner modifier or any other form of access control, malicious users can flood the contract with irrelevant or harmful comments, potentially leading to denial of service (DoS) by filling up storage or degrading the contract's usability.",
+        "code": "function addComment(bytes3 _rating, string _text) public returns (uint) { Comment storage comment = comments[commentsLength]; comment.rating = _rating; comment.text = _text; emit commentInfo(_rating, _text); commentsLength++; return commentsLength; }",
+        "file_name": "0xfb025f588cd68b9ddd30e4c3919748e87e5c6265.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "setComment",
+        "vulnerability": "Unrestricted access control",
+        "criticism": "The reasoning is correct in pointing out the lack of access control in the 'setComment' function, which could allow unauthorized modifications to comments. This could lead to misinformation or harm to reputation, as stated. The severity is moderate because the impact is limited to the data integrity of the comments. The profitability is low as there is no direct financial incentive, but could be used for malicious intent to damage reputation.",
+        "correctness": 8,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "Like 'addComment', the function 'setComment' lacks any form of access control. This allows any external caller to modify any comment stored in the contract. An attacker can exploit this to alter legitimate comments, leading to misinformation or confusion among users, potentially harming the reputation of the contract operators or other users.",
+        "code": "function setComment(uint256 _id, bytes3 _rating, string _text) public { Comment storage comment = comments[_id]; comment.rating = _rating; comment.text = _text; emit commentInfo(_rating, _text); }",
+        "file_name": "0xfb025f588cd68b9ddd30e4c3919748e87e5c6265.sol",
+        "final_score": 5.25
+    }
+]

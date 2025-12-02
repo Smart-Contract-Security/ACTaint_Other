@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "mintToken",
+        "code": "function mintToken(address target, uint256 mintedAmount) onlyOwner public { balanceOf[target] += mintedAmount; totalSupply += mintedAmount; Transfer(0, this, mintedAmount); Transfer(this, target, mintedAmount); }",
+        "vulnerability": "Unchecked Minting",
+        "reason": "The mintToken function allows the contract owner to arbitrarily increase the balance of any user and the total supply of the token without any caps or limits, potentially leading to hyperinflation and devaluation of the token.",
+        "file_name": "0x818b121e5c6435e1d3a7533c466804b817a18cd2.sol"
+    },
+    {
+        "function_name": "burnFrom",
+        "code": "function burnFrom(address _from, uint256 _value) public returns (bool success) { require(balanceOf[_from] >= _value); require(_value <= allowance[_from][msg.sender]); balanceOf[_from] -= _value; allowance[_from][msg.sender] -= _value; totalSupply -= _value; Burn(_from, _value); return true; }",
+        "vulnerability": "Potential for Double Spending",
+        "reason": "The burnFrom function reduces both the balance and the allowance of the user, but it does not explicitly check that the caller has been authorized to burn the tokens. This could potentially allow an attacker who has been allowed to spend tokens on behalf of another user to also burn the tokens without additional authorization, leading to a loss of tokens.",
+        "file_name": "0x818b121e5c6435e1d3a7533c466804b817a18cd2.sol"
+    },
+    {
+        "function_name": "sell",
+        "code": "function sell(uint256 amount) public { require(this.balance >= amount * sellPrice); _transfer(msg.sender, this, amount); msg.sender.transfer(amount * sellPrice); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The sell function transfers Ether to the caller before updating the user's balance, which could allow a caller to re-enter the function and sell more tokens than they own if the contract balance is sufficient, potentially draining the contract of Ether.",
+        "file_name": "0x818b121e5c6435e1d3a7533c466804b817a18cd2.sol"
+    }
+]

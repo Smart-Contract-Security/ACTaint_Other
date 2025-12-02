@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initializeVestingFor",
+        "code": "function initializeVestingFor (address payable account) external deployerOnly whenNotInitialized { initialTokensBalance = dreamToken.balanceOf(address(this)); require(initialTokensBalance != 0); withdrawalAddress = account; vestingStartUnixTimestamp = block.timestamp; vestingRules(); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'initializeVestingFor' updates the state of 'withdrawalAddress' after making an external call to 'dreamToken.balanceOf(address(this))', which can potentially be a reentrancy vulnerability if the 'dreamToken' contract is malicious or has a bug. An attacker can potentially be the deployer, and if they have control over the 'dreamToken' contract, they can make a re-entrant call to 'initializeVestingFor' (or other functions) after the balance check and before 'withdrawalAddress' is set, leading to unexpected behavior or draining funds.",
+        "file_name": "0x7e03d1b16aa793be483d230cd37f5bc607865fa4.sol"
+    },
+    {
+        "function_name": "vestingRules",
+        "code": "function vestingRules () internal { uint256 year = halfOfYear * 2; stages[0].date = vestingStartUnixTimestamp; stages[1].date = vestingStartUnixTimestamp + halfOfYear; stages[2].date = vestingStartUnixTimestamp + year; stages[3].date = vestingStartUnixTimestamp + year + halfOfYear; stages[4].date = vestingStartUnixTimestamp + (year * 2); stages[0].tokensUnlockedPercentage = 10; stages[1].tokensUnlockedPercentage = 2500; stages[2].tokensUnlockedPercentage = 5000; stages[3].tokensUnlockedPercentage = 7500; stages[4].tokensUnlockedPercentage = 10000; }",
+        "vulnerability": "Incorrect Unlocking Percentages",
+        "reason": "The function 'vestingRules' sets the 'tokensUnlockedPercentage' with incorrect values that exceed 100%. The second stage has 'tokensUnlockedPercentage' set to 2500, which is 25 times what should be a maximum of 100% (or 10000 in scaled terms). This can lead to unlocking more tokens than intended, resulting in potential overspending or depletion of token reserves ahead of schedule.",
+        "file_name": "0x7e03d1b16aa793be483d230cd37f5bc607865fa4.sol"
+    },
+    {
+        "function_name": "withdrawTokens",
+        "code": "function withdrawTokens () private whenInitialized { uint256 tokensToSend = getAvailableTokensToWithdraw(); sendTokens(tokensToSend); if (dreamToken.balanceOf(address(this)) == 0) { selfdestruct(withdrawalAddress); } }",
+        "vulnerability": "Self-destruction Logic",
+        "reason": "The 'withdrawTokens' function includes a 'selfdestruct' call which can be triggered if the balance of 'dreamToken' in the contract reaches 0. This can potentially be exploited by an attacker (if they can manipulate token balances or the sequence of withdrawals) to prematurely destruct the contract, which stops all contract functionality and might lead to loss of access to any remaining funds or states that were supposed to be maintained or released under different conditions.",
+        "file_name": "0x7e03d1b16aa793be483d230cd37f5bc607865fa4.sol"
+    }
+]

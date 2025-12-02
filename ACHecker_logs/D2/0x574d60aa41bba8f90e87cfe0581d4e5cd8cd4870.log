@@ -1,0 +1,37 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x574d60aa41bba8f90e87cfe0581d4e5cd8cd4870.code
+Start time: 21/08/2022 10:01:04
+Building CFG...
+CFG generation time (secs): 0.09
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setOldVersion(address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)
+	( 2060)  80c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function settleJackpot()
+
+Violated access control check in function setNewVersion(address)
+	( 3075)  c03:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function settleJackpot()
+
+Violated access control check in function migrate()
+	( 3368)  d28:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function settleJackpot()
+
+Violated access control check in function registerTicket(bytes16,address)
+	( 4941) 134d:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function setLoto(address)
+
+Violated access control check in function setLoto(address)
+	( 5402) 151a:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {7} in function settleJackpot()
+
+Violated access control check in function settleSuperPrize(address)
+	( 5487) 156f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {8} in function setLoto(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 16.00
+End time: 21/08/2022 10:01:20

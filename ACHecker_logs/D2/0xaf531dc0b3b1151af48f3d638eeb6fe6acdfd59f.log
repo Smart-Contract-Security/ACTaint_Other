@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xaf531dc0b3b1151af48f3d638eeb6fe6acdfd59f.code
+Start time: 27/08/2022 11:53:22
+Building CFG...
+CFG generation time (secs): 0.01
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function StopGame(uint8)
+	(  359)  167:	57	-2 +0 = -2	JUMPI
++--(Possible Intended Behavior) Attacker can make changes to AC item {0} in function StartRoulette(uint8)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function StartRoulette(uint8)
+Needed to protect following instruction in function StopGame(uint8)
+(  472)  1d8:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 0.61
+End time: 27/08/2022 11:53:22

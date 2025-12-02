@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "OwnedResolver",
+        "code": "function OwnedResolver() { owner = msg.sender; }",
+        "vulnerability": "Incorrect constructor name",
+        "reason": "The function 'OwnedResolver' is intended to be a constructor for the 'DNSResolver' contract but is incorrectly named. Constructors in Solidity version ^0.4.24 should have the same name as the contract or use the 'constructor' keyword. As a result, 'OwnedResolver' is treated as a regular function that can be called by anyone post-deployment, allowing an arbitrary user to change the owner of the contract at any time. This compromises the entire access control mechanism.",
+        "file_name": "0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.sol"
+    },
+    {
+        "function_name": "owner_only",
+        "code": "modifier owner_only { if(msg.sender != owner) throw; _; }",
+        "vulnerability": "Use of throw for error handling",
+        "reason": "The 'owner_only' modifier uses 'throw' for error handling. In Solidity, using 'throw' consumes all gas provided to the transaction. It is recommended to use 'revert()' or 'require()' instead, which provides the same functionality but with more gas-efficient error handling. This can prevent denial of service attacks where the aim is to deplete the contract's or caller's gas.",
+        "file_name": "0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.sol"
+    },
+    {
+        "function_name": "supportsInterface",
+        "code": "function supportsInterface(bytes4 interfaceID) constant returns (bool) { return interfaceID == 0x126a710e; }",
+        "vulnerability": "Hardcoded interface check",
+        "reason": "The function 'supportsInterface' returns true for a single hardcoded interface ID '0x126a710e'. This implementation is not flexible and does not follow the typical pattern of checking against multiple possible supported interfaces, which might be necessary if the contract evolves or needs to support additional interfaces in the future. It restricts the contract's upgradeability and compatibility with other contracts or interfaces.",
+        "file_name": "0x2807e558a7eba8d25c3a05a0e7e9a6a437a6e6a4.sol"
+    }
+]

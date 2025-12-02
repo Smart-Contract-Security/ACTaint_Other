@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { if (newOwner != address(0)) { owner = newOwner; } }",
+        "vulnerability": "Unchecked new owner",
+        "reason": "This function allows the current owner to change the ownership of the contract to a new owner. However, there's a lack of event emission after changing the owner, which should be included to ensure transparency and traceability of ownership change. This can lead to situations where the change in ownership could go unnoticed in the transaction logs, potentially leading to security risks or confusion.",
+        "file_name": "0xb81f629d2e5fd0860dae001376907feb2eba2b42.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= minContribution ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function getTokens is vulnerable to reentrancy attacks because it calls an external function (distr) which modifies state (balances and totalDistributed), and there is state modification after this external call within the same function (setting distributionFinished = true). This could allow an attacker to recursively call getTokens, potentially leading to unexpected behavior like distributing more tokens than intended.",
+        "file_name": "0xb81f629d2e5fd0860dae001376907feb2eba2b42.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { address myAddress = this; uint256 etherBalance = myAddress.balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unchecked send",
+        "reason": "This function transfers the entire balance of the contract to the owner without checking the success of the transfer. In Solidity, transfers can fail for various reasons (e.g., the receiving contract throwing an error), and not handling these failures can lead to security vulnerabilities, such as denial of service or unintended locking of funds.",
+        "file_name": "0xb81f629d2e5fd0860dae001376907feb2eba2b42.sol"
+    }
+]

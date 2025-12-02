@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "claimTokens",
+        "code": "function claimTokens() public onlyOwner { owner.transfer(this.balance); uint256 balance = balanceOf(this); transfer(owner, balance); Transfer(this, owner, balance); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'claimTokens' executes an Ether transfer followed by a token transfer. This pattern can lead to reentrancy attacks, where a malicious contract can call back into 'claimTokens' or other functions of this contract before the initial execution is complete, potentially leading to unexpected behavior or draining of contract Ether and tokens.",
+        "file_name": "0xc374bf3bba0a7c1e502e698741776a21e5f6eb9e.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public onlyPayloadSize(2) returns (bool) { require(_to != address(0)); require(_value <= balances[msg.sender]); require(transfersEnabled); balances[msg.sender] = balances[msg.sender].sub(_value); balances[_to] = balances[_to].add(_value); Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Unchecked Return Values",
+        "reason": "This function does not check the return value of the 'sub' and 'add' functions, which are used to decrease and increase the balance of tokens, respectively. Although these functions contain internal checks (using SafeMath), ignoring the return values might suppress important exceptions in scenarios where the SafeMath checks are bypassed or fail due to unforeseen reasons.",
+        "file_name": "0xc374bf3bba0a7c1e502e698741776a21e5f6eb9e.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public onlyPayloadSize(3) returns (bool) { require(_to != address(0)); require(_value <= balances[_from]); require(_value <= allowed[_from][msg.sender]); require(transfersEnabled); balances[_from] = balances[_from].sub(_value); balances[_to] = balances[_to].add(_value); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value); Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Unchecked Return Values",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' also does not check the return values of 'sub' and 'add' functions from the SafeMath library, as well as the return value from the subtraction on the allowance. This might lead to token balance inconsistencies if these operations fail silently.",
+        "file_name": "0xc374bf3bba0a7c1e502e698741776a21e5f6eb9e.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawTokenTo",
+        "code": "function withdrawTokenTo(address token, address to, uint amount) public onlyOwner returns (bool) { return Token(token).transfer(to, amount); }",
+        "vulnerability": "Arbitrary Token Transfer",
+        "reason": "This function allows the contract owner to transfer any amount of any ERC20 token held by the contract to any address. This can be exploited if the owner's account is compromised, allowing an attacker to drain all tokens.",
+        "file_name": "0x6f5c1ed62a4fa41cfc332d81fafd3cd38aacbd85.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Improper Withdrawal Check",
+        "reason": "This function is intended to check if withdrawals are enabled and if the amount requested is less than or equal to the deposited amount by the sender. However, it incorrectly checks the deposits of 'msg.sender' who is the owner, not the actual depositor, allowing the owner to potentially withdraw more funds than they have deposited if they can manipulate the conditions.",
+        "file_name": "0x6f5c1ed62a4fa41cfc332d81fafd3cd38aacbd85.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() { require(this.balance == 0); selfdestruct(Owner); }",
+        "vulnerability": "Selfdestruct Abuse",
+        "reason": "The 'kill' function can be used by the owner to destroy the contract if the balance is zero. This can be problematic if it's done without consensus from other stakeholders or in a malicious attempt to disrupt service or access to the contract's functions.",
+        "file_name": "0x6f5c1ed62a4fa41cfc332d81fafd3cd38aacbd85.sol"
+    }
+]

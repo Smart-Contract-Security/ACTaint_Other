@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "addPayout",
+        "code": "function addPayout(uint _fee) private { participants.push(Participant(msg.sender, (msg.value * pyramidMultiplier) / 100)); if (participants.length == 10) pyramidMultiplier = 200; else if (participants.length == 25) pyramidMultiplier = 150; balance += (msg.value * (100 - _fee)) / 100; collectedFees += (msg.value * _fee) / 100; while (balance > participants[payoutOrder].payout) { uint payoutToSend = participants[payoutOrder].payout; participants[payoutOrder].etherAddress.send(payoutToSend); balance -= participants[payoutOrder].payout; payoutOrder += 1; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function addPayout uses the send method to transfer ether, which is susceptible to reentrancy attacks because send allows the recipient to execute code (up to 2300 gas). An attacker could potentially re-enter the addPayout function or other state-changing functions in the contract during the transfer, which might lead to unintended effects (like withdrawing funds multiple times).",
+        "file_name": "0xe82719202e5965cf5d9b6673b7503a3b92de20be.sol"
+    },
+    {
+        "function_name": "collectAllFees",
+        "code": "function collectAllFees() onlyowner { if (collectedFees == 0) throw; creator.send(collectedFees); collectedFees = 0; }",
+        "vulnerability": "DoS with unexpected revert",
+        "reason": "This function uses throw for error handling, which will revert all changes and consume all provided gas. If collectedFees is 0 (perhaps due to an earlier call or initialization), any call to this function will fail, potentially leading to denial of service if the functionality depends on this call succeeding. Additionally, using creator.send(collectedFees) without checking the return value can lead to loss of ether if the send fails.",
+        "file_name": "0xe82719202e5965cf5d9b6673b7503a3b92de20be.sol"
+    },
+    {
+        "function_name": "changeMultiplier",
+        "code": "function changeMultiplier(uint _mult) onlyowner { if (_mult > 300 || _mult < 120) throw; pyramidMultiplier = _mult; }",
+        "vulnerability": "Arbitrary Modification of Critical Variable",
+        "reason": "The function allows the contract owner to change the pyramidMultiplier arbitrarily within a range (120 to 300). This is critical as it directly impacts the payout calculations in the addPayout function. An unethical owner could manipulate this multiplier to unfair advantage, potentially skewing payouts in favor of certain conditions or timings.",
+        "file_name": "0xe82719202e5965cf5d9b6673b7503a3b92de20be.sol"
+    }
+]

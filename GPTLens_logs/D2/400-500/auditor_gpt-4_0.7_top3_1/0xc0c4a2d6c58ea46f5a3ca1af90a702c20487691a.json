@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "adminClaimAirdrop",
+        "code": "function adminClaimAirdrop(address _participant, uint _amount) public onlyOwner { doAirdrop(_participant, _amount); }",
+        "vulnerability": "Unbounded Airdrop",
+        "reason": "The function 'adminClaimAirdrop' allows the contract owner to airdrop an arbitrary amount of tokens to any address. Since there are no checks on the '_amount' parameter, the owner can repeatedly call this function to distribute more tokens than the totalSupply, effectively creating tokens from thin air and diluting the token value.",
+        "file_name": "0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) { require(_to != address(0)); require(_amount <= balances[msg.sender]); balances[msg.sender] = balances[msg.sender].sub(_amount); balances[_to] = balances[_to].add(_amount); emit Transfer(msg.sender, _to, _amount); return true; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function 'transfer' uses the SafeMath library to prevent overflow and underflow. However, the return values from SafeMath functions are not checked. If an overflow or underflow occurs, the assert statement in the SafeMath library will cause a revert, but this is not explicitly handled in the 'transfer' function logic. This may lead to unexpected reverts during legitimate transfers.",
+        "file_name": "0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value <= MAX_CONTRIBUTION ); require( msg.value > 0 ); uint256 bonusTokens = 0; tokens = tokensPerEth.mul(msg.value) / 1 ether; if (msg.value >= 1 ether){bonusTokens = tokens.div(2);} else if (msg.value >= 0.5 ether){bonusTokens = tokens.div(4);} else if (msg.value >= 0.25 ether){bonusTokens = tokens.div(10);} else if (msg.value >= 0.05 ether){bonusTokens = tokens.div(20);} tokens += bonusTokens; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'getTokens' is vulnerable to reentrancy attacks. It receives ETH and distributes tokens in the same transaction. An attacker could exploit this by creating a fallback function that calls 'getTokens' again when it receives tokens. This could allow the attacker to drain the ETH balance of the contract, as the 'distributionFinished' flag check that should stop token distribution is only updated after the tokens have been distributed.",
+        "file_name": "0xc0c4a2d6c58ea46f5a3ca1af90a702c20487691a.sol"
+    }
+]

@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unauthorized token transfer",
+        "criticism": "The reasoning is accurate in identifying the potential for unauthorized token transfers if the manager or owner's account is compromised. However, the function is designed to allow such transfers by managers or owners, which is a design decision rather than an inherent vulnerability. The severity is moderate because if the manager or owner's account is compromised, it could lead to significant token loss. Profitability is moderate because an attacker with access to these roles could potentially transfer tokens to their control.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The 'withdraw' function allows a manager or owner to call the 'withdraw' method on the INMR token contract to move tokens from a user address to any other address without the user's explicit consent. This could lead to unauthorized token transfers if the manager or owner account is compromised.",
+        "code": "function withdraw(address _from, address _to, uint256 _value) public onlyManagerOrOwner onlyActive isUser(_from) returns (bool ok) { require(INMR(_TOKEN).withdraw(_from, _to, _value)); return true; }",
+        "file_name": "0xb17df4a656505570ad994d023f632d48de04edf2.sol"
+    },
+    {
+        "function_name": "burnZeroAddress",
+        "vulnerability": "Unauthorized withdrawal and burn",
+        "criticism": "The reasoning correctly identifies the risk associated with the ability to withdraw and burn tokens from specific addresses. However, the function's access control is not detailed in the reasoning, which is crucial to evaluate the actual risk. If the function is well-protected and only accessible by trusted parties, the risk might be lower. Severity is moderate because it could lead to a reduction in total token supply if misused. Profitability is low as it does not directly result in an attacker gaining tokens but manipulating the supply.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "This function allows the withdrawal of all tokens from the null and burn addresses and subsequently burns them. This manipulation of token supply could be misused if the function access is not strictly controlled or in case of role compromise.",
+        "code": "function burnZeroAddress() public { uint256 amtZero = INMR(_TOKEN).balanceOf(_NULL_ADDRESS); uint256 amtBurn = INMR(_TOKEN).balanceOf(_BURN_ADDRESS); require(INMR(_TOKEN).withdraw(_NULL_ADDRESS, address(this), amtZero)); require(INMR(_TOKEN).withdraw(_BURN_ADDRESS, address(this), amtBurn)); uint256 amtThis = INMR(_TOKEN).balanceOf(address(this)); _burn(amtThis); }",
+        "file_name": "0xb17df4a656505570ad994d023f632d48de04edf2.sol"
+    },
+    {
+        "function_name": "disableTokenUpgradability",
+        "vulnerability": "Potential denial of service",
+        "criticism": "The reasoning is somewhat correct in identifying a misuse of the 'createRound' function to disable upgradability. However, the impact and intent need to be clearer. If the owner deliberately disables upgradability, it might be intended functionality rather than a vulnerability. The severity is moderate because it could prevent necessary updates or fixes, impacting the token's functionality. Profitability is low as this action does not yield direct benefits to an attacker but could be used to harm the token ecosystem.",
+        "correctness": 5,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "This function essentially misuses the 'createRound' function of the INMR token to permanently disable token upgradability by creating a round with zero parameters. This can be seen as a denial of service if used maliciously to prevent further updates or fixes to the token contract.",
+        "code": "function disableTokenUpgradability() public onlyOwner onlyActive { require(INMR(_TOKEN).createRound(uint256(0),uint256(0),uint256(0),uint256(0))); }",
+        "file_name": "0xb17df4a656505570ad994d023f632d48de04edf2.sol"
+    }
+]

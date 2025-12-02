@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "repairTheCastle",
+        "code": "function repairTheCastle() returns(bool) { uint amount = msg.value; if (amount < 10 finney) { msg.sender.send(msg.value); return false; } if (amount > 100 ether) { msg.sender.send(msg.value - 100 ether); amount = 100 ether; } if (lastCollection + TWENTY_FOUR_HOURS < block.timestamp) { if (totalCitizens == 1) { citizensAddresses[citizensAddresses.length - 1].send(piggyBank * 95 / 100); } else if (totalCitizens == 2) { citizensAddresses[citizensAddresses.length - 1].send(piggyBank * 60 / 100); citizensAddresses[citizensAddresses.length - 2].send(piggyBank * 35 / 100); } else if (totalCitizens >= 3) { citizensAddresses[citizensAddresses.length - 1].send(piggyBank * 50 / 100); citizensAddresses[citizensAddresses.length - 2].send(piggyBank * 30 / 100); citizensAddresses[citizensAddresses.length - 3].send(piggyBank * 15 / 100); } godBank += piggyBank * 5 / 100; piggyBank = 0; jester = msg.sender; citizensAddresses.push(msg.sender); citizensAmounts.push(amount * 110 / 100); totalCitizens += 1; investInTheSystem(amount); godAutomaticCollectFee(); piggyBank += amount; round += 1; } else { citizensAddresses.push(msg.sender); citizensAmounts.push(amount * 110 / 100); totalCitizens += 1; investInTheSystem(amount); piggyBank += (amount * 5 / 100); while (citizensAmounts[lastCitizenPaid] < (address(this).balance - piggyBank - godBank - kingBank - jesterBank) && lastCitizenPaid <= totalCitizens) { citizensAddresses[lastCitizenPaid].send(citizensAmounts[lastCitizenPaid]); amountAlreadyPaidBack += citizensAmounts[lastCitizenPaid]; lastCitizenPaid += 1; } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'repairTheCastle' sends Ether to multiple addresses within a loop without updating their corresponding balances before making the calls. This could allow recipients to call back into the contract before their balances are updated, potentially leading to multiple withdrawals (reentrancy attack).",
+        "file_name": "0x7996d791995b9f9c15eb4c3e899b09a344c54bdb.sol"
+    },
+    {
+        "function_name": "usurpation",
+        "code": "function usurpation() { if (msg.sender == madKing) { investInTheSystem(msg.value); kingCost += msg.value; } else { if (onThrone + PEACE_PERIOD <= block.timestamp && msg.value >= kingCost * 110 / 100) { madKing.send(kingBank); godBank += msg.value * 5 / 100; investInTheSystem(msg.value); kingCost = msg.value; madKing = msg.sender; onThrone = block.timestamp; } else { throw; } } }",
+        "vulnerability": "DoS with Block Gas Limit",
+        "reason": "The 'usurpation' function contains a loop or heavy computation (updating kingCost and transferring Ether) which can consume a lot of gas. An attacker can repeatedly call this function with high gas costs, aiming to reach the block gas limit, which can prevent other transactions from being processed, effectively causing a denial of service (DoS).",
+        "file_name": "0x7996d791995b9f9c15eb4c3e899b09a344c54bdb.sol"
+    },
+    {
+        "function_name": "bribery",
+        "code": "function bribery() { uint amount = 100 finney; if (msg.value >= amount) { jester.send(jesterBank); jesterBank = 0; jester = msg.sender; msg.sender.send(msg.value - amount); investInTheSystem(amount); } else { throw; } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In the 'bribery' function, Ether is sent to 'jester' using jester.send(jesterBank) without checking if the send operation was successful. If the call fails (e.g., if jester is a contract that throws), the contract state is still updated (jesterBank set to 0), which can lead to unintended behavior and loss of funds.",
+        "file_name": "0x7996d791995b9f9c15eb4c3e899b09a344c54bdb.sol"
+    }
+]

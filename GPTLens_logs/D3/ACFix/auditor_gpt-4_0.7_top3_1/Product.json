@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "settle",
+        "code": "function settle() external nonReentrant notPaused { _settle(); }",
+        "vulnerability": "Reentrancy on _settle()",
+        "reason": "Although the 'nonReentrant' modifier is used, the actual reentrancy protection is applied incorrectly as it stops further calls only after the '_settle()' function has been completely executed. An attacker might take advantage of the state changes that happen in '_settle()' before the reentrancy lock is set, potentially leading to issues like double withdrawals or other state corruption.",
+        "file_name": "Product.sol"
+    },
+    {
+        "function_name": "updateClosed",
+        "code": "function updateClosed(bool newClosed) external nonReentrant notPaused onlyProductOwner { IOracleProvider.OracleVersion memory oracleVersion = _settle(); _closed.store(newClosed); emit ClosedUpdated(newClosed, oracleVersion.version); }",
+        "vulnerability": "Improper permission checks",
+        "reason": "The function 'updateClosed' is intended to be protected by the 'onlyProductOwner' modifier, but there's no implementation code provided for this modifier within the provided context. This may lead to unauthorized access if the modifier isn't correctly implemented to check for proper authorization, leading to potential unauthorized state changes.",
+        "file_name": "Product.sol"
+    },
+    {
+        "function_name": "openMakeFor",
+        "code": "function openMakeFor(address account, UFixed18 amount) public nonReentrant notPaused notClosed onlyAccountOrMultiInvoker(account) settleForAccount(account) nonZeroVersionInvariant makerInvariant positionInvariant(account) liquidationInvariant(account) maintenanceInvariant(account) { IOracleProvider.OracleVersion memory latestOracleVersion = atVersion(latestVersion()); _positions[account].pre.openMake(latestOracleVersion.version, amount); _position.pre.openMake(latestOracleVersion.version, amount); UFixed18 positionFee = amount.mul(latestOracleVersion.price.abs()).mul(makerFee()); if (!positionFee.isZero()) { controller().collateral().settleAccount(account, Fixed18Lib.from(-1, positionFee)); emit PositionFeeCharged(account, latestOracleVersion.version, positionFee); } emit PositionFeeCharged(account, latestOracleVersion.version, positionFee); emit MakeOpened(account, latestOracleVersion.version, amount); }",
+        "vulnerability": "Potential Price Manipulation",
+        "reason": "The function relies on the external call `atVersion(latestVersion())` to fetch the latest price which is then used to calculate fees. If the price feed or mechanism determining the latest version can be manipulated or if there's a delay in update, it might lead to incorrect fee calculation. This could be exploited by an attacker who can influence the oracle to benefit from reduced fees or other advantageous conditions.",
+        "file_name": "Product.sol"
+    }
+]

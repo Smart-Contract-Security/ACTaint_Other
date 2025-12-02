@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "dtrade",
+        "code": "function dtrade(address _callee, uint8 v1, uint8 v2, uint256[] uints,address[] addresses,bytes32[] b) public { if (_callee.delegatecall(bytes4(keccak256(\"trade(address,uint256,address,uint256,uint256,uint256,address,uint8,bytes32,bytes32,uint256)\")), addresses[0], uints[0], addresses[2], uints[2], uints[4], uints[6], addresses[4], v1, b[0], b[2], uints[8] )) { (_callee.delegatecall(bytes4(keccak256(\"trade(address,uint256,address,uint256,uint256,uint256,address,uint8,bytes32,bytes32,uint256)\")), addresses[1], uints[1], addresses[3], uints[3], uints[5], uints[7], addresses[5], v2, b[1], b[3], uints[9] )); } }",
+        "vulnerability": "Delegatecall to Arbitrary Address",
+        "reason": "The function 'dtrade' allows delegatecalls to an arbitrary address provided as an input (_callee). An attacker can pass a malicious contract's address as _callee, which may execute unintended code in the context of the calling contract. This can lead to state corruption, funds theft, or other unintended effects.",
+        "file_name": "0x02f66a7d5657ee67be39349988aa1f944206ead3.sol"
+    },
+    {
+        "function_name": "dtrade",
+        "code": "function dtrade(address _callee, uint8 v1, uint8 v2, uint256[] uints,address[] addresses,bytes32[] b) public { if (_callee.delegatecall(bytes4(keccak256(\"trade(address,uint256,address,uint256,uint256,uint256,address,uint8,bytes32,bytes32,uint256)\")), addresses[0], uints[0], addresses[2], uints[2], uints[4], uints[6], addresses[4], v1, b[0], b[2], uints[8] )) { (_callee.delegatecall(bytes4(keccak256(\"trade(address,uint256,address,uint256,uint256,uint256,address,uint8,bytes32,bytes32,uint256)\")), addresses[1], uints[1], addresses[3], uints[3], uints[5], uints[7], addresses[5], v2, b[1], b[3], uints[9] )); } }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The result of the delegatecall is not checked in the second call within an if statement block. If the first delegatecall is successful, the second delegatecall is executed regardless of its own success or failure. This can lead to unexpected behavior if the second call to the external contract fails, as the whole transaction will not be reverted.",
+        "file_name": "0x02f66a7d5657ee67be39349988aa1f944206ead3.sol"
+    },
+    {
+        "function_name": "testcall",
+        "code": "function testcall(address _callee) public { bytes32[] memory b = new bytes32[](4); address[] memory addrs = new address[](6); uint256[] memory ints = new uint256[](12); uint8 v1; uint8 v2; bytes32 somebytes; ints[0]=1; ints[1]=2; ints[2]=3; ints[3]=4; ints[4]=5; ints[5]=6; ints[6]=7; ints[7]=8; ints[8]=9; ints[9]=10; v1=11; v2=12; b[0]=somebytes; b[1]=somebytes; b[2]=somebytes; b[3]=somebytes; addrs[0]=0xdc04977a2078c8ffdf086d618d1f961b6c54111; addrs[1]=0xdc04977a2078c8ffdf086d618d1f961b6c54222; addrs[2]=0xdc04977a2078c8ffdf086d618d1f961b6c54333; addrs[3]=0xdc04977a2078c8ffdf086d618d1f961b6c54444; addrs[4]=0xdc04977a2078c8ffdf086d618d1f961b6c54555; addrs[5]=0xdc04977a2078c8ffdf086d618d1f961b6c54666; dtrade(_callee, v1, v2, ints, addrs,b); }",
+        "vulnerability": "Hardcoded Addresses",
+        "reason": "The function 'testcall' uses hardcoded addresses in its body for testing the 'dtrade' function. This could lead to a deployment mistake where these addresses are not updated or are incorrectly set, potentially interacting with unintended contracts or addresses in a production environment.",
+        "file_name": "0x02f66a7d5657ee67be39349988aa1f944206ead3.sol"
+    }
+]

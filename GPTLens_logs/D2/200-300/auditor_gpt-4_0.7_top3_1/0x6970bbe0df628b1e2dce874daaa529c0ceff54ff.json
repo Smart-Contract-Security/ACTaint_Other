@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'getTokens' function is marked as 'payable' and performs state changes after an external call, allowing for potential reentrancy attacks. Specifically, the function calls 'distr', which transfers tokens, and then performs further state changes such as blacklisting the user and modifying the 'value' variable. An attacker could potentially exploit this by recursively calling 'getTokens' during the execution of 'distr', leading to unexpected behavior or draining of tokens.",
+        "file_name": "0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.sol"
+    },
+    {
+        "function_name": "distr",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "vulnerability": "Incorrect Logic Handling",
+        "reason": "The 'distr' function has a logical issue, where the check for 'totalDistributed >= totalSupply' to set 'distributionFinished = true' is placed after a 'return true;' statement. This means that the check and the subsequent state change to 'distributionFinished' will never execute, potentially leading to over-distribution beyond the intended total supply.",
+        "file_name": "0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "vulnerability": "Approval Race Condition",
+        "reason": "The 'approve' function does not follow the best practice to mitigate the known ERC20 race condition vulnerability. The function should first set the allowance to zero before setting it to a new value if the new value is not zero and the current allowance is not zero, to prevent an attack where the spender could use the old and new allowance.",
+        "file_name": "0x6970bbe0df628b1e2dce874daaa529c0ceff54ff.sol"
+    }
+]

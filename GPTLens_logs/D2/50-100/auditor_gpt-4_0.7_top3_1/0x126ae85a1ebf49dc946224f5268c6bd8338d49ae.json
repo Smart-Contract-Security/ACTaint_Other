@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "debugDestruct",
+        "code": "function debugDestruct() public { selfdestruct(targetAddress); }",
+        "vulnerability": "Unauthorized Access",
+        "reason": "The function 'debugDestruct' allows any user to trigger the selfdestruct mechanism, sending all contract balance to the owner without any validation of who is calling the method. This poses a severe security risk as any external actor can destroy the contract.",
+        "file_name": "0x126ae85a1ebf49dc946224f5268c6bd8338d49ae.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function () public payable { if (balanceOf() >= 100) { selfdestruct(targetAddress); } }",
+        "vulnerability": "Unintended Selfdestruct",
+        "reason": "The fallback function triggers selfdestruct when the balance of the contract meets the target amount. However, this is risky as any transactions that cause the balance to meet or exceed the target unintentionally trigger the destruction of the contract, potentially without the consent or readiness of the contract owner.",
+        "file_name": "0x126ae85a1ebf49dc946224f5268c6bd8338d49ae.sol"
+    },
+    {
+        "function_name": "balanceOf",
+        "code": "function balanceOf() view public returns(uint256) { return 100 * address(this).balance / targetAmount; }",
+        "vulnerability": "Division Before Multiplication",
+        "reason": "The balanceOf function may result in integer division issues or unexpected rounding down to zero if 'targetAmount' is significantly higher than the contract's balance times 100. This can lead to incorrect calculations of the contract's balance percentage, affecting the logic in the fallback function that decides when to selfdestruct.",
+        "file_name": "0x126ae85a1ebf49dc946224f5268c6bd8338d49ae.sol"
+    }
+]

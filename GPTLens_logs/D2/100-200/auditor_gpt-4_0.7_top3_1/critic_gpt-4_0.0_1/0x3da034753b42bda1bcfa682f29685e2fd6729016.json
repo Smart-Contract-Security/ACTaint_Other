@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "distr",
+        "vulnerability": "Unchecked token distribution",
+        "criticism": "The criticism is valid as the function does not check if the total distributed tokens exceed the total supply, which could indeed lead to hyperinflation. However, the severity is high because it directly affects the token's value and supply integrity. The profitability is moderate because exploiting this requires control over the function calls, which is typically restricted.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 5,
+        "reason": "The 'distr' function does not check whether the '_amount' being distributed plus 'totalDistributed' exceeds 'totalSupply'. This could allow the contract to issue more tokens than intended, leading to hyperinflation and devaluation of the token.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) { totalDistributed = totalDistributed.add(_amount); balances[_to] = balances[_to].add(_amount); Distr(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "file_name": "0x3da034753b42bda1bcfa682f29685e2fd6729016.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Denial of Service by distribution finish",
+        "criticism": "The reasoning is correct in identifying a potential Denial of Service (DoS) attack by exhausting the token supply. However, this is not necessarily a vulnerability but a feature to prevent over-distribution. The severity is moderate as it affects the functionality, but profitability is low since it doesn't provide direct financial gain to the attacker.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "In the 'getTokens' function, once 'totalDistributed' reaches or exceeds 'totalSupply', the 'distributionFinished' flag is set to true, which disables the distribution functionality due to the 'canDistr' modifier. An attacker can deliberately trigger this condition, permanently halting token distribution.",
+        "code": "function getTokens() payable canDistr public { uint256 tokens = 0; require( msg.value >= MIN_CONTRIBUTION ); require( msg.value > 0 ); tokens = tokensPerEth.mul(msg.value) / 1 ether; address investor = msg.sender; if (tokens > 0) { distr(investor, tokens); } if (totalDistributed >= totalSupply) { distributionFinished = true; } }",
+        "file_name": "0x3da034753b42bda1bcfa682f29685e2fd6729016.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition in Approve function",
+        "criticism": "The reasoning correctly identifies a potential race condition vulnerability in the approve function. However, the explanation lacks depth in how this could be exploited, such as through specific transaction ordering or front-running. The severity is moderate due to potential unexpected financial transactions, but profitability is also moderate as it requires specific conditions to exploit.",
+        "correctness": 6,
+        "severity": 6,
+        "profitability": 4,
+        "reason": "The approve function does not properly handle the potential race condition that could occur if an owner approves a non-zero amount, followed by a subsequent approval before the spender has used the allowance. This can lead to an unexpected allowance being set, which could be exploited by an attacker.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; Approval(msg.sender, _spender, _value); return true; }",
+        "file_name": "0x3da034753b42bda1bcfa682f29685e2fd6729016.sol"
+    }
+]

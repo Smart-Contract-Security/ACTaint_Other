@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { require(_to != address(0)); if(balances[msg.sender] == 0) { uint256 qty = availableAirdrop(msg.sender); if(qty > 0) { balances[owner] -= qty; balances[msg.sender] += qty; Transfer(owner, _to, _value); update(); airdroped[msg.sender] = qty; aDropedThisWeek += qty; return true; } revert(); } if(balances[msg.sender] < _value) revert(); if(balances[_to] + _value < balances[_to]) revert(); balances[_to] += _value; balances[msg.sender] -= _value; Transfer(msg.sender, _to, _value); update(); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'transfer' function performs a state update after an external call to 'Transfer' event, which can lead to a reentrancy attack. An attacker could potentially utilize this issue by creating a fallback function in their receiving contract that calls back into 'transfer', causing unexpected behavior or allowing further manipulation of state.",
+        "file_name": "0x2b34ebda72bade6e6e91883ca67eb23484b045fb.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool) { require(_to != address(0)); require(_value <= balances[_from]); require(_value <= allowed[_from][msg.sender]); balances[_from] = balances[_from].sub(_value); balances[_to] = balances[_to].add(_value); allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value); Transfer(_from, _to, _value); update(); return true; }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the 'transfer' function, 'transferFrom' also performs a state update after an external call to 'Transfer' event. This could be exploited in a similar manner, allowing an attacker to perform a reentrancy attack by invoking 'transferFrom' recursively through a fallback function in a malicious contract.",
+        "file_name": "0x2b34ebda72bade6e6e91883ca67eb23484b045fb.sol"
+    },
+    {
+        "function_name": "transferTo",
+        "code": "function transferTo(address _to) external onlyOwner { require(_to != address(0)); assert(_to.send(this.balance)); }",
+        "vulnerability": "Unchecked Send",
+        "reason": "The 'transferTo' function sends Ether using 'send', which is known to return false on failure instead of throwing an exception. This can be risky as it does not check the return value of 'send', potentially leading to loss of funds if the send operation fails but the contract continues executing as if it were successful.",
+        "file_name": "0x2b34ebda72bade6e6e91883ca67eb23484b045fb.sol"
+    }
+]

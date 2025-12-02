@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "godChangeRoadCost",
+        "code": "function godChangeRoadCost(uint _newRoadCost) public onlyGod { roadCost = _newRoadCost; }",
+        "vulnerability": "Centralized Control Risk",
+        "reason": "This function allows a central admin ('god') to arbitrarily change the roadCost, which could be exploited to disrupt the game economy or to benefit certain players, leading to a lack of fairness in the contract.",
+        "file_name": "0x04bba664ea822924ff435ce1b3fad3e8dcc69481.sol"
+    },
+    {
+        "function_name": "purchaseRoad",
+        "code": "function purchaseRoad(uint _x, uint _y, uint8 _direction) public payable notPaused existingRoadSale(_x, _y, _direction) { require(roadPrices[_x][_y][_direction] == msg.value); roadPrices[_x][_y][_direction] = 0; uint taxCut = msg.value / taxDivisor; KingOfEthAbstractInterface(kingOfEthContract).payTaxes.value(taxCut)(); KingOfEthRoadsAbstractInterface _roadsContract = KingOfEthRoadsAbstractInterface(roadsContract); address _oldOwner = _roadsContract.ownerOf(_x, _y, _direction); _roadsContract.roadRealtyTransferOwnership( _x , _y , _direction , _oldOwner , msg.sender ); _oldOwner.transfer(msg.value - taxCut); emit RoadSold( _x , _y , _direction , _oldOwner , msg.sender , msg.value ); }",
+        "vulnerability": "Reentrancy Risk",
+        "reason": "The function transfers Ether to previous owner which can lead to reentrancy attacks where the _oldOwner could be a malicious contract that re-enters the purchaseRoad function to drain the contract funds or manipulate state variables before the first transaction is finished.",
+        "file_name": "0x04bba664ea822924ff435ce1b3fad3e8dcc69481.sol"
+    },
+    {
+        "function_name": "buildRoads",
+        "code": "function buildRoads( uint _x , uint _y , uint8 _direction , uint _length ) public payable { require(0 < _length); require(roadCost * _length == msg.value); KingOfEthBoard _boardContract = KingOfEthBoard(boardContract); require(_boardContract.boundX1() <= _x); require(_boardContract.boundY1() <= _y); require(_boardContract.boundX2() > _x); require(_boardContract.boundY2() > _y); KingOfEthResourcesInterface(interfaceContract).burnRoadCosts( _length , msg.sender ); if(0 == _direction) { require(_boardContract.boundX2() > _x + _length); buildRight(_x, _y, _length); } else if(1 == _direction) { require(_boardContract.boundY2() > _y + _length); buildDown(_x, _y, _length); } else if(2 == _direction) { require(_boardContract.boundX1() < _x - _length - 1); buildLeft(_x, _y, _length); } else if(3 == _direction) { require(_boardContract.boundY1() < _y - _length - 1); buildUp(_x, _y, _length); } else { revert(); } roadCounts[msg.sender] += _length; KingOfEthAbstractInterface(kingOfEthContract).payTaxes.value(msg.value)(); emit NewRoads(msg.sender, _x, _y, _direction, _length); }",
+        "vulnerability": "Unchecked external call",
+        "reason": "The call to 'burnRoadCosts' and 'payTaxes' are not checked for successful execution, which could lead to silent failures if those functions run out of gas or have other execution issues. This may lead to inconsistent state within the contract if some parts of the transaction succeed while others fail.",
+        "file_name": "0x04bba664ea822924ff435ce1b3fad3e8dcc69481.sol"
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'getTokens' function for reentrancy is valid as the function does make an external call to 'distr' before modifying the state variables, which can lead to reentrancy attacks. However, the severity is not the highest because the function does check the conditions before making the external call, and the profitability is moderate because exploiting this would require specific conditions to be met. The correctness is rated high because the reasoning aligns well with common reentrancy vulnerabilities.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 5,
+        "reason": "The 'getTokens' function allows for potential reentrancy attacks as the state is changed after external calls. The call to 'distr' function and subsequent state changes are vulnerable to reentrancy, where an attacker could re-enter the 'getTokens' function in a recursive manner, manipulating the state or causing unexpected behavior due to state changes post external call.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.sol",
+        "final_score": 6.75
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race Condition in Approve",
+        "criticism": "The reasoning about the race condition in the 'approve' function is partially correct. The function does indeed allow for a potential front-running attack when changing allowances. However, the function includes a check that prevents setting a new non-zero allowance if there is already a non-zero allowance, which mitigates the risk unless the allowance is first set to zero. The correctness is moderate, the severity is moderate due to potential exploitation, and the profitability is also moderate as it depends on specific conditions and timing.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 5,
+        "reason": "The 'approve' function is susceptible to a front-running attack, as it allows changing the allowance of a spender that could be abused by an attacker. If a user calls 'approve' to set a new non-zero allowance for a spender who already has a non-zero allowance, an attacker could see the pending transaction and quickly make a transfer based on the old allowance before the transaction is confirmed, potentially leading to unexpected spending.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.sol",
+        "final_score": 5.5
+    },
+    {
+        "function_name": "transfer",
+        "vulnerability": "Unchecked Return Value",
+        "criticism": "The criticism regarding the 'transfer' function not checking the return value of 'sub' and 'add' functions is incorrect. The SafeMath library's 'sub' and 'add' functions inherently use assertions to prevent overflows and underflows, which would revert the transaction in case of an error. Therefore, there is no need to check the return values as these operations will either succeed or revert the entire transaction. The correctness is low, and the severity and profitability are both minimal because the described scenario does not represent a real vulnerability.",
+        "correctness": 2,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "The 'transfer' function does not check the return value of the internal 'sub' and 'add' functions from the SafeMath library. In the unlikely case that these functions fail due to an assertion (e.g., overflow), the function would continue execution, potentially leading to incorrect balance updates and unexpected behavior.",
+        "code": "function transfer(address _to, uint256 _amount) onlyPayloadSize(2 * 32) public returns (bool success) {\n    require(_to != address(0));\n    require(_amount <= balances[msg.sender]);\n    balances[msg.sender] = balances[msg.sender].sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Transfer(msg.sender, _to, _amount);\n    return true;\n}",
+        "file_name": "0x39730ebfeb4e0c9c2e2645c528c00ee7b98ecfb2.sol",
+        "final_score": 1.0
+    }
+]

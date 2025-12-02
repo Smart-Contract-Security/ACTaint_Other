@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "burnPrivate",
+        "code": "function burnPrivate(uint256 burnNeumarkUlps, uint256 minEurUlps, uint256 maxEurUlps) private {\n    uint256 prevEuroUlps = _totalEurUlps;\n    mDestroyTokens(msg.sender, burnNeumarkUlps);\n    _totalEurUlps = cumulativeInverse(totalSupply(), minEurUlps, maxEurUlps);\n    assert(prevEuroUlps >= _totalEurUlps);\n    uint256 euroUlps = prevEuroUlps - _totalEurUlps;\n    emit LogNeumarksBurned(msg.sender, euroUlps, burnNeumarkUlps);\n}",
+        "vulnerability": "Unchecked return value",
+        "reason": "The function 'cumulativeInverse' calculates the new total EUR contribution after tokens are burned. It is critical to check whether this calculation was successful or resulted in a valid state. Missing checks on the return value might lead to incorrect state updates for '_totalEurUlps', potentially causing logical errors in tokenomics and economic calculations.",
+        "file_name": "0x1a637dac5effb60fb4fd4a808fb24914d56d4046.sol"
+    },
+    {
+        "function_name": "mTransfer",
+        "code": "function mTransfer( address from, address to, uint256 amount ) internal {\n    require(to != address(0));\n    require(parentToken() == address(0) || parentSnapshotId() < parentToken().currentSnapshotId());\n    require(mOnTransfer(from, to, amount));\n    uint256 previousBalanceFrom = balanceOf(from);\n    require(previousBalanceFrom >= amount);\n    uint256 newBalanceFrom = previousBalanceFrom - amount;\n    setValue(_balances[from], newBalanceFrom);\n    uint256 previousBalanceTo = balanceOf(to);\n    uint256 newBalanceTo = previousBalanceTo + amount;\n    assert(newBalanceTo >= previousBalanceTo);\n    setValue(_balances[to], newBalanceTo);\n    emit Transfer(from, to, amount);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'mTransfer' function is vulnerable to reentrancy attacks because it modifies the state after making an external call through the 'mOnTransfer' modifier. An attacker could take advantage of the state changes that happen after the external call to re-enter the function and manipulate balances or other critical state variables.",
+        "file_name": "0x1a637dac5effb60fb4fd4a808fb24914d56d4046.sol"
+    },
+    {
+        "function_name": "changeTokenController",
+        "code": "function changeTokenController(IControllerGovernance newController) public onlyStates(GovState.Funded, GovState.Closed) onlyCompany {\n    require(newController != address(this));\n    require(newController.oldTokenController() == address(this), \"NF_NOT_MIGRATED_FROM_US\");\n    _newController = newController;\n    transitionTo(GovState.Migrated);\n    emit LogResolutionExecuted(0, Action.ChangeTokenController);\n    emit LogMigratedTokenController(0, newController);\n}",
+        "vulnerability": "Improper Authorization",
+        "reason": "The 'changeTokenController' function allows the contract's token controller to be changed. The function checks if the new controller's previous controller is the current contract, which can be bypassed if the new controller contract is maliciously set to point back to the current contract. This could lead to unauthorized changes in the token controller without proper validation of the state or intention behind the change.",
+        "file_name": "0x1a637dac5effb60fb4fd4a808fb24914d56d4046.sol"
+    }
+]

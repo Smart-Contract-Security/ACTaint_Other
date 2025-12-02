@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning provided is somewhat accurate in identifying a potential reentrancy issue due to the state update ('value') occurring after the external call ('distr'). However, the severity and profitability are not as high as suggested because the function includes checks that could prevent multiple exploitations in a single transaction. The function checks if 'toGive' is greater than zero before blacklisting the investor, which might mitigate the risk of repeated reentrancy to some extent. The correctness is moderate because the vulnerability exists but the impact might be limited.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 3,
+        "reason": "The function 'getTokens' updates the state after calling another function ('distr') that transfers control, potentially allowing reentrancy attack. The state variable 'value' is decreased after the distribution, which could be exploited if the same function is called again before it finishes execution.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xb29b1547e2ce27161fda590f217c2c669e8a376a.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "criticism": "The reasoning is correct in identifying the risk associated with the 'withdraw' function allowing the owner to transfer all Ether without restrictions. However, the severity and profitability should be high because if the owner's account is compromised, it could lead to a significant loss of funds. The function lacks any checks or conditions, making it a critical vulnerability if the owner's security is breached.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 7,
+        "reason": "The 'withdraw' function allows the owner to transfer all Ether in the contract to their own address. No checks or effects limit the frequency or conditions under which this withdrawal can occur, potentially allowing abrupt draining of all contract funds if the owner's account is compromised.",
+        "code": "function withdraw() onlyOwner public {\n    uint256 etherBalance = address(this).balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0xb29b1547e2ce27161fda590f217c2c669e8a376a.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Improper Approval Reset",
+        "criticism": "The reasoning is incorrect. The function does include a check that prevents setting a new allowance if the previous allowance was not zero, unless the new value is zero. This mitigates the risk of the 'approve/transferFrom attack' to a significant extent. The vulnerability is overstated in the reasoning, and the actual risk is much lower. The function's design helps prevent the race condition described, thus the correctness and severity are low.",
+        "correctness": 2,
+        "severity": 1,
+        "profitability": 0,
+        "reason": "The 'approve' function does not reset the allowance to 0 before setting it to a new value, which can lead to a race condition known as the 'approve/transferFrom attack'. This allows a malicious spender to possibly transfer more tokens than intended by the token owner.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xb29b1547e2ce27161fda590f217c2c669e8a376a.sol"
+    }
+]

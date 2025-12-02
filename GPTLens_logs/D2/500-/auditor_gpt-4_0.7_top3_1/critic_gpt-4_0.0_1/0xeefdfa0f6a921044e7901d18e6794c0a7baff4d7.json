@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "getTokens",
+        "vulnerability": "Reentrancy",
+        "criticism": "The criticism of the 'getTokens' function for reentrancy is valid as it calls 'distr' which can change state and emit events before updating the 'blacklist'. However, the severity is not as high as suggested because the function does update the blacklist after distributing tokens, which mitigates the risk slightly. The profitability is moderate because if an attacker can exploit this, they could potentially drain resources, but it depends on the implementation of 'distr' and other security measures in place.",
+        "correctness": 6,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The 'getTokens' function allows for reentrancy attack because it calls 'distr', which emits an event and transfers tokens before updating the 'blacklist' state. An attacker can recursively call 'getTokens' within the same transaction before they are blacklisted, potentially draining the contract.",
+        "code": "function getTokens() payable canDistr onlyWhitelist public {\n    if (value > totalRemaining) {\n        value = totalRemaining;\n    }\n    require(value <= totalRemaining);\n    address investor = msg.sender;\n    uint256 toGive = value;\n    distr(investor, toGive);\n    if (toGive > 0) {\n        blacklist[investor] = true;\n    }\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n    value = value.div(100000).mul(99999);\n}",
+        "file_name": "0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.sol"
+    },
+    {
+        "function_name": "distr",
+        "vulnerability": "Logical flaw",
+        "criticism": "The reasoning is correct about the logical flaw in the 'distr' function due to unreachable code after the 'return' statement. This flaw can indeed lead to continuous distribution beyond the intended total supply if not caught during testing. The severity is high because it affects the fundamental token distribution logic, potentially leading to significant token oversupply. However, the profitability for an external attacker is low, as exploiting this flaw directly for profit is not straightforward without additional vulnerabilities.",
+        "correctness": 8,
+        "severity": 7,
+        "profitability": 2,
+        "reason": "The 'distr' function contains unreachable code. The conditional statement to finish distribution is placed after the 'return' statement, which means it will never execute. This logical flaw can lead to continuous distribution beyond the intended total supply.",
+        "code": "function distr(address _to, uint256 _amount) canDistr private returns (bool) {\n    totalDistributed = totalDistributed.add(_amount);\n    totalRemaining = totalRemaining.sub(_amount);\n    balances[_to] = balances[_to].add(_amount);\n    emit Distr(_to, _amount);\n    emit Transfer(address(0), _to, _amount);\n    return true;\n    if (totalDistributed >= totalSupply) {\n        distributionFinished = true;\n    }\n}",
+        "file_name": "0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.sol"
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Race condition",
+        "criticism": "The reasoning about the race condition in the 'approve' function is partially correct. The function does indeed not reset the allowance to zero before setting a new value, which can lead to a race condition. However, the function does check if the current allowance is non-zero and the new value is not zero, and returns false in such cases, which mitigates the risk of multiple spends somewhat. The severity is moderate, and the profitability could be high if an attacker can exploit this in a high-value transaction.",
+        "correctness": 5,
+        "severity": 4,
+        "profitability": 5,
+        "reason": "The 'approve' function is vulnerable to a race condition known as 'front-running'. It allows a spender to potentially spend an approved amount multiple times. This happens because it does not reset the allowance to 0 before setting it to a new value, allowing a spender to call 'transferFrom' twice: once before and once after the new approval.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    emit Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xeefdfa0f6a921044e7901d18e6794c0a7baff4d7.sol"
+    }
+]

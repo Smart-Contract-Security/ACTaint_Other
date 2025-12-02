@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withdrawETH",
+        "vulnerability": "Unexpected fund transfer",
+        "criticism": "The reasoning correctly identifies a potential risk in the function allowing the CAO to transfer all ETH to the CFO without checks on the CFO's address validity. However, the severity is not as high as it might seem because the function is restricted to the CAO, implying a level of trust and internal control. The profitability of exploiting this vulnerability is also low since it requires control over the CAO's role, which is typically a highly privileged position.",
+        "correctness": 6,
+        "severity": 4,
+        "profitability": 2,
+        "reason": "This function allows the CAO to withdraw all ETH from the contract to the CFO's address. Although it restricts access to only the CAO, it does not have checks to ensure that the CFO address is still valid or under proper control. This can lead to potential loss of funds if the CFO address is compromised or mistakenly set to an incorrect address.",
+        "code": "function withdrawETH() external onlyCAO { cfo.transfer(this.balance); }",
+        "file_name": "0xe9aeced8ed2abfa6ac913259eada8e3603d10e67.sol"
+    },
+    {
+        "function_name": "changeAllowTransferState",
+        "vulnerability": "Toggle-based access control",
+        "criticism": "The reasoning is valid in highlighting the risk of misuse by the COO through arbitrary toggling of the 'allowTransfer' state. However, the severity depends on the governance model of the organization. If the COO is a trusted and verified role, the risk might be mitigated. The profitability is low as it requires access to a privileged role, making external exploitation unlikely.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "This function toggles the state of 'allowTransfer' which is critical as it controls the ability to transfer skins. The toggling is controlled only by the COO and could potentially be misused to block or allow transfers arbitrarily without requiring consent or checks from other management members, thus manipulating the asset transfer capabilities.",
+        "code": "function changeAllowTransferState() public onlyCOO { if (allowTransfer) { allowTransfer = false; } else { allowTransfer = true; } }",
+        "file_name": "0xe9aeced8ed2abfa6ac913259eada8e3603d10e67.sol"
+    },
+    {
+        "function_name": "putOnSale",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning about reentrancy is incorrect because the 'PutOnSale' event itself does not call any external contracts but merely logs the event. Therefore, there is no risk of reentrancy from this event as described. The actual function does not interact with external contracts in a way that would allow reentrancy. The severity and profitability are both very low due to the absence of actual reentrancy risks.",
+        "correctness": 1,
+        "severity": 0,
+        "profitability": 0,
+        "reason": "This function allows users to set a skin for sale. However, it lacks protections against reentrancy attacks where a callback function in an untrusted contract called by 'PutOnSale' event could re-enter 'putOnSale' or other critical functions before the first transaction is finished. This could lead to multiple unintended sales or other state inconsistencies.",
+        "code": "function putOnSale(uint256 skinId, uint256 price) public whenNotPaused { require(skinIdToOwner[skinId] == msg.sender); require(skins[skinId].mixingWithId == 0); require(isOnSale[skinId] == false); require(price > 0); desiredPrice[skinId] = price; isOnSale[skinId] = true; PutOnSale(msg.sender, skinId); }",
+        "file_name": "0xe9aeced8ed2abfa6ac913259eada8e3603d10e67.sol"
+    }
+]

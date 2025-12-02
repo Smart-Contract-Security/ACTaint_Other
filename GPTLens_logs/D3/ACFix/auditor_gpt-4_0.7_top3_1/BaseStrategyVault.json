@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "redeemFromNotional",
+        "code": "function redeemFromNotional( address account, address receiver, uint256 strategyTokens, uint256 maturity, uint256 underlyingToRepayDebt, bytes calldata data ) external onlyNotional returns (uint256 transferToReceiver) { uint256 borrowedCurrencyAmount = _redeemFromNotional(account, strategyTokens, maturity, data); uint256 transferToNotional; if (account == address(this) || borrowedCurrencyAmount <= underlyingToRepayDebt) { transferToNotional = borrowedCurrencyAmount; } else { transferToNotional = underlyingToRepayDebt; unchecked { transferToReceiver = borrowedCurrencyAmount - underlyingToRepayDebt; } } if (_UNDERLYING_IS_ETH) { if (transferToReceiver > 0) payable(receiver).transfer(transferToReceiver); if (transferToNotional > 0) payable(address(NOTIONAL)).transfer(transferToNotional); } else { if (transferToReceiver > 0) _UNDERLYING_TOKEN.checkTransfer(receiver, transferToReceiver); if (transferToNotional > 0) _UNDERLYING_TOKEN.checkTransfer(address(NOTIONAL), transferToNotional); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'redeemFromNotional' is vulnerable to reentrancy attacks because it interacts with external contracts (transferring ETH or tokens) after performing critical state changes, such as updating balances. An attacker could exploit this by creating a fallback function in the receiver contract that calls 'redeemFromNotional' again, potentially leading to unexpected withdrawals or duplication of token transfers.",
+        "file_name": "BaseStrategyVault.sol"
+    },
+    {
+        "function_name": "depositFromNotional",
+        "code": "function depositFromNotional( address account, uint256 deposit, uint256 maturity, bytes calldata data ) external payable onlyNotional returns (uint256 strategyTokensMinted) { return _depositFromNotional(account, deposit, maturity, data); }",
+        "vulnerability": "Lack of input validation",
+        "reason": "The function 'depositFromNotional' lacks validation on the inputs 'account', 'deposit', and 'maturity'. This makes the contract prone to faulty or malicious inputs that could lead to erroneous minting of tokens, allowing attackers to potentially manipulate the contract's state or disrupt its normal operation.",
+        "file_name": "BaseStrategyVault.sol"
+    },
+    {
+        "function_name": "__INIT_VAULT",
+        "code": "function __INIT_VAULT( string memory name_, uint16 borrowCurrencyId_ ) internal onlyInitializing { _NAME = name_; _BORROW_CURRENCY_ID = borrowCurrencyId_; address underlyingAddress = _getNotionalUnderlyingToken(borrowCurrencyId_); _UNDERLYING_TOKEN = IERC20(underlyingAddress); _UNDERLYING_IS_ETH = underlyingAddress == address(0); _setupRole(DEFAULT_ADMIN_ROLE, NOTIONAL.owner()); }",
+        "vulnerability": "Improper Initialization",
+        "reason": "The function '__INIT_VAULT' is marked as internal and is intended to be called once to initialize the contract's state. If the contract's initialization can be triggered more than once due to missing checks or through inheritance misuse, it could lead to resetting critical state variables like '_BORROW_CURRENCY_ID', '_UNDERLYING_TOKEN', and roles, which can disrupt the intended logic and access controls of the contract.",
+        "file_name": "BaseStrategyVault.sol"
+    }
+]

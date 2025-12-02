@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createTokens",
+        "code": "function createTokens() payable public { require(msg.value > 0); require(whitelisted[msg.sender]); uint256 tokens = msg.value.mul(RATE); balances[msg.sender] = balances[msg.sender].add(tokens); _totalSupply = _totalSupply.add(tokens); owner.transfer(msg.value); }",
+        "vulnerability": "Unbounded Token Minting",
+        "reason": "This function allows whitelisted users to mint an arbitrary amount of tokens by simply sending ETH to the contract. The number of tokens minted is directly proportional to the amount of ETH sent and the RATE, which can be set arbitrarily by the owner. There is no cap on how many tokens an individual can mint, leading potentially to hyperinflation or devaluation of the token if exploited by sending very high amounts of ETH.",
+        "file_name": "0xe3c51fc064053ebc5a802e6f1d2897bf457c244f.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) { require( balances[msg.sender] >= _value && balances[_from] >= _value && _value > 0 && whitelisted[msg.sender] && !blockListed[_to] && !blockListed[msg.sender] ); balances[_from] -= _value; balances[_to] += _value; allowed[_from][msg.sender] -= _value; emit Transfer(_from, _to, _value); return true; }",
+        "vulnerability": "Incorrect balance check",
+        "reason": "The function incorrectly checks msg.sender's balance instead of _from's balance for sufficiency before performing a transfer. This could allow users to transfer tokens from any account that has allowed them a certain allowance, even if the _from account does not have a sufficient balance. This can lead to negative balances in the _from account.",
+        "file_name": "0xe3c51fc064053ebc5a802e6f1d2897bf457c244f.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _amount) hasMintPermission canMint public returns (bool) { uint256 tokens = _amount.mul(RATE); require( _currentSupply.add(tokens) < MAXUM_SUPPLY && whitelisted[msg.sender] && !blockListed[_to] ); if (_currentSupply >= INITIAL_SUPPLY) { _totalSupply = _totalSupply.add(tokens); } _currentSupply = _currentSupply.add(tokens); balances[_to] = balances[_to].add(tokens); emit Mint(_to, tokens); emit Transfer(address(0), _to, tokens); return true; }",
+        "vulnerability": "Unchecked Minting Post Initial Supply",
+        "reason": "The mint function allows tokens to be minted indefinitely once the _currentSupply reaches the INITIAL_SUPPLY. It only checks if the MAXUM_SUPPLY is not exceeded by the new tokens being added, but since _currentSupply can be manipulated to always be greater than INITIAL_SUPPLY, this could potentially allow an unlimited supply of tokens to be minted, which can lead to devaluation of the token.",
+        "file_name": "0xe3c51fc064053ebc5a802e6f1d2897bf457c244f.sol"
+    }
+]

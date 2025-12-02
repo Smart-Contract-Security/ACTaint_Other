@@ -1,0 +1,22 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xc0adf1ccc703a0a3393892600883a1a91a4e38de.code
+Start time: 28/08/2022 03:10:45
+Building CFG...
+CFG generation time (secs): 0.15
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function setMessage(int256,string)
+	( 4013)  fad:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1007} in function finalizeLottery(uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+storage-to-storage taints flow (2)
+(Controlable Address of SELFDESTRUCT) Missing access control check in function buyTickets(uint256[])
+Needed to protect following instruction in function destruct()
+( 2386)  952:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 7.68
+End time: 28/08/2022 03:10:53

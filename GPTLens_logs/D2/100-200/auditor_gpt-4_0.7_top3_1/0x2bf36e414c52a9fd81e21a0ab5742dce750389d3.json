@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external {\n    if (msg.value>=howManyEtherInWeiToBecomeOwner) {\n        owner.transfer(msg.value);\n        owner.transfer(this.balance);\n        owner=_newowner;\n    }\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' transfers Ether to the current owner using 'owner.transfer(msg.value)' and 'owner.transfer(this.balance)' before updating the 'owner' state variable to '_newowner'. This order of operations allows the previous owner to potentially re-enter the contract by calling 'changeOwner' again during the Ether transfer, possibly leading to multiple unauthorised state changes and draining of contract funds.",
+        "file_name": "0x2bf36e414c52a9fd81e21a0ab5742dce750389d3.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external {\n    if (msg.sender==owner || msg.value >=howManyEtherInWeiToKillContract) {\n        selfdestruct(owner);\n    }\n}",
+        "vulnerability": "Unauthorized contract destruction",
+        "reason": "The function 'killContract' allows anyone to destroy the contract if they send at least 'howManyEtherInWeiToKillContract' Ether to the function. This poses a significant risk as any wealthy attacker can permanently disable the contract's functionality, leading to loss of assets and denial of service for legitimate users.",
+        "file_name": "0x2bf36e414c52a9fd81e21a0ab5742dce750389d3.sol"
+    },
+    {
+        "function_name": "mintTo",
+        "code": "function mintTo(address _to, uint256 _value) public returns (bool) {\n    balances[_to] += _value;\n    Transfer(msg.sender, _to, _value);\n    return true;\n}",
+        "vulnerability": "Unauthorized token minting",
+        "reason": "The function 'mintTo' allows any caller to arbitrarily increase the token balance of any address ('_to') by any amount ('_value'). This can lead to uncontrolled inflation of the token supply, distortion of token value, and can potentially be abused by attackers to gain a large number of tokens illegitimately. There are no access control checks (e.g., onlyOwner modifier or similar) limiting the use of this function.",
+        "file_name": "0x2bf36e414c52a9fd81e21a0ab5742dce750389d3.sol"
+    }
+]

@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint _value) public returns (bool) { bytes memory empty; return transferFrom(_from, _to, _value, empty); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function indirectly calls '_checkDestination' which calls external contract through the 'tokenFallback' interface. If the external contract is malicious, it could call back into the 'transferFrom' or other functions in this contract that modify state, leading to reentrancy attacks.",
+        "file_name": "0xed81af91c38ac12b0464bf1ca4b887469f7adaec.sol"
+    },
+    {
+        "function_name": "mint",
+        "code": "function mint(address _to, uint256 _amount) onlyOwner public returns (bool) { bytes memory empty; _checkDestination(address(this), _to, _amount, empty); Mint(_to, _amount); Transfer(address(0), _to, _amount); return true; }",
+        "vulnerability": "Unchecked Return Value",
+        "reason": "The function 'mint' does not check the return value of '_checkDestination'. If the 'tokenFallback' function called in '_checkDestination' reverts or fails, the state changes in 'mint' would still be executed, potentially leading to inconsistencies or unintended token minting.",
+        "file_name": "0xed81af91c38ac12b0464bf1ca4b887469f7adaec.sol"
+    },
+    {
+        "function_name": "transferOwnership",
+        "code": "function transferOwnership(address newOwner) onlyOwner public { require(newOwner != address(0)); OwnershipTransferred(owner, newOwner); owner = newOwner; }",
+        "vulnerability": "Authorization Bypass through User Input",
+        "reason": "The 'transferOwnership' function transfers the ownership based on unvalidated user input without ensuring that the new owner address is a trusted or validated entity. This could potentially allow an attacker to gain control over the contract by setting the owner to a malicious address.",
+        "file_name": "0xed81af91c38ac12b0464bf1ca4b887469f7adaec.sol"
+    }
+]

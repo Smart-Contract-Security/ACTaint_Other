@@ -1,0 +1,23 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x8b9d642d1e455119778a5aaca416a216feec163d.code
+Start time: 26/08/2022 04:39:40
+Building CFG...
+CFG generation time (secs): 5.59
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+(  761)  2f9:	57	-2 +0 = -2	JUMPI
+((  756)  2f4:	34	-0 +1 = 1	CALLVALUE, (  757)  2f5:	15	-1 +1 = 0	ISZERO, (    0)    0:	63	-0 +1 = 1	PUSH4(3735929054) 	deadc0de)
+
+Violated access control check in function toSPool(uint256)
+	( 1190)  4a6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setFinalLotteryAddress(address)
+
+Violated access control check in function rewardLottery(bool)
+	( 4810) 12ca:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {4} in function setFinalLotteryAddress(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 16.23
+End time: 26/08/2022 04:40:02

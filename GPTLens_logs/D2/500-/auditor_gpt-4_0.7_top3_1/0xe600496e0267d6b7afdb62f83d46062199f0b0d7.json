@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "upgradeToAndCall",
+        "code": "function upgradeToAndCall(uint256 version, address implementation, bytes data) payable public onlyProxyOwner {\n    upgradeTo(version, implementation);\n    require(address(this).call.value(msg.value)(data));\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'upgradeToAndCall' function upgrades the contract and then calls an arbitrary function on the new implementation. This external call can lead to reentrancy attacks where the called contract calls back into the proxy contract before the initial call is completed, potentially leading to unexpected behavior or state changes.",
+        "file_name": "0xe600496e0267d6b7afdb62f83d46062199f0b0d7.sol"
+    },
+    {
+        "function_name": "upgradeTo",
+        "code": "function upgradeTo(uint256 version, address implementation) public onlyProxyOwner {\n    _upgradeTo(version, implementation);\n}",
+        "vulnerability": "Authorization",
+        "reason": "The 'upgradeTo' function allows the contract owner to change the contract's implementation to any address. If the owner's account is compromised, an attacker can upgrade the contract to a malicious implementation which can lead to loss or theft of funds or manipulation of the contract's intended logic.",
+        "file_name": "0xe600496e0267d6b7afdb62f83d46062199f0b0d7.sol"
+    },
+    {
+        "function_name": "transferProxyOwnership",
+        "code": "function transferProxyOwnership(address newOwner) public onlyProxyOwner {\n    require(newOwner != address(0));\n    emit ProxyOwnershipTransferred(proxyOwner(), newOwner);\n    setUpgradeabilityOwner(newOwner);\n}",
+        "vulnerability": "Centralization Risk",
+        "reason": "The 'transferProxyOwnership' function allows the current owner to transfer ownership to a new address. This function centralizes control to a single address, which if compromised, can lead to unauthorized changes in the contract's behavior or state, including upgrading to a malicious implementation.",
+        "file_name": "0xe600496e0267d6b7afdb62f83d46062199f0b0d7.sol"
+    }
+]

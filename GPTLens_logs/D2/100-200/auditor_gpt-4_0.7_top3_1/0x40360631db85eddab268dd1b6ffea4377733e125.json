@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "fallback",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The fallback function allows for a reentrancy attack because it sends ether (whale.send(this.balance - nextStake) and msg.sender.send(this.balance)) before updating the contract's state (setFacts()). An attacker can call this function again as part of the receiving call, leading to unintended behavior or draining of contract's funds.",
+        "file_name": "0x40360631db85eddab268dd1b6ffea4377733e125.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The calls to send ether (whale.send(this.balance - nextStake) and msg.sender.send(this.balance)) do not check the return value. If these calls fail (e.g., if the recipient is a contract that rejects payments), the contract will not be aware, potentially leading to inconsistent state or logic errors.",
+        "file_name": "0x40360631db85eddab268dd1b6ffea4377733e125.sol"
+    },
+    {
+        "function_name": "fallback",
+        "code": "function () payable{ if (block.number - period >= blockheight){ bool isSuccess=false; var nextStake = this.balance * WINNERTAX_PRECENT/100; if (isSuccess == false) isSuccess = whale.send(this.balance - nextStake); MatthewWon(\"Matthew won\", whale, this.balance, block.number); setFacts(); if (mustBeDestroyed) selfdestruct(whale); return; }else{ if (msg.value < this.balance + DELTA) throw; bool isOtherSuccess = msg.sender.send(this.balance); setFacts(); StakeIncreased(\"stake increased\", whale, this.balance, blockheight); } }",
+        "vulnerability": "Integer Overflow/Underflow",
+        "reason": "The calculation of nextStake uses an unchecked multiplication (this.balance * WINNERTAX_PRECENT/100) which can lead to integer overflow if the balance and WINNERTAX_PRECENT are large enough. This can result in incorrect stake calculations and potential loss or theft of funds.",
+        "file_name": "0x40360631db85eddab268dd1b6ffea4377733e125.sol"
+    }
+]

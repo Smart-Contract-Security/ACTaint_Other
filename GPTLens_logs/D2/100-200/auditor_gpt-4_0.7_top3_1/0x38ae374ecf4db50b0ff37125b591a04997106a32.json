@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw( uint _value, uint8 v, bytes32 r, bytes32 s, uint signatureValidUntilBlock ) public returns (bool success) { require(balanceOf(msg.sender) >= _value); if (now <= depositLock[msg.sender]) { require(block.number < signatureValidUntilBlock); require(isValidSignature(keccak256(msg.sender, address(this), signatureValidUntilBlock), v, r, s)); } balances[msg.sender] = balances[msg.sender].sub(_value); totalSupply_ = totalSupply_.sub(_value); depositLock[msg.sender] = 0; if (erc20old) { ERC20Old(originalToken).transfer(msg.sender, _value); } else { require(ERC20(originalToken).transfer(msg.sender, _value)); } return true; }",
+        "vulnerability": "Signature Replay Attack",
+        "reason": "The function 'withdraw' uses a digital signature to authorize withdrawal operations, but it does not sufficiently ensure that each signature is used only once. This allows a replay attack where an old transaction can be re-submitted by an attacker, reusing the same signature to authorize additional unintended withdrawals as long as 'signatureValidUntilBlock' has not been surpassed.",
+        "file_name": "0x38ae374ecf4db50b0ff37125b591a04997106a32.sol"
+    },
+    {
+        "function_name": "transferFrom",
+        "code": "function transferFrom(address _from, address _to, uint _value) public { require(isSigner[_to] || isSigner[_from]); assert(msg.sender == TRANSFER_PROXY_VEFX || msg.sender == TRANSFER_PROXY_V2); balances[_to] = balances[_to].add(_value); depositLock[_to] = depositLock[_to] > now ? depositLock[_to] : now + 1 hours; balances[_from] = balances[_from].sub(_value); Transfer(_from, _to, _value); }",
+        "vulnerability": "Unchecked Return Values",
+        "reason": "In the function 'transferFrom', there is no check for the success of the 'transfer' function calls for the ERC20Old and ERC20 token standards. This might lead to a scenario where the balance is adjusted on the contract, but the actual tokens aren't transferred, leading to an inconsistency between the on-chain ledger and actual token holdings.",
+        "file_name": "0x38ae374ecf4db50b0ff37125b591a04997106a32.sol"
+    },
+    {
+        "function_name": "withdrawBalanceDifference",
+        "code": "function withdrawBalanceDifference() public onlyOwner returns (bool success) { require(ERC20(originalToken).balanceOf(address(this)).sub(totalSupply_) > 0); if (erc20old) { ERC20Old(originalToken).transfer(msg.sender, ERC20(originalToken).balanceOf(address(this)).sub(totalSupply_)); } else { require(ERC20(originalToken).transfer(msg.sender, ERC20(originalToken).balanceOf(address(this)).sub(totalSupply_))); } return true; }",
+        "vulnerability": "Privilege Escalation",
+        "reason": "The function 'withdrawBalanceDifference' allows only the owner to withdraw the difference between the total supply and the balance of the tokens held by the contract. This could be exploited if the total supply is manipulated or if there are rounding errors in the balance calculations, allowing the owner to extract more funds than intended.",
+        "file_name": "0x38ae374ecf4db50b0ff37125b591a04997106a32.sol"
+    }
+]

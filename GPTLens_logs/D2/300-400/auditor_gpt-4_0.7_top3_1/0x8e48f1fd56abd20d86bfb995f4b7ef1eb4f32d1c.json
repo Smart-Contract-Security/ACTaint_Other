@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdrawETH",
+        "code": "function withdrawETH() external onlyOwner { owner.transfer(this.balance); }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The function 'withdrawETH' in the SkinBase contract transfers all ETH held by the contract to the owner's address. If the owner's address is a contract, it could potentially execute fallback function and re-enter the withdrawETH function leading to multiple withdrawals. It should ideally use the Checks-Effects-Interactions pattern to mitigate this risk.",
+        "file_name": "0x8e48f1fd56abd20d86bfb995f4b7ef1eb4f32d1c.sol"
+    },
+    {
+        "function_name": "buyInMarket",
+        "code": "function buyInMarket(uint256 skinId) external payable whenNotPaused { require(isOnSale[skinId] == true); address seller = skinIdToOwner[skinId]; require(msg.sender != seller); uint256 _price = desiredPrice[skinId]; require(msg.value >= _price); uint256 sellerProceeds = _price - _computeCut(_price); seller.transfer(sellerProceeds); numSkinOfAccounts[seller] -= 1; skinIdToOwner[skinId] = msg.sender; numSkinOfAccounts[msg.sender] += 1; isOnSale[skinId] = false; desiredPrice[skinId] = 0; BuyInMarket(msg.sender, skinId); }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "This function transfers ETH to the seller and updates the ownership of the skin. If the seller's address is a contract, it could re-enter the 'buyInMarket' function through its fallback function. This would disrupt the execution flow, potentially leading to multiple unauthorized transfers or other state inconsistencies. Using reentrancy guards or the Checks-Effects-Interactions pattern would mitigate this.",
+        "file_name": "0x8e48f1fd56abd20d86bfb995f4b7ef1eb4f32d1c.sol"
+    },
+    {
+        "function_name": "getSkin",
+        "code": "function getSkin(uint256 id) public view returns (uint128, uint64, uint64) { require(id > 0); require(id < nextSkinId); Skin storage skin = skins[id]; return (skin.appearance, skin.cooldownEndTime, skin.mixingWithId); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'getSkin' allows anyone to access the details of any skin by providing its ID. There is no check to ensure that the caller is the owner of the skin or has permission to view its details. This could lead to unauthorized disclosure of potentially sensitive skin details.",
+        "file_name": "0x8e48f1fd56abd20d86bfb995f4b7ef1eb4f32d1c.sol"
+    }
+]

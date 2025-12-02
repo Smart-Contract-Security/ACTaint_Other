@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "createPattern",
+        "code": "function createPattern(bytes32 patternid, string dataMixed, address newowner, string message) onlyAdmin public returns(string) {\n    string memory data = toUpper(dataMixed);\n    require(keccak256(abi.encodePacked(data)) == patternid);\n    require(newowner != address(0));\n    if(Pattern[patternid].owner == address(0)){\n        Pattern[patternid].owner = newowner;\n        Pattern[patternid].message = message;\n        Pattern[patternid].data = data;\n        addPatternUserIndex(newowner,patternid);\n        return \"ok\";\n    }else{\n        return \"error:exists\";\n    }\n}",
+        "vulnerability": "Phishing with malicious contract",
+        "reason": "The function compares the hash of the capitalized data to the patternid, which is supplied by the user. A malicious contract could potentially manipulate dataMixed to produce a desired hash that matches a known patternid, allowing them to set themselves as the owner of a pattern. This could result in unauthorized control over patterns.",
+        "file_name": "0x7acbbd35d59c112071fa627e5f64d9cf79755f20.sol"
+    },
+    {
+        "function_name": "transferPattern",
+        "code": "function transferPattern(bytes32 patternid,address newowner,string message, uint8 v, bytes32 r, bytes32 s) public returns(string) {\n    address oldowner = admin;\n    require(Pattern[patternid].owner != address(0));\n    require(newowner != address(0));\n    if(Pattern[patternid].owner == msg.sender){\n        oldowner = msg.sender;\n    }else{\n        bytes32 h = prefixedHash2(newowner);\n        require(ecrecover(h, v, r, s) == Pattern[patternid].owner);\n        oldowner = Pattern[patternid].owner;\n    }\n    removePatternUserIndex(oldowner,patternid);\n    Pattern[patternid].owner = newowner;\n    Pattern[patternid].message = message;\n    addPatternUserIndex(newowner,patternid);\n    return \"ok\";\n}",
+        "vulnerability": "Signature Replay Attack",
+        "reason": "The function uses ecrecover to verify ownership via a signature. However, it lacks nonce usage and checks against previously seen signatures, making it vulnerable to replay attacks. An attacker could reuse valid signatures to change ownership of a pattern multiple times, exploiting the transferPattern functionality.",
+        "file_name": "0x7acbbd35d59c112071fa627e5f64d9cf79755f20.sol"
+    },
+    {
+        "function_name": "emergency",
+        "code": "function emergency(address newa, uint8 v, bytes32 r, bytes32 s, uint8 v2, bytes32 r2, bytes32 s2) public {\n    bytes32 h = prefixedHash2(newa);\n    require(ecrecover(h, v, r, s)==admin);\n    require(ecrecover(h, v2, r2, s2)==emergency_admin);\n    admin = newa;\n}",
+        "vulnerability": "Centralization Risk",
+        "reason": "The emergency function allows the admin address to be changed by providing signatures from both the current admin and an emergency admin. However, this can be a risk if these addresses are compromised or collude, leading to a centralization issue where the contract's control could be overtaken by unauthorized parties.",
+        "file_name": "0x7acbbd35d59c112071fa627e5f64d9cf79755f20.sol"
+    }
+]

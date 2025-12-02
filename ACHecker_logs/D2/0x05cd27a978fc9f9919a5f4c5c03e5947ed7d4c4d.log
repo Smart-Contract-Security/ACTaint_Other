@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x05cd27a978fc9f9919a5f4c5c03e5947ed7d4c4d.code
+Start time: 18/08/2022 22:46:02
+Building CFG...
+CFG generation time (secs): 0.00
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function 143181e3
+Needed to protect following instruction in function 143181e3
+(  110)   6e:	ff	-1 +0 = -1	SELFDESTRUCT
+
+(Non protected SELFDESTRUCT) Missing access control check in function 143181e3
+Needed to protect following instruction in function 143181e3
+(  110)   6e:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 0.44
+End time: 18/08/2022 22:46:02

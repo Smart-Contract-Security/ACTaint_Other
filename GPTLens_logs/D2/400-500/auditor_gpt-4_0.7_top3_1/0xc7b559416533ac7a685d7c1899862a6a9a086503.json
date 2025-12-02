@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "approve",
+        "code": "function approve (address _spender, uint256 _currentValue, uint256 _newValue) returns (bool success) { if (allowance (msg.sender, _spender) == _currentValue) return approve (_spender, _newValue); else return false; }",
+        "vulnerability": "Race Condition (Reentrancy)",
+        "reason": "The custom 'approve' function in the CROPToken contract is vulnerable to a race condition through the approve/transferFrom attack vector. The function first checks if the current allowance equals a provided '_currentValue', and if true, updates the allowance to '_newValue'. An attacker can exploit this by calling approve to set a small allowance, initiating a transferFrom, and then calling approve again to reset the allowance before the first transferFrom has been mined. This could lead to unexpected transfers, allowing an attacker to transfer more tokens than intended by the token owner.",
+        "file_name": "0xc7b559416533ac7a685d7c1899862a6a9a086503.sol"
+    },
+    {
+        "function_name": "transferPayable",
+        "code": "function transferPayable(address _address, uint _amount) private returns (bool) { accounts[_address] = safeAdd(accounts[_address], _amount); accounts[owner] = safeSub(accounts[owner], _amount); totalSold = safeAdd(totalSold, _amount); return true; }",
+        "vulnerability": "Private Function with Sensitive Logic",
+        "reason": "The function 'transferPayable' is marked as private and is responsible for transferring tokens and updating the total sold tokens. However, since Solidity does not enforce access restrictions on private functions at the EVM level, a malicious actor who understands the contract's byte code could potentially invoke this function directly, circumventing any checks or balances implemented elsewhere in the contract. This can lead to unauthorized token distribution or manipulation of sales figures.",
+        "file_name": "0xc7b559416533ac7a685d7c1899862a6a9a086503.sol"
+    },
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() public saleIsOn() minAmount() payable { uint tokens = get_tokens_count(msg.value); require(transferPayable(msg.sender , tokens)); if(_allowedTransfers) { beneficiary.transfer(msg.value); } }",
+        "vulnerability": "Unchecked External Call",
+        "reason": "The function 'getTokens' includes a call to 'beneficiary.transfer(msg.value)', transferring Ether to a beneficiary address. This external call is not checked for its return value, potentially leading to a loss of Ether without updating the state accordingly if the call fails (e.g., if the beneficiary is a contract that rejects Ether). This could disrupt the accounting within the contract, allowing the contract to believe tokens were sold when, in fact, the corresponding Ether was not successfully transferred.",
+        "file_name": "0xc7b559416533ac7a685d7c1899862a6a9a086503.sol"
+    }
+]

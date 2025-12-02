@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "register_claim",
+        "code": "function register_claim(string password) payable { if (msg.value != 50 ether || valid_voucher_code[sha3(password)] == 0) return; if (redeemed[sha3(password)] || deposits_refunded ) throw; num_claimed++; redeemed[sha3(password)] = true; who_claimed[sha3(password)] = msg.sender; valid_voucher_code[sha3(password)] += 50 ether; claimers[num_claimed] = sha3(password); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'register_claim' allows calling external contracts (via the 'send' method), and the contract state is updated after this call. An attacker could exploit this by creating a fallback function in their contract that calls 'register_claim' again before the first execution completes. This would allow the attacker to redeem multiple times using the same voucher, potentially draining the contract's funds.",
+        "file_name": "0xaa93338ef3b64a50dcfb2eba57a1eb4ad59d955b.sol"
+    },
+    {
+        "function_name": "refund_deposits",
+        "code": "function refund_deposits(string password){ if (deposits_refunded) throw; if (valid_voucher_code[sha3(password)] == 0) throw; if (num_claimed >= total_claim_codes || block.number >= 2850000 ){ for (uint256 index = 1; index <= num_claimed; index++){ bytes32 claimcode = claimers[index]; address receiver = who_claimed[claimcode]; if (!receiver.send(50 ether)) throw; valid_voucher_code[claimcode] -= 50 ether; } deposits_refunded = true; } else throw; }",
+        "vulnerability": "Reentrancy",
+        "reason": "Similar to the 'register_claim' function, the 'refund_deposits' function also performs calls to external addresses using 'send', and modifies the contract state after these calls. An attacker could utilize a fallback function to re-enter the 'refund_deposits' function during the execution of the 'send' method, allowing them to withdraw additional funds, leading to potential financial loss for the contract.",
+        "file_name": "0xaa93338ef3b64a50dcfb2eba57a1eb4ad59d955b.sol"
+    },
+    {
+        "function_name": "refund_claims",
+        "code": "function refund_claims(string password){ if (!deposits_refunded) throw; if (valid_voucher_code[sha3(password)] == 0) throw; for (uint256 index = 1; index <= num_claimed; index++){ bytes32 claimcode = claimers[index]; address receiver = who_claimed[claimcode]; uint256 refund_amount = valid_voucher_code[claimcode]; if (this.balance >= refund_amount){ if (!receiver.send(refund_amount)) throw; valid_voucher_code[claimcode] = 0; } } }",
+        "vulnerability": "Reentrancy",
+        "reason": "In the 'refund_claims' function, there is a similar issue with reentrancy due to external calls made with 'send'. Since the state update ('valid_voucher_code[claimcode] = 0') is performed after the 'send' call, an attacker can re-enter this function through a malicious fallback function. This could allow them to repeatedly claim refunds, potentially draining the contract of all its ether.",
+        "file_name": "0xaa93338ef3b64a50dcfb2eba57a1eb4ad59d955b.sol"
+    }
+]

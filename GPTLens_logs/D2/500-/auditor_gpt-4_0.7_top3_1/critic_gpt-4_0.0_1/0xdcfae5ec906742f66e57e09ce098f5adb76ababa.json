@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "WthdrawAllToCreator",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning provided is accurate in identifying a potential DoS vulnerability due to the reliance on the creator's address being able to receive ether. If the creator's address is a contract with a failing fallback function, it could indeed lock funds. However, the severity is moderate because it depends on the specific implementation of the creator's address and is not a general flaw in the function itself. The profitability is low as this vulnerability does not provide a direct way for an attacker to profit, but rather creates a denial of service scenario.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 1,
+        "reason": "This function transfers all the contract balance to the creator if the transaction is initiated by the creator. However, if the creator's address is a contract that fails to receive ether (e.g., fallback function reverts or runs out of gas), the transfer will fail and effectively lock all funds in the contract since there is no alternative mechanism to withdraw them.",
+        "code": "function WthdrawAllToCreator() public payable { if(msg.sender==creator) { creator.transfer(this.balance); } }",
+        "file_name": "0xdcfae5ec906742f66e57e09ce098f5adb76ababa.sol"
+    },
+    {
+        "function_name": "WthdrawToCreator",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning is similar to the 'WthdrawAllToCreator' function and correctly identifies a potential DoS vulnerability. The severity is slightly lower than the 'WthdrawAllToCreator' function because it allows for partial withdrawals, potentially reducing the impact of a complete lock of funds. The profitability remains low as it primarily poses a risk of service denial without direct financial gain for an attacker.",
+        "correctness": 7,
+        "severity": 4,
+        "profitability": 1,
+        "reason": "Similar to the 'WthdrawAllToCreator' function, this function allows the creator to withdraw a specified amount of ether from the contract. If the creator's address is a contract that fails on receiving ether, it could cause the transaction to revert and prevent the withdrawal functionality from being used, potentially freezing funds in the contract.",
+        "code": "function WthdrawToCreator(uint val) public payable { if(msg.sender==creator) { creator.transfer(val); } }",
+        "file_name": "0xdcfae5ec906742f66e57e09ce098f5adb76ababa.sol"
+    },
+    {
+        "function_name": "WithdrawToSponsor",
+        "vulnerability": "Unchecked send",
+        "criticism": "The reasoning correctly identifies a flaw in the handling of the 'send' operation's return value, but it incorrectly states that 'CharterCapital' is updated regardless of the send's success. The code shows that 'CharterCapital' is only updated if '_addr.send(_wei)' returns true, meaning the state is consistent with the transaction's success. Therefore, the vulnerability is overstated, and the actual risk is lower. The severity and profitability are both low as the function does handle the send failure correctly by not updating the state in case of failure.",
+        "correctness": 3,
+        "severity": 2,
+        "profitability": 0,
+        "reason": "While there is an attempt to check if the send operation was successful, the subsequent updates to 'CharterCapital' do not account for the possibility of the send failing. If the send fails (returns false), the state of 'CharterCapital' will still be subtracted incorrectly. This could lead to discrepancies in the accounting of 'CharterCapital', potentially allowing for ether to be withdrawn on the basis of incorrect capital reported.",
+        "code": "function WithdrawToSponsor(address _addr, uint _wei) public payable { if(Sponsors[_addr]>0) { if(isOwner()) { if(_addr.send(_wei)) { if(CharterCapital>=_wei)CharterCapital-=_wei; else CharterCapital=0; } } } }",
+        "file_name": "0xdcfae5ec906742f66e57e09ce098f5adb76ababa.sol"
+    }
+]

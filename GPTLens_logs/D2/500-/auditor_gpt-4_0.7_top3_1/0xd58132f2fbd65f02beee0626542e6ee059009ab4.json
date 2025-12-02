@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "getTokens",
+        "code": "function getTokens() payable canDistr onlyWhitelist public { if (value > totalRemaining) { value = totalRemaining; } require(value <= totalRemaining); address investor = msg.sender; uint256 toGive = value; distr(investor, toGive); if (toGive > 0) { blacklist[investor] = true; } if (totalDistributed >= totalSupply) { distributionFinished = true; } value = value.div(100000).mul(99999); }",
+        "vulnerability": "Reentrancy",
+        "reason": "This function calls 'distr', which emits events and updates state variables, and then it modifies user state by blacklisting. An attacker can potentially re-enter the contract in the same transaction before the blacklist state is updated, leading to unexpected behaviors or exploits such as draining the contract by repeatedly calling getTokens.",
+        "file_name": "0xd58132f2fbd65f02beee0626542e6ee059009ab4.sol"
+    },
+    {
+        "function_name": "approve",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) { if (_value != 0 && allowed[msg.sender][_spender] != 0) { return false; } allowed[msg.sender][_spender] = _value; emit Approval(msg.sender, _spender, _value); return true; }",
+        "vulnerability": "Unsafe ERC20 Approval Handling",
+        "reason": "This function does not correctly reset allowances in certain conditions. The check for nonzero _value and nonzero allowed amount does not account for reducing allowances, which can lead to an approved spender being able to spend more than intended by the token owner if the owner only partially reduces the spender's allowance.",
+        "file_name": "0xd58132f2fbd65f02beee0626542e6ee059009ab4.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw() onlyOwner public { uint256 etherBalance = address(this).balance; owner.transfer(etherBalance); }",
+        "vulnerability": "Unprotected Ether Withdrawal",
+        "reason": "This function allows the contract owner to withdraw all Ether stored in the contract without any checks or limitations on the frequency or conditions under which the withdrawal can occur. This could potentially lead to security risks where the owner extracts Ether, leaving other contract functionalities inoperative if they depend on the Ether balance.",
+        "file_name": "0xd58132f2fbd65f02beee0626542e6ee059009ab4.sol"
+    }
+]

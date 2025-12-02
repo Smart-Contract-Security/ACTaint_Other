@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "NewForm",
+        "code": "function NewForm () public { owner = msg.sender; }",
+        "vulnerability": "Missing constructor",
+        "reason": "The function NewForm is intended to act as a constructor to initialize the owner of the contract, but it is not marked with the 'constructor' keyword, making it callable by anyone post-deployment. This allows any user to reassign the ownership of the contract after it has been deployed, potentially leading to unauthorized access and control over the contract's functions.",
+        "file_name": "0x3edbf38df1f895e639d705aaadb5430dbb7f894b.sol"
+    },
+    {
+        "function_name": "setData_1",
+        "code": "function setData_1 (string newData_1) public onlyOwner { inData_1 = newData_1; }",
+        "vulnerability": "Unprotected sensitive string handling",
+        "reason": "The function setData_1 allows the owner to set a sensitive string, but solidity before 0.5.0 does not enforce string input validation, which can lead to unintended type conversions or data corruption. An attacker can exploit this by passing specially crafted string inputs that may disrupt the contract logic or lead to unexpected behavior.",
+        "file_name": "0x3edbf38df1f895e639d705aaadb5430dbb7f894b.sol"
+    },
+    {
+        "function_name": "setData_2",
+        "code": "function setData_2 (string newData_2) public onlyOwner { inData_2 = newData_2; }",
+        "vulnerability": "DoS with Unexpected Revert",
+        "reason": "The setData_2 function allows only the owner to modify a string variable. However, if an attacker can cause the transaction to fail (e.g., by sending malformed input or causing the contract to run out of gas), it can permanently lock the ability to update inData_2. This can be used to deny service to legitimate users and disrupt contract functionality.",
+        "file_name": "0x3edbf38df1f895e639d705aaadb5430dbb7f894b.sol"
+    }
+]

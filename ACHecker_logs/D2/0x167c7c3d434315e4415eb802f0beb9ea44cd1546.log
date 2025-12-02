@@ -1,0 +1,25 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x167c7c3d434315e4415eb802f0beb9ea44cd1546.code
+Start time: 19/08/2022 10:40:06
+Building CFG...
+CFG generation time (secs): 0.60
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function updatePollDescription(uint256,bytes,uint8)
+	( 7060) 1b94:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function addPoll(uint256,uint256,bytes,uint8)
++--Attacker can make changes to AC item {1} in function addPoll(uint256,bytes,uint8)
++--Attacker can make changes to AC item {1} in function vote(uint256,uint256[])
+
+Violated access control check in function cancelPoll(uint256)
+	(11686) 2da6:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {1} in function addPoll(uint256,uint256,bytes,uint8)
++--Attacker can make changes to AC item {1} in function addPoll(uint256,bytes,uint8)
++--Attacker can make changes to AC item {1} in function vote(uint256,uint256[])
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 50.47
+End time: 19/08/2022 10:40:57

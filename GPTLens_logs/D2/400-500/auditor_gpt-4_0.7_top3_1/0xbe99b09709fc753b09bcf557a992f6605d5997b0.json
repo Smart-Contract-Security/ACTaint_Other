@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "transferAdminship",
+        "code": "function transferAdminship(address _newAdmin) onlyAdmin public { require(_newAdmin != 0); admin = _newAdmin; TransferAdminship(admin); }",
+        "vulnerability": "Improper Access Control",
+        "reason": "The function 'transferAdminship' allows the current admin to transfer the admin role to any other address. While it checks if the new admin address is not zero, it does not validate whether the new admin address is a contract or an externally owned account. This might lead to transferring control to a malicious contract, which can take over the contract management.",
+        "file_name": "0xbe99b09709fc753b09bcf557a992f6605d5997b0.sol"
+    },
+    {
+        "function_name": "burnToken",
+        "code": "function burnToken(uint256 _burnedAmount) onlyAdmin public { balances[msg.sender] = SafeMath.sub(balances[msg.sender], _burnedAmount); totalSupply = SafeMath.sub(totalSupply, _burnedAmount); Burned(msg.sender, _burnedAmount); }",
+        "vulnerability": "Arbitrary Burning",
+        "reason": "The 'burnToken' function allows the admin to burn tokens from their own balance without restrictions or checks on the amount. This could lead to mishandling where the admin might unintentionally or maliciously reduce the total supply drastically, affecting the token's market and the holders' value unexpectedly.",
+        "file_name": "0xbe99b09709fc753b09bcf557a992f6605d5997b0.sol"
+    },
+    {
+        "function_name": "setFrozen",
+        "code": "function setFrozen(address _target,bool _flag) onlyAdmin public { frozen[_target]=_flag; FrozenStatus(_target,_flag); }",
+        "vulnerability": "Centralized Control Over Accounts",
+        "reason": "The 'setFrozen' function allows the admin to freeze any account unilaterally. This means the admin has the power to stop all transfers from and to the account, which could be abused or used arbitrarily. This centralized control goes against the decentralized nature expected in blockchain applications and can lead to trust issues and potential censorship or freezing of funds.",
+        "file_name": "0xbe99b09709fc753b09bcf557a992f6605d5997b0.sol"
+    }
+]

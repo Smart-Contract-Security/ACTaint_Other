@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "initalize",
+        "code": "function initalize(uint _openDate) payable public { Owner = msg.sender; openDate = _openDate; deposit(); }",
+        "vulnerability": "Re-initialization of owner",
+        "reason": "This function allows re-initialization of the owner and openDate by any user. Since it is a public function and changes the state variables 'Owner' and 'openDate', it can be called by any user after deployment to change the ownership and control the contract, leading to unauthorized access and potential loss of funds.",
+        "file_name": "0x5c8546a7b86ba30202c09a84f5a72644a2a4f7ba.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint amount) public onlyOwner { if (now >= openDate) { uint max = deposits[msg.sender]; if (amount <= max && max > 0) if (!msg.sender.send(amount)) revert(); } }",
+        "vulnerability": "Reentrancy attack",
+        "reason": "The function uses a direct call to 'send' for transferring ether which is prone to reentrancy attacks. If an attacker can call this function recursively through a fallback function in their contract, they might drain the funds from this contract before the state (specifically 'deposits[msg.sender]') is updated, leading to potential loss of ether.",
+        "file_name": "0x5c8546a7b86ba30202c09a84f5a72644a2a4f7ba.sol"
+    },
+    {
+        "function_name": "kill",
+        "code": "function kill() public { if (address(this).balance == 0) selfdestruct(msg.sender); }",
+        "vulnerability": "Unauthorized selfdestruct",
+        "reason": "The 'kill' function allows any caller to destroy the contract if the contract balance is zero. This is risky as it does not check if the caller is the owner, hence any user can potentially remove the contract from the blockchain when the balance is zero, leading to denial of service or loss of contract functionality.",
+        "file_name": "0x5c8546a7b86ba30202c09a84f5a72644a2a4f7ba.sol"
+    }
+]

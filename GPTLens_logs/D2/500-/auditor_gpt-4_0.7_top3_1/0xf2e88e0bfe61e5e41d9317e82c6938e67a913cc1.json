@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "setResult",
+        "code": "function setResult(uint32 _result) external onlySiths { require(_result >= firstHero || _result <= lastHero); require(startPayment == false); if (betAmount[_result] == 0) { startWithdraw(); return; } uint256 donation = (address(this).balance - betAmount[_result]) / 10; Martin.transfer(donation / 2); George.transfer(donation / 2); uint256 totalBets = (address(this).balance - betAmount[_result]); winRatio = totalBets * RR / betAmount[_result]; resultWin = _result; startPayment = true; if (endBetting != true) { endBetting = true; } }",
+        "vulnerability": "Integer underflow",
+        "reason": "The function 'setResult' does not correctly check the range for '_result' which should use logical AND '&&' instead of OR '||'. This could lead to an integer underflow when accessing array indices outside 'firstHero' and 'lastHero'.",
+        "file_name": "0xf2e88e0bfe61e5e41d9317e82c6938e67a913cc1.sol"
+    },
+    {
+        "function_name": "clearBlockchain",
+        "code": "function clearBlockchain() external { require(startPayment && endBetting); if (resultWin == Withdraw) { require(address(this).balance < minBet); selfdestruct(msg.sender); } else { require(playerCount[resultWin] == 0); selfdestruct(msg.sender); } }",
+        "vulnerability": "Arbitrary destruction",
+        "reason": "The function 'clearBlockchain' allows for the self-destruction of the contract based on conditions that can be manipulated by users (like resultWin and playerCount[resultWin]). This can lead to loss of funds or denial of service.",
+        "file_name": "0xf2e88e0bfe61e5e41d9317e82c6938e67a913cc1.sol"
+    },
+    {
+        "function_name": "setBet",
+        "code": "function setBet(uint8 _hero) external payable { require(onPause == false); require(msg.value >= minBet); require(endBetting == false); require(_hero >= firstHero || _hero <= lastHero); if (bets[msg.sender][_hero] == 0) { playerCount[_hero]++; } bets[msg.sender][_hero] += msg.value; betAmount[_hero] += msg.value; emit Bet(msg.sender, _hero, msg.value); }",
+        "vulnerability": "Incorrect validation",
+        "reason": "In 'setBet', logical OR '||' is used instead of AND '&&' to check the range of '_hero'. This could allow a user to place bets on invalid hero indices, potentially leading to out-of-bounds access or incorrect state updates.",
+        "file_name": "0xf2e88e0bfe61e5e41d9317e82c6938e67a913cc1.sol"
+    }
+]

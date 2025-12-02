@@ -1,0 +1,35 @@
+[
+    {
+        "function_name": "withdraw",
+        "vulnerability": "Reentrancy",
+        "criticism": "The reasoning is accurate in identifying a reentrancy vulnerability due to the state not being updated before sending ether. This is a classic reentrancy issue where the balance should be set to zero or updated before the external call to prevent multiple withdrawals. The severity is high because it can potentially drain the contract's funds. The profitability is also high as an attacker can exploit this to extract more funds than intended.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 8,
+        "reason": "The withdraw function sends ether to msg.sender without updating the state first, which might allow a malicious contract to call withdraw again during the sending process. This can lead to multiple withdrawals in a single transaction, potentially draining the contract if there are no other checks on balance or withdrawals.",
+        "code": "function withdraw () public noone_else { uint256 withdraw_amt = this.balance; if (msg.sender != owner || withdraw_amt < 1000 ether ){ withdraw_amt = 0; } msg.sender.send(withdraw_amt); }",
+        "file_name": "0x8b099bdcfea93faecfac13d0dbc1d08c4e1ec595.sol"
+    },
+    {
+        "function_name": "recovery",
+        "vulnerability": "Arbitrary destruction",
+        "criticism": "The reasoning correctly identifies a severe vulnerability where the contract can be destroyed under certain conditions. The use of a hash function with a hardcoded value that triggers self-destruction is risky and can lead to total loss of the contract's assets if an attacker can generate or find an address that satisfies the condition. The severity and profitability are both high due to the irreversible damage and potential redirection of all contract funds.",
+        "correctness": 8,
+        "severity": 9,
+        "profitability": 9,
+        "reason": "The recovery function can result in self-destruction of the contract if the condition based on the hash of the supplied address meets a specific value. This can be exploited if an attacker finds an address that meets the condition, leading to loss of contract and all its funds to the attacker's address.",
+        "code": "function recovery (string _password, address _return_addr) returns (uint256) { if ( uint256(sha3(_return_addr)) % 100000000000000 == 94865382827780 ){ selfdestruct (_return_addr); } return uint256(sha3(_return_addr)) % 100000000000000; }",
+        "file_name": "0x8b099bdcfea93faecfac13d0dbc1d08c4e1ec595.sol"
+    },
+    {
+        "function_name": "recovery",
+        "vulnerability": "Predictable randomness",
+        "criticism": "The reasoning is partially correct in identifying the use of SHA3 for pseudo-random number generation as potentially predictable. However, the main issue is not just predictability but the specific use case where it leads to self-destruction. The predictability of SHA3 with known inputs does pose a risk, but the severity and profitability should be evaluated in the context of how it can be exploited to trigger the self-destruct. The reasoning should focus more on the implications of predictability leading to arbitrary destruction.",
+        "correctness": 6,
+        "severity": 7,
+        "profitability": 7,
+        "reason": "The recovery function uses SHA3 hashing of an address to determine the outcomes, which can be predicted and exploited by an attacker if they can control or predict the input address. This directly impacts the security of any functionality relying on this pseudo-random generation.",
+        "code": "function recovery (string _password, address _return_addr) returns (uint256) { if ( uint256(sha3(_return_addr)) % 100000000000000 == 94865382827780 ){ selfdestruct (_return_addr); } return uint256(sha3(_return_addr)) % 100000000000000; }",
+        "file_name": "0x8b099bdcfea93faecfac13d0dbc1d08c4e1ec595.sol"
+    }
+]

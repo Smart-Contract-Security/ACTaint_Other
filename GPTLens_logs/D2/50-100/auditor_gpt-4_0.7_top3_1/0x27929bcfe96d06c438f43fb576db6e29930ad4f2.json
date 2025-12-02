@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "changeOwner",
+        "code": "function changeOwner (address _newowner) payable external { if (msg.value>=howManyEthersToBecomeOwner) { owner.transfer(msg.value); owner.transfer(this.balance); owner=_newowner; } }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'changeOwner' allows the caller to become the new owner of the contract if they send a certain amount of ether. The function transfers ether to the current owner before updating the state variable 'owner'. This may allow the previous owner to re-enter the contract and perform actions while they still have control, potentially draining ether or causing other state inconsistencies.",
+        "file_name": "0x27929bcfe96d06c438f43fb576db6e29930ad4f2.sol"
+    },
+    {
+        "function_name": "killContract",
+        "code": "function killContract () payable external { if (msg.sender==owner || msg.value >=howManyEthersToKillContract) { selfdestruct(owner); } }",
+        "vulnerability": "Unauthorized contract destruction",
+        "reason": "The 'killContract' function allows anyone to destroy the contract if they send enough ether, even if they are not the owner. This can lead to loss of contract functionality and funds unexpectedly, as any user can permanently remove the contract from the blockchain if they have sufficient funds.",
+        "file_name": "0x27929bcfe96d06c438f43fb576db6e29930ad4f2.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) public returns (bool) { var senderBalance = balances[msg.sender]; if (senderBalance >= _value && _value > 0) { senderBalance -= _value; balances[msg.sender] = senderBalance; balances[_to] += _value; Transfer(msg.sender, _to, _value); return true; } return false; }",
+        "vulnerability": "Integer overflow",
+        "reason": "The 'transfer' function does not properly validate that the addition of '_value' tokens to the balance of the receiver ('_to') will not cause an integer overflow. This can be exploited to wrap the balance around and grant the attacker an arbitrary amount of tokens, potentially leading to loss or theft of tokens.",
+        "file_name": "0x27929bcfe96d06c438f43fb576db6e29930ad4f2.sol"
+    }
+]

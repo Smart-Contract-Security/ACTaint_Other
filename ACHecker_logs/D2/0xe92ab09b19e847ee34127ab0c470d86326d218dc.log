@@ -1,0 +1,47 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xe92ab09b19e847ee34127ab0c470d86326d218dc.code
+Start time: 31/08/2022 10:50:29
+Building CFG...
+CFG generation time (secs): 4.14
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function destroyContract()
+	( 1477)  5c5:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function SelfDesctruction()
++--Attacker can make changes to AC item {6} in function transferOwnerShip(address)
+
+Violated access control check in function burn(uint256)
+	( 1789)  6fd:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function SelfDesctruction()
++--Attacker can make changes to AC item {6} in function transferOwnerShip(address)
+
+Violated access control check in function burnFrom(address,uint256)
+	( 2113)  841:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function SelfDesctruction()
++--Attacker can make changes to AC item {6} in function transferOwnerShip(address)
+
+Violated access control check in function transferOwnerShip(address)
+	( 2428)  97c:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function SelfDesctruction()
++--Attacker can make changes to AC item {6} in function transferOwnerShip(address)
+
+Violated access control check in function mine(address,uint256)
+	( 2641)  a51:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function SelfDesctruction()
++--Attacker can make changes to AC item {6} in function transferOwnerShip(address)
+
+Violated access control check in function freezeAccount(address,bool)
+	( 3077)  c05:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {6} in function SelfDesctruction()
++--Attacker can make changes to AC item {6} in function transferOwnerShip(address)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+(Controlable Address of SELFDESTRUCT) Missing access control check in function SelfDesctruction()
+Needed to protect following instruction in function destroyContract()
+( 1495)  5d7:	ff	-1 +0 = -1	SELFDESTRUCT
+
+Analysis time (secs): 17.63
+End time: 31/08/2022 10:50:50

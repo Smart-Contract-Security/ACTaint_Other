@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "giveRuling",
+        "code": "function giveRuling(uint _disputeID, uint _ruling) public onlyOwner { return _giveRuling(_disputeID, _ruling); }",
+        "vulnerability": "Centralized Control",
+        "reason": "This function allows only the owner to give rulings, which centralizes control and could lead to biased or unfair decisions if the owner is compromised or acts maliciously.",
+        "file_name": "0x5906db495c9f27f73a9c46790cc79d860a6e9b5d.sol"
+    },
+    {
+        "function_name": "executeRuling",
+        "code": "function executeRuling(uint _transactionID, uint _ruling) internal { Transaction storage transaction = transactions[_transactionID]; require(_ruling <= AMOUNT_OF_CHOICES, \"Invalid ruling.\"); if (_ruling == SENDER_WINS) { transaction.sender.send(transaction.senderFee + transaction.amount); } else if (_ruling == RECEIVER_WINS) { transaction.receiver.send(transaction.receiverFee + transaction.amount); } else { uint split_amount = (transaction.senderFee + transaction.amount) / 2; transaction.sender.send(split_amount); transaction.receiver.send(split_amount); } transaction.amount = 0; transaction.senderFee = 0; transaction.receiverFee = 0; transaction.status = Status.Resolved; }",
+        "vulnerability": "Unchecked Send",
+        "reason": "The function uses .send() which can fail silently (e.g., if the recipient is a contract that consumes more gas than provided). These failed sends do not revert the transaction, potentially leading to funds being locked or lost.",
+        "file_name": "0x5906db495c9f27f73a9c46790cc79d860a6e9b5d.sol"
+    },
+    {
+        "function_name": "payArbitrationFeeBySender",
+        "code": "function payArbitrationFeeBySender(uint _transactionID) public payable { Transaction storage transaction = transactions[_transactionID]; uint arbitrationCost = arbitrator.arbitrationCost(arbitratorExtraData); require(transaction.status < Status.DisputeCreated, \"Dispute has already been created or because the transaction has been executed.\"); require(msg.sender == transaction.sender, \"The caller must be the sender.\"); transaction.senderFee += msg.value; require(transaction.senderFee >= arbitrationCost, \"The sender fee must cover arbitration costs.\"); transaction.lastInteraction = now; if (transaction.receiverFee < arbitrationCost) { transaction.status = Status.WaitingReceiver; emit HasToPayFee(_transactionID, Party.Receiver); } else { raiseDispute(_transactionID, arbitrationCost); } }",
+        "vulnerability": "DoS by External Contract",
+        "reason": "This function depends on an external call to `arbitrator.arbitrationCost()`, which could lead to a denial of service (DoS) if the call consistently fails or if the arbitration cost is set too high, preventing users from being able to afford dispute resolution.",
+        "file_name": "0x5906db495c9f27f73a9c46790cc79d860a6e9b5d.sol"
+    }
+]

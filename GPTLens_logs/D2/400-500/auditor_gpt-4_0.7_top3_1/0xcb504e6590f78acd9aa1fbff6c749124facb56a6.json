@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "purchaseArmy",
+        "code": "function purchaseArmy(uint _armyId) public payable {\n    require(msg.value == armies[_armyId].price);\n    require(msg.value > 0);\n    if(armies[_armyId].ownerAddress != address(this)) {\n        uint CommissionOwnerValue = msg.value - (msg.value / 10);\n        armies[_armyId].ownerAddress.transfer(CommissionOwnerValue);\n    }\n    _ownershipArmy(_armyId);\n}",
+        "vulnerability": "Reentrancy",
+        "reason": "The function 'purchaseArmy' transfers funds to the current owner before updating the ownership state with '_ownershipArmy'. An attacker could potentially exploit this by creating a fallback function in their contract that calls 'purchaseArmy' again, leading to multiple withdrawals before state change.",
+        "file_name": "0xcb504e6590f78acd9aa1fbff6c749124facb56a6.sol"
+    },
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(uint amount, uint who) public onlyCeo returns(bool) {\n    require(amount <= this.balance);\n    if(who == 0) {\n        ceoAddress.transfer(amount);\n    } else {\n        cfoAddress.transfer(amount);\n    }\n    return true;\n}",
+        "vulnerability": "Arbitrary Withdrawal",
+        "reason": "The function 'withdraw' allows the CEO to specify any 'amount' to transfer without a check on the legitimacy or logging of the withdrawal. This could potentially lead to fraudulent behavior or unintended fund drains.",
+        "file_name": "0xcb504e6590f78acd9aa1fbff6c749124facb56a6.sol"
+    },
+    {
+        "function_name": "purchaseWeapons",
+        "code": "function purchaseWeapons(uint _armyId, uint _weaponId, uint _bonusAttack, uint _bonusDefense ) public payable {\n    uint isValid = 0;\n    uint256 msgValue = msg.value;\n    if(msgValue == 10000000000000000 && _weaponId == 0) {\n        armyDronesCount[_armyId]++; isValid = 1;\n    } else if(msgValue == 25000000000000000 && _weaponId == 1) {\n        armyPlanesCount[_armyId]++; isValid = 1;\n    } else if(msgValue == 25000000000000000 && _weaponId == 2) {\n        armyHelicoptersCount[_armyId]++; isValid = 1;\n    } else if(msgValue == 45000000000000000 && _weaponId == 3) {\n        armyTanksCount[_armyId]++; isValid = 1;\n    } else if(msgValue == 100000000000000000 && _weaponId == 4) {\n        armyAircraftCarriersCount[_armyId]++; isValid = 1;\n    } else if(msgValue == 100000000000000000 && _weaponId == 5) {\n        armySubmarinesCount[_armyId]++; isValid = 1;\n    } else if(msgValue == 120000000000000000 && _weaponId == 6) {\n        armySatelitesCount[_armyId]++; isValid = 1;\n    }\n    if(isValid == 1) {\n        armies[_armyId].attackBonus = armies[_armyId].attackBonus + _bonusAttack;\n        armies[_armyId].defenseBonus = armies[_armyId].defenseBonus + _bonusDefense;\n    }\n}",
+        "vulnerability": "Unchecked External Call",
+        "reason": "In 'purchaseWeapons', the function increases the attack and defense bonuses directly based on unchecked inputs '_bonusAttack' and '_bonusDefense'. This can be exploited by an attacker by passing large values to manipulate army strengths unfairly.",
+        "file_name": "0xcb504e6590f78acd9aa1fbff6c749124facb56a6.sol"
+    }
+]

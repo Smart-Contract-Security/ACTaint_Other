@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "buyTickets",
+        "code": "function buyTickets() public payable { if (entry == true) { revert(); } entry = true; if (msg.value != (price)) { entry = false; if (keccak256(status) == keccak256(\"Shutdown\")) { selfdestruct(owner); } revert(); } else { if (tickets == 5) { tickets -= 1; ticket1 = msg.sender; } else if(tickets == 4) { tickets -= 1; ticket2 = msg.sender; profit.transfer(price * 1/2); } else if(tickets == 3) { tickets -= 1; ticket3 = msg.sender; } else if(tickets == 2) { tickets -= 1; ticket4 = msg.sender; } else if(tickets == 1) { ticket5 = msg.sender; tickets = 5; round += 1; seed = uint(block.blockhash(block.number-seed))%2000 + 1; uint random_number = uint(block.blockhash(block.number-seed))%5 + 1; lastWiningTicketNumber = random_number; uint pay = (price * 9/2); if (random_number == 1) { ticket1.transfer(pay); lastWinner = ticket1; } else if(random_number == 2) { ticket2.transfer(pay); lastWinner = ticket2; } else if(random_number == 3) { ticket3.transfer(pay); lastWinner = ticket3; } else if(random_number == 4) { ticket4.transfer(pay); lastWinner = ticket4; } else if(random_number == 5) { ticket5.transfer(pay); lastWinner = ticket5; } } } entry = false; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The function allows for reentrancy attack because the 'entry' mutex is set back to false at the end of the function, after external calls (e.g., transfer). An attacker could make a recursive call back to buyTickets() during the execution of the transfers, potentially allowing manipulation or disruption before the function execution completes.",
+        "file_name": "0x2044c97717a622b4d9462329db2497e69201623a.sol"
+    },
+    {
+        "function_name": "changeSeed",
+        "code": "function changeSeed(uint32 n) public { if (msg.sender == owner) { seed = uint(n); seed = uint(block.blockhash(block.number-seed))%2000 + 1; } else { revert(); } }",
+        "vulnerability": "Predictable Randomness",
+        "reason": "The seed used to determine the winner is predictable as it depends on publicly visible blockchain data (blockhash) and a modifiable seed value. An attacker could potentially manipulate or predict the outcome by choosing a seed that, when processed, results in a favorable position in the winner determination logic.",
+        "file_name": "0x2044c97717a622b4d9462329db2497e69201623a.sol"
+    },
+    {
+        "function_name": "buyTickets",
+        "code": "function buyTickets() public payable { if (entry == true) { revert(); } entry = true; if (msg.value != (price)) { entry = false; if (keccak256(status) == keccak256(\"Shutdown\")) { selfdestruct(owner); } revert(); } else { if (tickets == 5) { tickets -= 1; ticket1 = msg.sender; } else if(tickets == 4) { tickets -= 1; ticket2 = msg.sender; profit.transfer(price * 1/2); } else if(tickets == 3) { tickets -= 1; ticket3 = msg.sender; } else if(tickets == 2) { tickets -= 1; ticket4 = msg.sender; } else if(tickets == 1) { ticket5 = msg.sender; tickets = 5; round += 1; seed = uint(block.blockhash(block.number-seed))%2000 + 1; uint random_number = uint(block.blockhash(block.number-seed))%5 + 1; lastWiningTicketNumber = random_number; uint pay = (price * 9/2); if (random_number == 1) { ticket1.transfer(pay); lastWinner = ticket1; } else if(random_number == 2) { ticket2.transfer(pay); lastWinner = ticket2; } else if(random_number == 3) { ticket3.transfer(pay); lastWinner = ticket3; } else if(random_number == 4) { ticket4.transfer(pay); lastWinner = ticket4; } else if(random_number == 5) { ticket5.transfer(pay); lastWinner = ticket5; } } } entry = false; }",
+        "vulnerability": "Denial of Service",
+        "reason": "If the contract's status is set to 'Shutdown', and a ticket purchase attempt is made with incorrect payment, the contract will execute selfdestruct. This action could be triggered by any user, permanently disabling the contract and preventing legitimate users from interacting with it, leading to a potential denial of service.",
+        "file_name": "0x2044c97717a622b4d9462329db2497e69201623a.sol"
+    }
+]

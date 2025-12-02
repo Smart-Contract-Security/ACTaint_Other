@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "withdraw",
+        "code": "function withdraw(address to, uint amount) public onlyOwner { if (WithdrawEnabled()) { uint max = Deposits[msg.sender]; if (max > 0 && amount <= max) { to.transfer(amount); Withdrawal(to, amount); } } }",
+        "vulnerability": "Authorization Bug",
+        "reason": "In the 'withdraw' function, 'Deposits[msg.sender]' is checked, but 'msg.sender' is the caller, who is also the owner due to the onlyOwner modifier. This could allow the owner to withdraw funds deposited by other users, not just their own deposits.",
+        "file_name": "0xe14f29c22f47d1ca8dda796a6718c6bd0be0b3cf.sol"
+    },
+    {
+        "function_name": "withdrawTokenTo",
+        "code": "function withdrawTokenTo(address token, address to) public onlyOwner returns (bool) { uint amount = balanceOfToken(token); if (amount > 0) { TokenTransfer(to, token, amount); return Token(token).transfer(to, amount); } return false; }",
+        "vulnerability": "Lack of Check on Return Value",
+        "reason": "The 'withdrawTokenTo' function does not check the return value of the 'Token(token).transfer(to, amount)' function call. If the ERC20 token transfer fails for any reason (such as lack of balance or failed logic in the token contract), the 'TokenTransfer' event will still emit, leading to misleading transaction logs.",
+        "file_name": "0xe14f29c22f47d1ca8dda796a6718c6bd0be0b3cf.sol"
+    },
+    {
+        "function_name": "init",
+        "code": "function init() payable open { Owner = msg.sender; minDeposit = 1 ether; deposit(); }",
+        "vulnerability": "Reentrancy",
+        "reason": "The 'init' function calls 'deposit()' within it and is marked by the 'open' modifier, which sets the 'owner' variable and allows reentrancy. If an attacker can call 'init' directly or indirectly multiple times (due to the lack of state locking mechanisms or multiple entry points allowing calls to 'init'), they may cause unexpected behavior in the contract state, especially manipulating deposits.",
+        "file_name": "0xe14f29c22f47d1ca8dda796a6718c6bd0be0b3cf.sol"
+    }
+]

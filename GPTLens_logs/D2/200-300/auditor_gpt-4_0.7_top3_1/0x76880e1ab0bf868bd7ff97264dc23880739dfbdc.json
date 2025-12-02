@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "bid",
+        "code": "function bid (uint256 _roundNumber, string _message) payable public { require(!isContract(msg.sender)); require(bytes(_message).length <= maxMessageChars); require(msg.value > 0); if (_roundNumber == currentRoundNumber && !roundExpired()) { require(msg.value > lastBidAmount); }else if (_roundNumber == (currentRoundNumber+1) && roundExpired()) { var lastRoundPotBalance = this.balance.sub(msg.value); uint256 devFee = lastRoundPotBalance.mul(devFeePercent).div(100); owner.transfer(devFee); uint256 winnings = lastRoundPotBalance.sub(devFee).mul(100 - rolloverPercent).div(100); king.transfer(winnings); roundToKing[currentRoundNumber] = king; roundToWinnings[currentRoundNumber] = winnings; roundToFinalBid[currentRoundNumber] = lastBidAmount; roundToFinalMessage[currentRoundNumber] = kingsMessage; currentBidNumber = 0; currentRoundNumber++; if (nextBidExpireBlockLength != 0) { bidExpireBlockLength = nextBidExpireBlockLength; nextBidExpireBlockLength = 0; } }else { require(false); } king = msg.sender; kingsMessage = _message; lastBidAmount = msg.value; lastBidBlock = block.number; NewKing(currentRoundNumber, king, kingsMessage, lastBidAmount, currentBidNumber, lastBidBlock); currentBidNumber++; }",
+        "vulnerability": "Reentrancy",
+        "reason": "The bid function transfers ether to an external address (king) via king.transfer(winnings) before updating its state variables such as lastBidAmount and lastBidBlock. This can lead to reentrancy where the external address, if a contract, might call into the bid function again and alter its flow or cause unexpected behavior before the first transaction is fully completed.",
+        "file_name": "0x76880e1ab0bf868bd7ff97264dc23880739dfbdc.sol"
+    },
+    {
+        "function_name": "bid",
+        "code": "function bid (uint256 _roundNumber, string _message) payable public { require(!isContract(msg.sender)); require(bytes(_message).length <= maxMessageChars); require(msg.value > 0); if (_roundNumber == currentRoundNumber && !roundExpired()) { require(msg.value > lastBidAmount); }else if (_roundNumber == (currentRoundNumber+1) && roundExpired()) { var lastRoundPotBalance = this.balance.sub(msg.value); uint256 devFee = lastRoundPotBalance.mul(devFeePercent).div(100); owner.transfer(devFee); uint256 winnings = lastRoundPotBalance.sub(devFee).mul(100 - rolloverPercent).div(100); king.transfer(winnings); roundToKing[currentRoundNumber] = king; roundToWinnings[currentRoundNumber] = winnings; roundToFinalBid[currentRoundNumber] = lastBidAmount; roundToFinalMessage[currentRoundNumber] = kingsMessage; currentBidNumber = 0; currentRoundNumber++; if (nextBidExpireBlockLength != 0) { bidExpireBlockLength = nextBidExpireBlockLength; nextBidExpireBlockLength = 0; } }else { require(false); } king = msg.sender; kingsMessage = _message; lastBidAmount = msg.value; lastBidBlock = block.number; NewKing(currentRoundNumber, king, kingsMessage, lastBidAmount, currentBidNumber, lastBidBlock); currentBidNumber++; }",
+        "vulnerability": "Integer Underflow",
+        "reason": "In the calculation of 'winnings' using 'lastRoundPotBalance.sub(devFee).mul(100 - rolloverPercent).div(100)', there's a potential for integer underflow if 'devFee' is greater than 'lastRoundPotBalance', leading to incorrect and large winnings. This could deplete the contract funds incorrectly.",
+        "file_name": "0x76880e1ab0bf868bd7ff97264dc23880739dfbdc.sol"
+    },
+    {
+        "function_name": "setNextBidExpireBlockLength",
+        "code": "function setNextBidExpireBlockLength (uint256 _n) onlyOwner() public { require(_n >= 10 && _n <= 10000); nextBidExpireBlockLength = _n; }",
+        "vulnerability": "Denial of Service",
+        "reason": "By setting an extremely high 'nextBidExpireBlockLength', an owner can make the rounds very long such that no new bids can be placed for an unreasonable amount of time, effectively causing a denial of service.",
+        "file_name": "0x76880e1ab0bf868bd7ff97264dc23880739dfbdc.sol"
+    }
+]

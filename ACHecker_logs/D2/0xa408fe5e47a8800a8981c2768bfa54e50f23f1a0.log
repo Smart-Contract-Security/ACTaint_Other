@@ -1,0 +1,53 @@
+Analyzing contract ../smartbugs_wild/bytecode//0xa408fe5e47a8800a8981c2768bfa54e50f23f1a0.code
+Start time: 27/08/2022 00:42:13
+Building CFG...
+CFG generation time (secs): 11.74
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function freezeTransfers()
+	( 2706)  a92:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function setOwner(address)
+	( 3222)  c96:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function allowTransfers()
+	( 3524)  dc4:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function unfreezeTransfers()
+	( 3707)  e7b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function setState(uint8)
+	( 3988)  f94:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function stopTransfers()
+	( 4507) 119b:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function createTokens(uint256)
+	( 4630) 1216:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function setMinAmount(uint256)
+	( 4964) 1364:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function stopSale()
+	( 5357) 14ed:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+Violated access control check in function setBeneficiaryAddress(address)
+	( 5487) 156f:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {2} in function DESALSale()
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 16.72
+End time: 27/08/2022 00:42:42

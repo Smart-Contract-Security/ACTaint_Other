@@ -1,0 +1,23 @@
+[
+    {
+        "function_name": "TokenDrop",
+        "code": "function TokenDrop(address[] _addresses, uint256[] _values) payable returns(bool){ for (uint i = 0; i < _addresses.length; i++) { transfer(_addresses[i], _values[i]); } return true; }",
+        "vulnerability": "Batch Overflow",
+        "reason": "This function loops through arrays to transfer tokens to a list of addresses. If the arrays are overly large, it can lead to out of gas errors, effectively denying service. Additionally, there is no check for the arrays' lengths being equal, leading to potential mismatches in addresses and values.",
+        "file_name": "0x4eaf0a28ba6f524518df13a75ac276683efb7d3b.sol"
+    },
+    {
+        "function_name": "transfer",
+        "code": "function transfer(address _to, uint256 _value) isRunning validAddress returns (bool success) { require(balanceOf[msg.sender] >= _value); require(balanceOf[_to] + _value >= balanceOf[_to]); balanceOf[msg.sender] -= _value; balanceOf[_to] += _value; Transfer(msg.sender, _to, _value); return true; }",
+        "vulnerability": "Unchecked Return Values",
+        "reason": "The function does not check the return value of the 'transfer' function calls within the 'TokenDrop' function. This means transfers that fail silently (due to exceptions or errors in the 'transfer' function) will not be noticed, and the 'TokenDrop' function will still return true.",
+        "file_name": "0x4eaf0a28ba6f524518df13a75ac276683efb7d3b.sol"
+    },
+    {
+        "function_name": "burn",
+        "code": "function burn(uint256 _value) { require(balanceOf[msg.sender] >= _value); balanceOf[msg.sender] -= _value; balanceOf[0x0] += _value; Transfer(msg.sender, 0x0, _value); }",
+        "vulnerability": "Burning Funds to Zero Address",
+        "reason": "This function allows users to 'burn' their tokens by sending them to the 0x0 address, potentially reducing the total supply. However, increasing the balance of the zero address, which is commonly used as an indicator for burned or non-existent funds, could be misleading and might not align with typical tokenomics where burned tokens are meant to be permanently removed from circulation.",
+        "file_name": "0x4eaf0a28ba6f524518df13a75ac276683efb7d3b.sol"
+    }
+]

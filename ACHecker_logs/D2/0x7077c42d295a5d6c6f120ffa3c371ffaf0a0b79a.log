@@ -1,0 +1,21 @@
+Analyzing contract ../smartbugs_wild/bytecode//0x7077c42d295a5d6c6f120ffa3c371ffaf0a0b79a.code
+Start time: 22/08/2022 23:18:42
+Building CFG...
+CFG generation time (secs): 56.83
+
+Checking contract for [4mViolated-AC-Check[0m 
+------------------
+
+Violated access control check in function withdrawCDAI(uint256)
+	( 1881)  759:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {10} in function depositCDAI(uint256)
+
+Violated access control check in function withdrawDAI(uint256)
+	( 5010) 1392:	57	-2 +0 = -2	JUMPI
++--Attacker can make changes to AC item {10} in function depositCDAI(uint256)
+
+
+Checking contract for [4mMissing-AC-Check[0m 
+------------------
+Analysis time (secs): 449.59
+End time: 22/08/2022 23:27:08

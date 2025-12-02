@@ -1,0 +1,38 @@
+[
+    {
+        "function_name": "finishDistribution",
+        "vulnerability": "Distribution cannot be finished",
+        "criticism": "The reasoning is accurate as the function 'finishDistribution' incorrectly sets 'distributionFinished' to false instead of true, which indeed prevents the distribution from being marked as finished. This is a critical flaw in the logic of the function, which could lead to perpetual distribution, affecting the contract's intended functionality. The severity is high because it affects the core functionality of the contract. However, the profitability is low as it does not provide a direct financial gain to an attacker.",
+        "correctness": 9,
+        "severity": 8,
+        "profitability": 1,
+        "reason": "The function 'finishDistribution' is supposed to mark the distribution process as finished by setting 'distributionFinished' to true. However, it mistakenly sets 'distributionFinished' to false, making it impossible to stop the distribution process.",
+        "code": "function finishDistribution() onlyOwner canDistr public returns (bool) {\n    distributionFinished = false;\n    DistrFinished();\n    return true;\n}",
+        "file_name": "0xf669d2963fd7daef7bfacbbe35392066ee08f9cb.sol",
+        "final_score": 6.75
+    },
+    {
+        "function_name": "approve",
+        "vulnerability": "Approval race condition",
+        "criticism": "The reasoning correctly identifies a potential race condition in the 'approve' function. However, the description of the condition is slightly off. The race condition arises when the 'approve' function is called, and before it is mined, another transaction that calls 'transferFrom' could use the previous allowance. This could lead to unexpected financial transfers. The severity is moderate because it can lead to loss of funds, but the profitability is also moderate as it requires specific conditions to exploit.",
+        "correctness": 7,
+        "severity": 5,
+        "profitability": 4,
+        "reason": "The function 'approve' allows changing the allowance only if the current allowance is zero or the new value is zero. This can lead to a race condition known as the 'approve/transferFrom' race condition where the approved address could potentially execute an old allowance and the new one.",
+        "code": "function approve(address _spender, uint256 _value) public returns (bool success) {\n    if (_value != 0 && allowed[msg.sender][_spender] != 0) {\n        return false;\n    }\n    allowed[msg.sender][_spender] = _value;\n    Approval(msg.sender, _spender, _value);\n    return true;\n}",
+        "file_name": "0xf669d2963fd7daef7bfacbbe35392066ee08f9cb.sol",
+        "final_score": 5.75
+    },
+    {
+        "function_name": "withdraw",
+        "vulnerability": "DoS with unexpected revert",
+        "criticism": "The reasoning is correct in identifying a potential denial of service (DoS) if the 'transfer' fails. This is particularly problematic if the owner is a contract that cannot receive ether. The severity is moderate because it can halt important functionalities of the contract. However, the profitability is low as it does not provide a direct benefit to an attacker, but rather disrupts the contract's operations.",
+        "correctness": 8,
+        "severity": 6,
+        "profitability": 1,
+        "reason": "The 'withdraw' function transfers all the ether balance of the contract to the owner. If the 'transfer' call fails (e.g., if the owner is a contract that fails in receiving ether), the entire function will revert, potentially leading to denial of service if the contract relies on the successful withdrawal of funds.",
+        "code": "function withdraw() onlyOwner public {\n    address myAddress = this;\n    uint256 etherBalance = myAddress.balance;\n    owner.transfer(etherBalance);\n}",
+        "file_name": "0xf669d2963fd7daef7bfacbbe35392066ee08f9cb.sol",
+        "final_score": 5.75
+    }
+]
